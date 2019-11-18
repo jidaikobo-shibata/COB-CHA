@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base target="_top">
+  <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>
+    /**
+     * events
+     */
+    $(function() {
+      // on loadˇ
+      $('#do-edit-value').prop('disabled', true);
+      $('#do-make-same-as-template').prop('disabled', true);
+      $('#template-caution').hide();
+      $('#message-area').hide();
+      $('#pannel-value').hide();
+      $('#pannel-report').hide();
+
+      // on change
+      $('#test-type').change(changeTestType);
+      $('#evaluate-level').change(generateBulkCriteia);
+      $('#edit-value').change(changeEditValue);
+      $('#make-same-as-template').change(changeMakeSameAsTemplate);
+      $('#delete-sheets').change(changeControlStatus);
+
+      // on click
+      $('#generate-sheets').bind('click', {sheets:"*urls*"}, onGenerateSheetClick);
+      $('#generate-template').bind('click', {sheets:"*Template*"}, onGenerateSheetClick);
+      $('#control-sheets').click(onControlSheetClick);
+      $('#evaluate').click(onEvaluateClick);
+      $('#do-edit-value').click(onDoEditValueClick);
+      $('#do-bulk-edit').click(onDoBulkCheckClick);
+      $('#do-make-same-as-template').click(onDoMakeSameAsTemplateClick);
+      $('#do-insert-tech').click(onShowTechDialogClick);
+      $('#add-edit-issue').click(onAddIssueClick);
+      $('#show-issue').click(onShowIssueClick);
+      $('#export-html').click(onExportHtmlClick);
+      $('#export-issue').click(onExportIssueClick);
+      
+      // menu
+      $('#show-sheet').on(
+        'click',
+        function(){
+          $('#pannel-sheet').show()
+          $('#pannel-value').hide()
+          $('#pannel-report').hide()
+        }
+      );
+      $('#show-value').on(
+        'click',
+        function(){
+          $('#pannel-sheet').hide()
+          $('#pannel-value').show()
+          $('#pannel-report').hide()
+        }
+      );
+      $('#show-report').on(
+        'click',
+        function(){
+          $('#pannel-sheet').hide()
+          $('#pannel-value').hide()
+          $('#pannel-report').show()
+        }
+      );
+
+      // default value
+      setDefaultValue();
+    });
+
+    /**
+     * set default value
+     */
+    function setDefaultValue() {
+      google.script.run
+        .withSuccessHandler(
+          function(ret) {
+            $("#lang").val(ret);
+          })
+        .getProp('lang');
+
+      google.script.run
+        .withSuccessHandler(
+          function(ret) {
+            $("#test-type").val(ret);
+
+            // select level depend on test-type
+            if (ret.indexOf('wcag') >= 0) {
+              google.script.run
+                .withSuccessHandler(
+                  function(innerRet) {
+                    $("#evaluate-level").val(innerRet);
+                  })
+                .getProp('level');
+            } else {
+              $("#evaluate-level").val('AA');
+            }
+
+            // generate select candidate of bulk criteria
+            generateBulkCriteia();
+          })
+        .getProp('type');
+    }
+
+    /**
+     * Generate Bulk Criteia
+     */
+    function generateBulkCriteia() {
+      $('#message-area').hide();
+
+      var targetList = $('#test-type').val().indexOf('wcag') >= 0 ? 'criteria' : 'ttCriteria';
+      google.script.run
+        .withSuccessHandler(
+          function(ret) {
+            var doubleA = [
+              '1.2.4', '1.2.5', '1.3.4', '1.3.5', '1.4.3', '1.4.4', '1.4.5', '1.4.1', '1.4.1',
+              '1.4.1', '1.4.1', '2.4.5', '2.4.6', '2.4.7', '3.1.2', '3.2.3', '3.2.4', '3.3.3',
+              '3.3.4', '4.1.3'
+            ];
+
+            var tripleA = [
+              '1.2.6', '1.2.7', '1.2.8', '1.2.9', '1.3.6', '1.4.6', '1.4.7', '1.4.8', '1.4.9',
+              '2.1.3', '2.2.3', '2.2.4', '2.2.5', '2.2.6', '2.3.2', '2.3.3', '2.4.8', '2.4.9',
+              '2.4.1', '2.5.5', '2.5.6', '3.1.3', '3.1.4', '3.1.5', '3.1.6', '3.2.5', '3.3.5',
+              '3.3.6'
+            ];
+
+            var criteria21 = [
+              '1.3.4', '1.3.5', '1.3.6', '1.4.10', '1.4.11', '1.4.12', '1.4.13',
+              '2.1.4', '2.2.6', '2.3.3', '2.5.1', '2.5.2', '2.5.3', '2.5.4', '2.5.5', '2.5.6',
+              '4.1.3'
+            ];
+
+            $('#bulk-target > option').remove();
+            for (i = 0; i < ret.length; i++) {
+              var currentCriterion = ret[i][1];
+              if ($("#evaluate-level").val() == 'A'  && doubleA.indexOf(currentCriterion) >= 0) continue;
+              if ($("#evaluate-level").val() == 'A'  && tripleA.indexOf(currentCriterion) >= 0) continue;
+              if ($("#evaluate-level").val() == 'AA' && tripleA.indexOf(currentCriterion) >= 0) continue;
+              if ($("#test-type").val() == 'wcag20'  && criteria21.indexOf(currentCriterion) >= 0) continue;
+              $('#bulk-target').append($('<option>').html(currentCriterion).val(currentCriterion));
+            }
+          })
+          .getLangSet(targetList);
+    }
+
+    /**
+     * change test type
+     */
+    function changeTestType() {
+      if ($('#test-type').val().indexOf('tt') != -1) {
+        $('#evaluate-level').val('AA');
+        $('#evaluate-level').prop('disabled', true);
+      } else {
+        $('#evaluate-level').prop('disabled', false);
+      }
+      generateBulkCriteia();
+    }
+
+    /**
+     * change Edit Value
+     */
+    function changeEditValue() {
+      if ($('#edit-value').prop('checked')) {
+        $('#do-edit-value').prop('disabled', false);
+      } else {
+        $('#do-edit-value').prop('disabled', true);
+      }
+    }
+
+    /**
+     * change Make same as template
+     */
+    function changeMakeSameAsTemplate() {
+      if ($('#make-same-as-template').prop('checked')) {
+        $('#do-make-same-as-template').prop('disabled', false);
+        $('#template-caution').show();
+      } else {
+        $('#do-make-same-as-template').prop('disabled', true);
+        $('#template-caution').hide();
+      }
+    }
+
+    /**
+     * Generate Sheets
+     * @param Object sheetsObj
+     */
+    function onGenerateSheetClick(sheetsObj) {
+      $('#message-area').hide();
+      var sheets = sheetsObj.data.sheets == "*urls*" ? $('#urls').val() : sheetsObj.data.sheets;
+
+      this.disabled = true;
+
+      google.script.run
+        .withSuccessHandler(
+          function(msg, element) {
+            showStatus(msg);
+            element.disabled = false;
+          })
+        .withFailureHandler(
+          function(msg, element) {
+            showStatus(msg, 'error');
+            element.disabled = false;
+          })
+        .withUserObject(this)
+        .generateSheets(sheets, $('#lang').val(), $('#test-type').val(), $('#evaluate-level').val());
+    }
+
+    /**
+     * Get All Sheets / Delete Selected Sheets
+     */
+    function onControlSheetClick() {
+      $('#message-area').hide();
+      this.disabled = true;
+
+      if ($('#delete-sheets').prop('checked')) {
+        google.script.run
+          .withSuccessHandler(
+            function(msg, element) {
+              showStatus(msg);
+              element.disabled = false;
+            })
+          .withFailureHandler(
+            function(msg, element) {
+              showStatus(msg, 'error');
+              element.disabled = false;
+            })
+          .withUserObject(this)
+          .deleteSheets($('#urls').val());
+      } else {
+        google.script.run
+          .withSuccessHandler(
+            function(ret, element) {
+              $("#urls").val(ret);
+              element.disabled = false;
+            })
+          .withFailureHandler(
+            function(msg, element) {
+              showStatus(msg, 'error');
+              element.disabled = false;
+            })
+          .withUserObject(this)
+          .getSheets();
+      }
+    }
+    
+    /**
+     * Edit Value
+     */
+    function onDoEditValueClick() {
+      $('#message-area').hide();
+      this.disabled = true;
+
+      google.script.run
+        .withSuccessHandler(
+          function(msg, element) {
+            showStatus(msg);
+            element.disabled = false;
+            $('#do-edit-value').prop('disabled', true);
+            $('#edit-value').prop('checked', false);
+          })
+        .withFailureHandler(
+          function(msg, element) {
+            showStatus(msg, 'error');
+            element.disabled = false;
+          })
+        .withUserObject(this)
+        .editValue($('#test-type').val(), $('#evaluate-level').val());
+    }
+
+    /**
+     * Bulk Edit
+     */
+    function onDoBulkCheckClick() {
+      $('#message-area').hide();
+      this.disabled = true;
+
+      google.script.run
+        .withSuccessHandler(
+          function(msg, element) {
+            showStatus(msg);
+            element.disabled = false;
+            $('#do-edit-value').prop('disabled', true);
+            $('#edit-value').prop('checked', false);
+          })
+        .withFailureHandler(
+          function(msg, element) {
+            showStatus(msg, 'error');
+            element.disabled = false;
+          })
+        .withUserObject(this)
+        .bulkEdit($('#bulk-target').val(), $('#bulk-check').val(), $('#bulk-memo').val());
+    }
+
+    /**
+     * show Tech dialog
+     */
+    function onShowTechDialogClick() {
+      google.script.run.showTechDialog();
+    }
+
+    /**
+     * Make same as template
+     */
+    function onDoMakeSameAsTemplateClick() {
+      $('#message-area').hide();
+      this.disabled = true;
+
+      google.script.run
+        .withSuccessHandler(
+          function(msg, element) {
+            showStatus(msg);
+            element.disabled = false;
+            $('#do-make-same-as-template').prop('disabled', true);
+            $('#template-caution').hide();
+            $('#make-same-as-template').prop('checked', false);
+          })
+        .withFailureHandler(
+          function(msg, element) {
+            showStatus(msg, 'error');
+            element.disabled = false;
+          })
+        .withUserObject(this)
+        .makeSameAsTemplate();
+    }
+
+    /**
+     * change control status
+     */
+    function changeControlStatus() {
+      if ($('#delete-sheets').prop('checked')) {
+        $('#urls').css({'color':'#ffffff', 'background-color':'#aaaaaa'});
+        $('#control-sheets').html('DELETE');
+        $('#generate-sheets').prop('disabled', true);
+      } else {
+        $('#urls').css({'color':'#000000', 'background-color':'#ffffff'});
+        $('#control-sheets').html('Get Sheets');
+        $('#generate-sheets').prop('disabled', false);
+      }
+    }
+
+    /**
+     * Evaluate
+     */
+    function onEvaluateClick() {
+      $('#message-area').hide();
+      this.disabled = true;
+
+      google.script.run
+        .withSuccessHandler(
+          function(msg, element) {
+            showStatus(msg);
+            element.disabled = false;
+          })
+        .withFailureHandler(
+          function(msg, element) {
+            showStatus(msg, 'error');
+            element.disabled = false;
+          })
+        .withUserObject(this)
+        .evaluate($('#lang').val(), $('#test-type').val(), $('#evaluate-level').val());
+    }
+
+    /**
+     * Add Issue
+     */
+    function onAddIssueClick() {
+      $('#message-area').hide();
+      this.disabled = true;
+
+      google.script.run
+        .withSuccessHandler(
+          function(msg, element) {
+            element.disabled = false;
+          })
+        .withFailureHandler(
+          function(msg, element) {
+            element.disabled = false;
+          })
+        .withUserObject(this)
+        .addIssue($('#lang').val(), $('#test-type').val(), $('#evaluate-level').val());
+    }
+
+
+    /**
+     * Show Issue
+     */
+    function onShowIssueClick() {
+      $('#message-area').hide();
+      this.disabled = true;
+
+      google.script.run
+        .withSuccessHandler(
+          function(msg, element) {
+            showStatus(msg);
+            element.disabled = false;
+          })
+        .withFailureHandler(
+          function(msg, element) {
+            showStatus(msg);
+            element.disabled = false;
+          })
+        .withUserObject(this)
+        .showIssue();
+    }
+
+    /**
+     * Export HTML
+     */
+    function onExportHtmlClick() {
+      $('#message-area').hide();
+      this.disabled = true;
+
+      google.script.run
+        .withSuccessHandler(
+          function(msg, element) {
+            showStatus(msg);
+            element.disabled = false;
+          })
+        .withFailureHandler(
+          function(msg, element) {
+            showStatus(msg);
+            element.disabled = false;
+          })
+        .withUserObject(this)
+        .exportHtml($('#test-type').val(), $('#evaluate-level').val());
+    }
+
+    /**
+     * Export Issue
+     */
+    function onExportIssueClick() {
+      $('#message-area').hide();
+      this.disabled = true;
+
+      google.script.run
+        .withSuccessHandler(
+          function(msg, element) {
+            showStatus(msg);
+            element.disabled = false;
+          })
+        .withFailureHandler(
+          function(msg, element) {
+            showStatus(msg);
+            element.disabled = false;
+          })
+        .withUserObject(this)
+        .exportIssue();
+    }
+
+    /**
+     * Show Status
+     */
+    function showStatus(msg, classId) {
+      $('#message-area').show();
+      $('#sidebar-status').removeClass().html(msg);
+      if (classId) {
+        $('#sidebar-status').addClass(classId);
+      }
+    }
+  </script>
+</head>
+
+<body>
+  <div class="sidebar branding-below">
+      <button id="show-sheet" style="width:4.5em;min-width:4.5em;">Sheet</button>
+      <button id="show-value" style="width:4.5em;min-width:4.5em;">Value</button>
+      <button id="show-report" style="width:5.5em;min-width:5.5em;">Report</button>
+      <button id="evaluate" class="blue" style="width:5.5em;min-width:5.5em;">Evaluate</button>
+      <hr>
+
+    <div id="pannel-sheet">
+    <fieldset class="block">
+      <legend>Test type</legend>
+      <select id="lang" title="Language" style="width:3.5em;min-width:3.5em;">
+        <option value="en">en</option>
+        <option value="ja">ja</option>
+      </select>
+      <select id="test-type" title="Test Type">
+        <option value="wcag20">WCAG 2.0</option>
+        <option value="wcag21">WCAG 2.1</option>
+        <option value="tt20">Trusted Tester</option>
+  <!--      <option value="tt21">Trusted Tester (WCAG 2.1)</option>-->
+      </select>
+      <select id="evaluate-level" title="Level" style="width:5em;min-width:5em;">
+        <option value="A">A</option>
+        <option value="AA">AA</option>
+        <option value="AAA">AAA</option>
+      </select>
+    </fieldset>
+    
+    <fieldset class="block">
+      <legend><label for="urls">Sheet control</label></legend>
+      <textarea style="width:100%;" id="urls"></textarea>
+      <button id="generate-sheets">Generate</button>
+      <button id="control-sheets">Get Sheets</button>
+      <label><input type="checkbox" id="delete-sheets">Delete</label>
+    </fieldset>
+    </div>
+  
+    <div id="pannel-value">
+    <fieldset class="block">
+      <legend>Bulk edit</legend>
+      <select id="bulk-target" title="Target" style="width:5em;min-width:5em;">
+        <option></option>
+      </select>
+      <select id="bulk-check" title="Check" style="width:4.5em;min-width:4.5em;">
+        <option value="Yet">Yet</option>
+        <option value="DNA">DNA</option>
+        <option value="T">T</option>
+        <option value="F">F</option>
+      </select>
+      <input type="text" id="bulk-memo" title="Memo" style="width:5em;">
+      <button id="do-bulk-edit" style="width:4.5em;min-width:4.5em;">Apply</button>
+    </fieldset>
+
+    <fieldset class="block">
+      <legend>Insert techniques</legend>
+      <button id="do-insert-tech">Insert Techs</button>
+    </fieldset>
+
+    <fieldset class="block">
+      <legend>Select "Check"</legend>
+      <button id="do-edit-value">Set all to 'T'</button>
+      <label><input type="checkbox" id="edit-value">Enable "Set all to 'T'"</label>
+    </fieldset>
+
+    <fieldset class="block">
+      <legend>Using template</legend>
+      <button id="generate-template" style="width:6em;min-width:6em;">Generate</button>
+      <button id="do-make-same-as-template" style="width:4.5em;min-width:4.5em;margin-left:0;">Apply</button>
+      <label><input type="checkbox" id="make-same-as-template">Enable "Apply"</label>
+      <p id="template-caution" style="font-size:95%;"><strong>CAUTION: All result will be overwritten</strong></p>
+    </fieldset>
+    </div>
+    
+    <div id="pannel-report">
+    <fieldset class="block">
+      <legend>Issue Control</legend>
+      <button id="add-edit-issue">Add/Edit Issue</button>
+      <button id="show-issue">Show Issue</button>
+    </fieldset>
+    <fieldset class="block">
+      <legend>Export Reprot</legend>
+      <button id="export-html">Export HTML</button>
+      <button id="export-issue">Export Issues</button>
+    </fieldset>
+    </div>
+    
+    <div id="message-area" style="margin-top:15px;background-color: #eeeeee;padding:5px;">
+      <div id="sidebar-info"></div>
+      <div id="sidebar-status"></div>
+    </div>
+  </div>
+</body>
+
+</html>

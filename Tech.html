@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
+  <link href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" rel="stylesheet">
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>
+    /**
+     * events
+     */
+    $(function() {
+      setDefaultValue();
+      $('#apply-techs').click(onApplyTechsClick);
+    });
+    
+    /**
+     * set default value
+     */
+    function setDefaultValue() {
+      google.script.run
+        .withSuccessHandler(
+          function(rets) {
+            if (rets['techs'] == '') {
+              $('body').append('<h1>No criterion found</h1><p>Place your cursor below Techs.</p>');
+              $('#apply-techs').hide();
+            } else {
+              $('#apply-techs').append(' ['+rets['criterion']+']');
+              for(var i = 0; i < rets['techs'].length; i++) {
+                $('#techs').append($('<tr></tr>')
+                           .append($('<td></td>').html('<input type="checkbox" id="'+rets['techs'][i][0]+'" value="'+rets['techs'][i][0]+'">'))
+                           .append($('<td></td>').html('<label for="'+rets['techs'][i][0]+'">'+rets['techs'][i][0]+': '+rets['techs'][i][1]+'</label>'))
+                           .append($('<td></td>').html('<a target="_blank" href="'+rets['urlbase']+rets['techs'][i][0]+'.html"><i class="fas fa-external-link-alt"></i><span style="position: absolute;width: 1px;height: 1px;clip: rect(0 0 0 0);">Open '+rets['techs'][i][0]+'</span></a>'))
+                          );
+              }
+
+              var checked = rets['checked'].split(/,/);
+              for (var i = 0; i < checked.length; i++) {
+                var id = checked[i].trim();
+                if ($('#'+id).length < 0) continue;
+                $('#'+id).prop('checked', 'checked');
+              }
+            }
+          })
+        .getContextualTechs();
+    }
+
+    /**
+     * Apply Techs
+     */
+    function onApplyTechsClick() {
+      var techs = [];
+      $("#techs :checkbox:checked").each(function() {
+        techs.push($(this).val());
+      });
+   
+      google.script.run
+        .withSuccessHandler(
+          function() {
+            google.script.host.close();
+          })
+        .setContextualTechs(techs.join(', '));
+    }
+
+  </script>
+</head>
+<body style="padding-bottom: 4em;">
+  <div style="position: fixed; width: 100%; bottom: 0; background: #fff; z-index: 9; padding-top: 1em;">
+    <button onclick="google.script.host.close()">Close</button>
+    <button id="apply-techs" class="blue">Apply techniques </button>
+  </div>
+
+  <table id="techs" style="width:90%;">
+  </table>
+</body>
+</html>

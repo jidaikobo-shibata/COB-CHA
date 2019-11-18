@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
+  <link href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" rel="stylesheet">
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>
+    /**
+     * events
+     */
+    $(function() {
+    
+      google.script.run
+        .withSuccessHandler(
+          function(isEdit) {
+            setDefaultValue(isEdit);
+          })
+        .isEditIssue();
+
+      $('#apply-issue').click(onApplyIssueClick);
+    });
+    
+    /**
+     * set default value
+     * @param bool isEdit
+     */
+    function setDefaultValue(isEdit) {
+      google.script.run
+        .withSuccessHandler(
+          function(rets) {
+            if (rets['vals']['issueId'] == '') {
+              $('#apply-issue').html('Add New Issue');
+            } else {
+              $('#apply-issue').html('Edit Issue');
+            }
+            $('#apply-issue').after('<input type="hidden" id="issue-id" value="'+rets['vals']['issueId']+'">');
+
+            for (var i = 0; i < rets['techs'].length; i++) {
+              var classname = rets['techs'][i][0].replace('.', '_');
+              $('#techs').append($('<tr class="'+classname+'"></tr>').append($('<th colspan="3"></th>').html(rets['techs'][i][0])));
+              for (var j = 0; j < rets['techs'][i][1].length; j++) {
+                var each = rets['techs'][i][1][j];
+                $('#techs').append($('<tr></tr>')
+                           .append($('<td></td>').html('<input type="checkbox" id="'+each+'" value="'+each+'">'))
+                           .append($('<td></td>').html('<label for="'+each+'">'+each+': '+rets['techNames'][each]+'</label>'))
+                           .append($('<td></td>').html('<a target="_blank" href="'+rets['urlbase']+each+'.html"><i class="fas fa-external-link-alt"></i><span style="position: absolute;width: 1px;height: 1px;clip: rect(0 0 0 0);">Open '+each+'</span></a>'))
+                          );
+              }
+            }
+            
+            for(var i = 0; i < rets['criteria'].length; i++) {
+              var level = rets['criteria'][i][0];
+              var criterion = rets['criteria'][i][1];
+              var exp = rets['criteria'][i][2];
+              var classname = criterion.replace('.', '_');
+              $('#criteria').append($('<tr></tr>')
+                         .append($('<td></td>').html('<input type="checkbox" id="'+classname+'" value="'+criterion+'">'))
+                         .append($('<td></td>').html('<label for="'+classname+'">'+criterion+': '+exp+'</label>'))
+                         .append($('<td></td>').html('<a target="_blank" href="'+rets['urlbase']+criterion+'.html"><i class="fas fa-external-link-alt"></i><span style="position: absolute;width: 1px;height: 1px;clip: rect(0 0 0 0);">Open '+criterion+'</span></a>'))
+                        );
+            }
+            
+            for(var i = 0; i < rets['places'].length; i++) {
+              var place = rets['places'][i];
+              var idname = btoa(place).replace('=', '');
+              $('#places').append($('<tr></tr>')
+                         .append($('<td></td>').html('<input type="checkbox" id="'+idname+'" class="places" value="'+place+'">'))
+                         .append($('<td></td>').html('<label for="'+idname+'">'+place+'</label>'))
+                         .append($('<td></td>').html('<a target="_blank" href="'+place+'"><i class="fas fa-external-link-alt"></i><span style="position: absolute;width: 1px;height: 1px;clip: rect(0 0 0 0);">Open '+place+'</span></a>'))
+                        );
+            }
+            
+            $("#issue-name").val(rets['vals']['issueName']);
+            
+            var textarea = ['html', 'memo', 'explanation'];
+            for (var i = 0; i < textarea.length; i++) {
+              $("#"+textarea[i]).val(rets['vals'][textarea[i]]);
+            }
+            
+            // select
+            if (rets['vals']['errorNotice'] == 'Notice') {
+              $("#error-notice").val('Notice');
+            }
+            
+            // checkboxes
+            if (rets['vals']['issueVisibility'] == 'on') {
+              $("input#issue-visibility").prop('checked', 'checked');
+            }
+
+            if (rets['vals']['common'] == 'on') {
+              $("input#common").prop('checked', 'checked');
+            }
+
+            var checkboxes = ['checked', 'techs', 'places'];
+            for (var i = 0; i < checkboxes.length; i++) {
+              var checked = rets['vals'][checkboxes[i]].split(/,/);
+              for (var j = 0; j < checked.length; j++) {
+                var thisvalue = checked[j].trim();
+                if ($("input[value='"+thisvalue+"']").val().length < 0) continue;
+                $("input[value='"+thisvalue+"']").prop('checked', 'checked');
+              }
+            }
+          })
+        .setIssueValue(isEdit);
+    }
+
+    /**
+     * Apply Issue
+     */
+    function onApplyIssueClick() {
+      $('#message-area').hide();
+      
+      var checked = [];
+      $('#criteria').find(':checked').each(function(){
+        checked.push($(this).val());
+      });
+      
+      var techs = [];
+      $('#techs').find(':checked').each(function(){
+        techs.push($(this).val());
+      });
+      
+      var places = [];
+      $('#places').find(':checked').each(function(){
+        places.push($(this).val());
+      });
+      
+      var issueVisibility = $('#issue-visibility').prop('checked') == 'checked' ? 'on' : 'off' ;
+      var common = $('#common').prop('checked') ? 'on' : 'off' ;
+      
+      var vals = [
+        $('#issue-id').val(),
+        $('#issue-name').val(),
+        issueVisibility,
+        common,
+        $('#error-notice').val(),
+        $('#html').val(),
+        $('#explanation').val(),
+        checked.join(', '),
+        techs.join(', '),
+        places.join(', '),
+        $('#memo').val()
+      ];
+      
+      google.script.run
+        .withSuccessHandler(
+          function(msg, element) {
+            google.script.host.close();
+          })
+        .applyIssue(vals);
+    }
+</script>
+</head>
+<body style="padding-bottom: 4em;">
+  <div style="position: fixed; width: 100%; bottom: 0; background: #fff; z-index: 9; padding-top: 1em;">
+    <button onclick="google.script.host.close()">Close</button>
+    <button id="apply-issue" class="blue"></button>
+  </div>
+
+  <table style="width:95%;">
+  <tr>
+    <th><label for="issue-name">Name</label></th>
+    <td><input type="text" id="issue-name" style="width:100%;"></td>
+  </tr>
+  <tr>
+    <th><label for="issue-name">Issue Visibility</label></th>
+    <td><input type="checkbox" id="issue-visibility"></td>
+  </tr>
+  <tr>
+    <th><label for="issue-name">Error/Notice</label></th>
+    <td><select id="error-notice"><option value="Error">Error</option><option value="Notice">Notice</option></select></td>
+  </tr>
+  <tr>
+    <th><label for="html">HTML</label></th>
+    <td><textarea id="html" style="width:100%;height:100px;"></textarea></td>
+  </tr>
+  <tr>
+    <th><label for="explanation">Explanation</th>
+    <td><textarea id="explanation" style="width:100%;height:100px;"></textarea></td>
+  </tr>
+  <tr>
+    <th>Criteria</th>
+    <td style="position:relative;height:150px;"><div style="position:absolute;top:0;height:160px;overflow:auto;overflow-x:hidden;padding:5px"><table id="criteria" style="width: 100%"></table></div></td>
+  </tr>
+  <tr>
+    <th style="vertical-align: top;">Techniques</th>
+    <td style="position:relative;height:150px;"><div style="position:absolute;top:0;height:160px;overflow:auto;overflow-x:hidden;padding:5px"><table id="techs" style="width: 100%"></table></div></td>
+  </tr>
+  <tr>
+    <th>Places<p><label><button onclick="$('.places').prop('checked', 'checked')">Check All</button></label></p></th>
+    <td style="position:relative;height:150px;"><div style="position:absolute;top:0;height:160px;overflow:auto;overflow-x:hidden;padding:5px"><table id="places" style="width: 100%"></table></div></td>
+  </tr>
+  <tr>
+    <th><label for="memo">Memo</label></th>
+    <td><textarea id="memo" style="width:100%;height:100px;"></textarea></td>
+  </tr>
+  </table>
+</body>
+</html>
