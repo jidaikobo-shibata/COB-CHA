@@ -95,13 +95,28 @@ function getContextualTechs() {
   var activeRow = activeSheet.getActiveCell().getRow();
   var criterion = activeSheet.getRange(activeRow, 1).getValue();
   var checked = activeSheet.getRange(activeRow, 4).getValue();
-  var techs = relTechsAndCriteria[criterion] ? relTechsAndCriteria[criterion] : [] ;
   var techLangsSrc = getLangSet('tech');
+
   var rets = [];
-  for (var i = 0; i < techs.length; i++) {
-    if (techLangsSrc[techs[i]] == null) continue;
-    rets.push([techs[i], techLangsSrc[techs[i]]]);
+  var type = getProp('type');
+  if (type.indexOf('tt') >= 0) {
+    var ttCheckValSrc = getLangSet('ttCheckVal');
+    for (var key in ttCheckValSrc) {
+      if (ttCheckValSrc[key].indexOf(criterion) < 0) continue;
+      var techs = relTechsAndCriteria[key] ? relTechsAndCriteria[key] : [] ;
+      for (var i = 0; i < techs.length; i++) {
+        if (techLangsSrc[techs[i]] == null) continue;
+        rets.push([techs[i], techLangsSrc[techs[i]]]);
+      }
+    }
+  } else {
+    var techs = relTechsAndCriteria[criterion] ? relTechsAndCriteria[criterion] : [] ;
+    for (var i = 0; i < techs.length; i++) {
+      if (techLangsSrc[techs[i]] == null) continue;
+      rets.push([techs[i], techLangsSrc[techs[i]]]);
+    }
   }
+
   var urlbase = techUrls[getProp('lang')];
   return {'criterion': criterion, 'techs': rets, 'checked': checked, 'urlbase': urlbase};
 }
