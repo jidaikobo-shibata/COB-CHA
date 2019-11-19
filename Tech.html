@@ -33,6 +33,7 @@
                 var url = ret['urlbase']['tech'][ret['docurl']];
                 if (ret['type'] == 'wcag21' && ret['lang'] == 'en') {
                   var dir = each.charAt(0)+each.charAt(1);
+                  // flash, smil, silverlight, server-side-script, client-side-script has a second english character
                   if (['M', 'L', 'V', 'C'].indefOf(each.charAt(1)) < 0) {
                     dir = dir.charAt(0);
                   }
