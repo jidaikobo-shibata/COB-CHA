@@ -49,6 +49,8 @@ function setIssueValue(isEdit) {
     'checked': '',
     'techs': '',
     'places': '',
+    'image': '',
+    'preview': '',
     'memo': ''
   };
 
@@ -59,9 +61,16 @@ function setIssueValue(isEdit) {
     var activeRow = issueSheet.getActiveCell().getRow();
     var i = 1;
     for (var key in ret['vals']) {
-      ret['vals'][key] = issueSheet.getRange(activeRow, i).getValue();
+      var val = issueSheet.getRange(activeRow, i).getValue();
+      if (val) {
+        ret['vals'][key] = issueSheet.getRange(activeRow, i).getValue();
+      } else {
+        ret['vals'][key] = issueSheet.getRange(activeRow, i).getFormula();
+      }
       i++;
     }
+    ret['vals']['preview'] = ret['vals']['preview'].replace('=IMAGE("https://drive.google.com/uc?export=download&id=' ,'');
+    ret['vals']['preview'] = ret['vals']['preview'].replace('",1)', '');
   }
 
   // to keep array order
@@ -96,6 +105,21 @@ function setIssueValue(isEdit) {
 }
 
 /**
+ * file upload
+ * @param Object formObj
+ */
+function fileUpload(formObj) {
+  var formBlob = formObj.imageFile;
+  var driveFile = DriveApp.createFile(formBlob);
+  var targetFolder = getTargetFolder(imagesFolderName);
+  deleteFileIfExists(imagesFolderName, driveFile.getName());
+  targetFolder.addFile(driveFile);
+  driveFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  DriveApp.getRootFolder().removeFile(driveFile);
+  return [driveFile.getName() ,driveFile.getId()];
+}
+
+/**
  * add Issue
  * @param String lang
  * @param String testType
@@ -124,9 +148,9 @@ function addIssue(lang, testType, level) {
     issueSheet.getRange(2,  8).setValue('Criteria');
     issueSheet.getRange(2,  9).setValue('Techniques');
     issueSheet.getRange(2, 10).setValue('Places');
-    issueSheet.getRange(2, 11).setValue('Memo');
-    issueSheet.getRange(2, 12).setValue('Create Date');
-    issueSheet.getRange(2, 13).setValue('Update Date');
+    issueSheet.getRange(2, 11).setValue('Image');
+    issueSheet.getRange(2, 12).setValue('Preview');
+    issueSheet.getRange(2, 13).setValue('Memo');
   };
 
   var today = new Date();
@@ -150,9 +174,14 @@ function applyIssue(vals) {
     var targetRow = issueSheet.getLastRow() + 1;
     issueSheet.getRange(targetRow, 1).setValue(targetRow - 2);
   }
-  
+ 
   for (i = 1; i < vals.length; i++) {
     issueSheet.getRange(targetRow, i + 1).setValue(vals[i]);
+  }
+  var preview = issueSheet.getRange(targetRow, 11).getValue();
+    Logger.log(preview);
+  if (preview) {
+    issueSheet.getRange(targetRow, 11).setValue('=IMAGE("https://drive.google.com/uc?export=download&id='+preview+'",1)')
   }
     
   if (vals[0] > 0) {

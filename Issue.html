@@ -19,6 +19,7 @@
         .isEditIssue();
 
       $('#apply-issue').click(onApplyIssueClick);
+//      $('#upload-image').click(onUploadImageClick);
       $(document).on('change','.criteria-chk',function(){
         changeCriteria();
       });
@@ -101,6 +102,8 @@
             }
             
             $("#issue-name").val(ret['vals']['issueName']);
+            $("#uploaded-file").val(ret['vals']['image']);
+            $("#uploaded-file-url").val(ret['vals']['preview']);
             
             var textarea = ['html', 'memo', 'explanation'];
             for (var i = 0; i < textarea.length; i++) {
@@ -154,7 +157,7 @@
       $('#places').find(':checked').each(function(){
         places.push($(this).val());
       });
-      
+
       var issueVisibility = $('#issue-visibility').prop('checked') == 'checked' ? 'on' : 'off' ;
       
       var vals = [
@@ -167,9 +170,11 @@
         checked.join(', '),
         techs.join(', '),
         places.join(', '),
+        $('#uploaded-file').val(),
+        $('#uploaded-file-url').val(),
         $('#memo').val()
       ];
-      
+
       google.script.run
         .withSuccessHandler(
           function(msg, element) {
@@ -178,6 +183,21 @@
         .applyIssue(vals);
     }
     
+    /**
+     * Upload Image
+     */
+    function onUploadImageClick(obj) {
+      google.script.run
+        .withSuccessHandler(function (ret){
+          $('#upload-image-msg').html('File Uploaded');
+          $('#uploaded-file').val(ret[0]);
+          $('#uploaded-file-url').val(ret[1]);
+        })
+        .withFailureHandler(function (){
+          $('#upload-image-msg').html('Failed file Uploading');
+        })
+        .fileUpload(obj);
+    }
     
     /**
      * Change Criteria
@@ -211,16 +231,27 @@
     <td><input type="text" id="issue-name" style="width:100%;"></td>
   </tr>
   <tr>
-    <th><label for="issue-name">Issue Visibility</label></th>
+    <th><label for="issue-visibility">Issue Visibility</label></th>
     <td><input type="checkbox" id="issue-visibility"></td>
   </tr>
   <tr>
-    <th><label for="issue-name">Error/Notice</label></th>
+    <th><label for="error-notice">Error/Notice</label></th>
     <td><select id="error-notice"><option value="Error">Error</option><option value="Notice">Notice</option></select></td>
   </tr>
   <tr>
     <th><label for="html">HTML</label></th>
     <td><textarea id="html" style="width:100%;height:100px;"></textarea></td>
+  </tr>
+  <tr>
+    <th><label for="issue-image">Image</label></th>
+    <td>
+      <form id="upload-form" onsubmit="onUploadImageClick(this)">
+        <input type="file" id="issue-image" name="imageFile"> <input type="submit" id="upload-image" value="upload">
+        <input type="text" id="uploaded-file" value="">
+        <input type="text" id="uploaded-file-url" value="">
+      </form>
+      <div id="upload-image-msg"></div>
+    </td>
   </tr>
   <tr>
     <th><label for="explanation">Explanation</label></th>

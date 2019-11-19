@@ -72,6 +72,7 @@ var issueSheetName = '*Issue*';
 var templateSheetName = '*Template*';
 var resourceFolderName = 'resource';
 var exportFolderName = 'export';
+var imagesFolderName = 'images';
 var issueFileName = 'issue-report';
 var trueColor    = '#f5fff3';
 var falseColor   = '#f7f3ff';
@@ -151,7 +152,7 @@ function getCurrentFolder() {
 
 /**
  * Get target folder object
- * @param String target [resourceFolderName, exportFolderName]
+ * @param String target [resourceFolderName, exportFolderName, imagesFolderName]
  * @return Object
  */
 function getTargetFolder(target) {
@@ -161,7 +162,7 @@ function getTargetFolder(target) {
   getTargetFolder.folder = {};
   
   // is already exists?
-  var folders = [resourceFolderName, exportFolderName]
+  var folders = [resourceFolderName, exportFolderName, imagesFolderName]
   while (children.hasNext()){
     var folder = children.next();
     for (var i = 0; i < folders.length; i++) {
@@ -180,6 +181,22 @@ function getTargetFolder(target) {
 };
 
 /**
+ * delete file if exists
+ * @param String target
+ * @param String name
+ */
+function deleteFileIfExists(targetFolder, name) {
+  var targetFolder = getTargetFolder(targetFolder);
+  var children = targetFolder.getFiles();
+  while (children.hasNext()) {
+    var current = children.next();
+    if (current.getName() == name) {
+      targetFolder.removeFile(current);
+    }
+  };
+};
+
+/**
  * save HTML
  * @param String target
  * @param String name
@@ -187,16 +204,10 @@ function getTargetFolder(target) {
  * @param Bool overwrite
  */
 function saveHtml(targetFolder, name, html, overwrite) {
-  var targetFolder = getTargetFolder(targetFolder);
   if (overwrite) {
-    var children = targetFolder.getFiles();
-    while (children.hasNext()) {
-      var current = children.next();
-      if (current.getName() == name) {
-        targetFolder.removeFile(current);
-      }
-    };
+    deleteFileIfExists(targetFolder, name);
   }
+  var targetFolder = getTargetFolder(targetFolder);
   targetFolder.createFile(name, html, 'text/html');
 };
 
