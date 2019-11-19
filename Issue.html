@@ -127,13 +127,11 @@
       });
       
       var issueVisibility = $('#issue-visibility').prop('checked') == 'checked' ? 'on' : 'off' ;
-      var common = $('#common').prop('checked') ? 'on' : 'off' ;
       
       var vals = [
         $('#issue-id').val(),
         $('#issue-name').val(),
         issueVisibility,
-        common,
         $('#error-notice').val(),
         $('#html').val(),
         $('#explanation').val(),
@@ -176,7 +174,7 @@
     <td><textarea id="html" style="width:100%;height:100px;"></textarea></td>
   </tr>
   <tr>
-    <th><label for="explanation">Explanation</th>
+    <th><label for="explanation">Explanation</label></th>
     <td><textarea id="explanation" style="width:100%;height:100px;"></textarea></td>
   </tr>
   <tr>

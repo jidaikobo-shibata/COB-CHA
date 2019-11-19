@@ -43,7 +43,6 @@ function setIssueValue(isEdit) {
     'issueId': 0,
     'issueName': '',
     'issueVisibility': '',
-    'common': '',
     'errorNotice': '',
     'html': '',
     'explanation': '',
