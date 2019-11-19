@@ -88,14 +88,9 @@ function setIssueValue(isEdit) {
     ret['places'].push(all[i].getName());
   }
  
-  ret['urlbase'] = {
-    'tech': techUrls,
-    'understanding': criteriaUrls,
-  };
+  ret['urlbase'] = urlbase;
   ret['docurl'] = ret['lang']+'-'+ret['type'];
   ret['docurlEn'] = 'en'+'-'+ret['type'];
-  
-  Logger.log(ret['urlbase']['tech']['ja-wcag20']);
  
   return ret;
 }

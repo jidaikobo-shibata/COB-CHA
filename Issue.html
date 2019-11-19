@@ -31,57 +31,57 @@
     function setDefaultValue(isEdit) {
       google.script.run
         .withSuccessHandler(
-          function(rets) {
-            if (rets['vals']['issueId'] == '') {
+          function(ret) {
+            if (ret['vals']['issueId'] == '') {
               $('#apply-issue').html('Add New Issue');
             } else {
               $('#apply-issue').html('Edit Issue');
             }
-            $('#apply-issue').after('<input type="hidden" id="issue-id" value="'+rets['vals']['issueId']+'">');
+            $('#apply-issue').after('<input type="hidden" id="issue-id" value="'+ret['vals']['issueId']+'">');
 
-            for (var i = 0; i < rets['techs'].length; i++) {
-              var classname = rets['techs'][i][0].replace(/\./g, '_');
-              $('#techs').append($('<tr class="'+classname+' tech-row"></tr>').append($('<th colspan="3"></th>').html(rets['techs'][i][0])));
-              for (var j = 0; j < rets['techs'][i][1].length; j++) {
-                var each = rets['techs'][i][1][j];
+            for (var i = 0; i < ret['techs'].length; i++) {
+              var classname = ret['techs'][i][0].replace(/\./g, '_');
+              $('#techs').append($('<tr class="'+classname+' tech-row"></tr>').append($('<th colspan="3"></th>').html(ret['techs'][i][0])));
+              for (var j = 0; j < ret['techs'][i][1].length; j++) {
+                var each = ret['techs'][i][1][j];
                 
                 // Techniques for WCAG 2.1 has directory
-                var url = rets['urlbase']['tech'][rets['docurl']];
-                if (rets['type'] == 'wcag21' && rets['lang'] == 'en') {
+                var url = ret['urlbase']['tech'][ret['docurl']];
+                if (ret['type'] == 'wcag21' && ret['lang'] == 'en') {
                   var dir = each.charAt(0)+each.charAt(1);
                   if (['M', 'L', 'V', 'C'].indefOf(each.charAt(1)) < 0) {
                     dir = dir.charAt(0);
                   }
-                  url += rets['type']['techDirAbbr'][dir]+'/'+each;
+                  url += ret['type']['techDirAbbr'][dir]+'/'+each;
                 } else {
                   url += each+'.html';
                 }
                 
                 $('#techs').append($('<tr class="'+classname+' tech-row"></tr>')
                            .append($('<td></td>').html('<input type="checkbox" id="'+each+'" value="'+each+'">'))
-                           .append($('<td></td>').html('<label for="'+each+'">'+each+': '+rets['techNames'][each]+'</label>'))
+                           .append($('<td></td>').html('<label for="'+each+'">'+each+': '+ret['techNames'][each]+'</label>'))
                            .append($('<td></td>').html('<a target="_blank" href="'+url+'"><i class="fas fa-external-link-alt"></i><span style="position: absolute;width: 1px;height: 1px;clip: rect(0 0 0 0);">Open '+each+'</span></a>'))
                           );
               }
             }
 
-            for(var i = 0; i < rets['criteria'].length; i++) {
-              if (rets['type'] == 'wcag20' && rets['criteria21'].indexOf(rets['criteria'][i][1]) >= 0) continue;
-              if (rets['criteria'][i][0].length > rets['level'].length) continue;
+            for(var i = 0; i < ret['criteria'].length; i++) {
+              if (ret['type'] == 'wcag20' && ret['criteria21'].indexOf(ret['criteria'][i][1]) >= 0) continue;
+              if (ret['criteria'][i][0].length > ret['level'].length) continue;
               
               // complex language selection ...
-              var langPointer = rets['type'] == 'wcag21' ? rets['criteria'][i][4] : rets['criteria'][i][3];
-              langPointer = rets['type'] == 'wcag21' && rets['lang'] == 'ja' ? rets['criteria'][i][3] : langPointer;
-              var urlPointer = rets['docurl'];
-              urlPointer = rets['type'] == 'wcag21' && rets['lang'] == 'ja' ? rets['docurlEn'] : urlPointer;
-              var url = rets['urlbase']['understanding'][urlPointer]+langPointer;
-              if (rets['lang'] == 'ja' && rets['type'] == 'wcag21' && rets['criteria21'].indexOf(rets['criteria'][i][1]) >= 0) {
-                url = rets['urlbase']['understanding']['en-wcag21']+rets['criteria'][i][4];
+              var langPointer = ret['type'] == 'wcag21' ? ret['criteria'][i][4] : ret['criteria'][i][3];
+              langPointer = ret['type'] == 'wcag21' && ret['lang'] == 'ja' ? ret['criteria'][i][3] : langPointer;
+              var urlPointer = ret['docurl'];
+              urlPointer = ret['type'] == 'wcag21' && ret['lang'] == 'ja' ? ret['docurlEn'] : urlPointer;
+              var url = ret['urlbase']['understanding'][urlPointer]+langPointer;
+              if (ret['lang'] == 'ja' && ret['type'] == 'wcag21' && ret['criteria21'].indexOf(ret['criteria'][i][1]) >= 0) {
+                url = ret['urlbase']['understanding']['en-wcag21']+ret['criteria'][i][4];
               }
               
-              var level = rets['criteria'][i][0];
-              var criterion = rets['criteria'][i][1];
-              var exp = rets['criteria'][i][2];
+              var level = ret['criteria'][i][0];
+              var criterion = ret['criteria'][i][1];
+              var exp = ret['criteria'][i][2];
               var classname = criterion.replace(/\./g, '_');
               $('#criteria').append($('<tr></tr>')
                          .append($('<td></td>').html('<input type="checkbox" class="criteria-chk" id="'+classname+'" value="'+criterion+'">'))
@@ -90,8 +90,8 @@
                         );
             }
             
-            for(var i = 0; i < rets['places'].length; i++) {
-              var place = rets['places'][i];
+            for(var i = 0; i < ret['places'].length; i++) {
+              var place = ret['places'][i];
               var idname = btoa(place).replace(/=/g, '');
               $('#places').append($('<tr></tr>')
                          .append($('<td></td>').html('<input type="checkbox" id="'+idname+'" class="places" value="'+place+'">'))
@@ -100,30 +100,30 @@
                         );
             }
             
-            $("#issue-name").val(rets['vals']['issueName']);
+            $("#issue-name").val(ret['vals']['issueName']);
             
             var textarea = ['html', 'memo', 'explanation'];
             for (var i = 0; i < textarea.length; i++) {
-              $("#"+textarea[i]).val(rets['vals'][textarea[i]]);
+              $("#"+textarea[i]).val(ret['vals'][textarea[i]]);
             }
             
             // select
-            if (rets['vals']['errorNotice'] == 'Notice') {
+            if (ret['vals']['errorNotice'] == 'Notice') {
               $("#error-notice").val('Notice');
             }
             
             // checkboxes
-            if (rets['vals']['issueVisibility'] == 'on') {
+            if (ret['vals']['issueVisibility'] == 'on') {
               $("input#issue-visibility").prop('checked', 'checked');
             }
 
-            if (rets['vals']['common'] == 'on') {
+            if (ret['vals']['common'] == 'on') {
               $("input#common").prop('checked', 'checked');
             }
 
             var checkboxes = ['checked', 'techs', 'places'];
             for (var i = 0; i < checkboxes.length; i++) {
-              var checked = rets['vals'][checkboxes[i]].split(/,/);
+              var checked = ret['vals'][checkboxes[i]].split(/,/);
               for (var j = 0; j < checked.length; j++) {
                 var thisvalue = checked[j].trim();
                 if ($("input[value='"+thisvalue+"']").val().length < 0) continue;

@@ -32,6 +32,39 @@ var nonInterference = [
 ];
 
 /**
+ * URL
+ */
+var urlbase = {
+  'understanding': {
+    'en-wcag20': 'https://www.w3.org/TR/UNDERSTANDING-WCAG20/',
+    'en-wcag21': 'https://www.w3.org/WAI/WCAG21/Understanding/', // and directory
+    'ja-wcag20': 'https://waic.jp/docs/UNDERSTANDING-WCAG20/',
+    'ja-wcag21': 'https://waic.jp/docs/UNDERSTANDING-WCAG20/'
+  },
+  'tech': {
+    'en-wcag20': 'https://www.w3.org/TR/WCAG20-TECHS/',
+    'en-wcag21': 'https://www.w3.org/WAI/WCAG21/Techniques/',
+    'ja-wcag20': 'https://waic.jp/docs/WCAG-TECHS/',
+    'ja-wcag21': 'https://waic.jp/docs/WCAG-TECHS/'
+  }
+};
+
+var techDirAbbr = {
+  'G': 'general',
+  'H': 'html',
+  'C': 'css',
+  'A': 'aria',
+  'T': 'text',
+  'P': 'pdf',
+  'FL': 'flash',
+  'F': 'failures',
+  'SM': 'smil',
+  'SL': 'silverlight',
+  'SV': 'server-side-script',
+  'SC': 'client-side-script'
+}
+
+/**
  * global variables
  */
 var resultSheetName = '*Result*';

@@ -9,7 +9,7 @@
      * events
      */
     $(function() {
-      // on loadˇ
+      // on load
       $('#do-edit-value').prop('disabled', true);
       $('#do-make-same-as-template').prop('disabled', true);
       $('#template-caution').hide();
@@ -94,6 +94,7 @@
                 .getProp('level');
             } else {
               $("#evaluate-level").val('AA');
+              $("#evaluate-level").prop('disabled', true);
             }
 
             // generate select candidate of bulk criteria

@@ -67,13 +67,26 @@ function generateSheets(urlstr, lang, testType, level) {
     var set = testType.indexOf('wcag') >= 0 ? 'criteria' : 'ttCriteria' ;
     var usingCriteria = getLangSet(set);
     
+    
+    // complex language selection ...
+    var docurl = lang+'-'+testType;
+    
     // each row
     var row = 5;
     for (var j = 0; j < usingCriteria.length; j++) {
       if (testType == 'wcag20' && criteria21.indexOf(usingCriteria[j][1]) >= 0) continue;
       if (usingCriteria[j][0].length > level.length) continue;
+
+      var langPointer = testType == 'wcag21' ? usingCriteria[j][4] : usingCriteria[j][3];
+      langPointer = testType == 'wcag21' && lang == 'ja' ? usingCriteria[j][3] : langPointer;
+      var urlPointer = docurl;
+      urlPointer = testType == 'wcag21' && lang == 'ja' ? 'en-wcag21' : urlPointer;
+      var url = urlbase['understanding'][urlPointer]+langPointer;
+      if (lang == 'ja' && testType == 'wcag21' && criteria21.indexOf(usingCriteria[j][1]) >= 0) {
+        url = urlbase['understanding']['en-wcag21']+usingCriteria[j][4];
+      }
       
-      originalSheet.getRange(row, 1).setValue(usingCriteria[j][1]).setHorizontalAlignment('center');
+      originalSheet.getRange(row, 1).setValue('=HYPERLINK("'+url+'", "'+usingCriteria[j][1]+'")').setHorizontalAlignment('center');
       originalSheet.getRange(row, 2).setDataValidation(pullDown).setHorizontalAlignment('center').setComment(usingCriteria[j][2]);
       originalSheet.getRange(row, 3).setValue(usingCriteria[j][0]).setHorizontalAlignment('center');
       row++;

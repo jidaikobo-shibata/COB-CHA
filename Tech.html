@@ -20,21 +20,35 @@
     function setDefaultValue() {
       google.script.run
         .withSuccessHandler(
-          function(rets) {
-            if (rets['techs'] == '') {
+          function(ret) {
+            if (ret['techs'] == '') {
               $('body').append('<h1>No criterion found</h1><p>Place your cursor below Techs.</p>');
               $('#apply-techs').hide();
             } else {
-              $('#apply-techs').append(' ['+rets['criterion']+']');
-              for(var i = 0; i < rets['techs'].length; i++) {
+              $('#apply-techs').append(' ['+ret['criterion']+']');
+              for(var i = 0; i < ret['techs'].length; i++) {
+                var each = ret['techs'][i][0];
+                
+                // Techniques for WCAG 2.1 has directory
+                var url = ret['urlbase']['tech'][ret['docurl']];
+                if (ret['type'] == 'wcag21' && ret['lang'] == 'en') {
+                  var dir = each.charAt(0)+each.charAt(1);
+                  if (['M', 'L', 'V', 'C'].indefOf(each.charAt(1)) < 0) {
+                    dir = dir.charAt(0);
+                  }
+                  url += ret['type']['techDirAbbr'][dir]+'/'+each;
+                } else {
+                  url += each+'.html';
+                }
+
                 $('#techs').append($('<tr></tr>')
-                           .append($('<td></td>').html('<input type="checkbox" id="'+rets['techs'][i][0]+'" value="'+rets['techs'][i][0]+'">'))
-                           .append($('<td></td>').html('<label for="'+rets['techs'][i][0]+'">'+rets['techs'][i][0]+': '+rets['techs'][i][1]+'</label>'))
-                           .append($('<td></td>').html('<a target="_blank" href="'+rets['urlbase']+rets['techs'][i][0]+'.html"><i class="fas fa-external-link-alt"></i><span style="position: absolute;width: 1px;height: 1px;clip: rect(0 0 0 0);">Open '+rets['techs'][i][0]+'</span></a>'))
+                           .append($('<td></td>').html('<input type="checkbox" id="'+each+'" value="'+each+'">'))
+                           .append($('<td></td>').html('<label for="'+each+'">'+ret['techs'][i][0]+': '+ret['techs'][i][1]+'</label>'))
+                           .append($('<td></td>').html('<a target="_blank" href="'+url+'"><i class="fas fa-external-link-alt"></i><span style="position: absolute;width: 1px;height: 1px;clip: rect(0 0 0 0);">Open '+ret['techs'][i][0]+'</span></a>'))
                           );
               }
 
-              var checked = rets['checked'].split(/,/);
+              var checked = ret['checked'].split(/,/);
               for (var i = 0; i < checked.length; i++) {
                 var id = checked[i].trim();
                 if ($('#'+id).length < 0) continue;
