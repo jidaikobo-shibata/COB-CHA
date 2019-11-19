@@ -73,6 +73,12 @@ function setIssueValue(isEdit) {
     ret['techs'].push([criteria[i][1], relTechsAndCriteria[criteria[i][1]]]);
   }
   
+  ret['lang'] = getProp('lang');
+  ret['type'] = getProp('type');
+  ret['level'] = getProp('level');
+  
+  ret['techDirAbbr'] = techDirAbbr;
+  ret['criteria21'] = criteria21;
   ret['criteria'] = getLangSet('criteria');
   ret['techNames'] = getLangSet('tech');
 
@@ -82,10 +88,15 @@ function setIssueValue(isEdit) {
     ret['places'].push(all[i].getName());
   }
  
-  ret['urlbase'] = techUrls[getProp('lang')];
-
-  Logger.log(ret['vals']);
-
+  ret['urlbase'] = {
+    'tech': techUrls,
+    'understanding': criteriaUrls,
+  };
+  ret['docurl'] = ret['lang']+'-'+ret['type'];
+  ret['docurlEn'] = 'en'+'-'+ret['type'];
+  
+  Logger.log(ret['urlbase']['tech']['ja-wcag20']);
+ 
   return ret;
 }
 
@@ -214,33 +225,36 @@ function exportIssue() {
   var lang = getProp('lang');
   var criteriaVals = getLangSet('criteria');
   var techVals = getLangSet('tech');
-  
+
   var str = '';
   for (var i = 2; i < dataObj.length; i++) {
     var issueId         = dataObj[i][0];
     var name            = dataObj[i][1];
     var issueVisibility = dataObj[i][2];
-//    var commonIssue     = dataObj[i][3];
-    var errorNotice     = dataObj[i][4];
-    var html            = dataObj[i][5];
-    var explanation     = dataObj[i][6];
-    var criteria        = dataObj[i][7];
-    var techs           = dataObj[i][8];
-    var places          = dataObj[i][9];
-//    var memo            = dataObj[i][10];
-        
+    var errorNotice     = dataObj[i][3];
+    var html            = dataObj[i][4];
+    var explanation     = dataObj[i][5];
+    var criteria        = dataObj[i][6];
+    var techs           = dataObj[i][7];
+    var places          = dataObj[i][8];
+//    var memo            = dataObj[i][9];
+    
     if (issueVisibility == 'off') continue;
 
     str += '<h2>'+issueId+': '+name+'</h2>';
     str += '<table>';
-    
+
     str += '<tr><th>';
     str += lang == 'ja' ? '重要度' : 'Priority';
-    str += '</th><td>'+errorNotice+'</td><tr>';
+    str += '</th><td>'+errorNotice+'</td></tr>';
+
+    str += '<tr><th>';
+    str += lang == 'ja' ? 'HTML' : 'Explanation';
+    str += '</th><td>'+html+'</td></tr>';
 
     str += '<tr><th>';
     str += lang == 'ja' ? '解説' : 'Explanation';
-    str += '</th><td>'+explanation+'</td><tr>';
+    str += '</th><td>'+explanation+'</td></tr>';
     
     str += '<tr><th>';
     str += lang == 'ja' ? '関連する達成基準' : 'Criteria';
@@ -255,38 +269,35 @@ function exportIssue() {
       }
       n++;
     }
-    str += '</th><td><ul>'+tmp.join()+'</ul></td></tr><tr>';
+    str += '</th><td><ul>'+tmp.join()+'</ul></td></tr>';
     
     str += '<tr><th>';
     str += lang == 'ja' ? '関連する達成方法' : 'Techniques';
     var tmp = [];
-    var n = 0;
     var targetTechs = techs.split(',');
     for (var j = 0; j < targetTechs.length; j++) {
       var cTech = targetTechs[j].trim();
       if (techVals[cTech] == null) continue;
-      tmp[n] = '<li>'+cTech+': '+techVals[cTech]+'</li>';
-      n++;
+      tmp.push('<li>'+cTech+': '+techVals[cTech]+'</li>');
     }
-    str += '</th><td><ul>'+tmp.join()+'</ul></td></tr><tr>';
+    str += '</th><td><ul>'+tmp.join('')+'</ul></td></tr>';
     
     str += '<tr><th>';
     str += lang == 'ja' ? '問題が存在するページ' : 'URL';
     var tmp = [];
-    var n = 0;
     var targetPlaces = places.split(',');
     for (var j = 0; j < targetPlaces.length; j++) {
       var url = targetPlaces[j].trim();
       var eachTargetSheet = ss.getSheetByName(url);
       if (eachTargetSheet == null) continue;
       var pageTitle = eachTargetSheet.getRange(3, 2).getValue();
-      tmp[n] = '<li><a href="'+url+'">'+pageTitle+'</a></li>';
-      n++;
+      tmp.push('<li><a href="'+url+'">'+pageTitle+'</a></li>');
     }
-    str += '</th><td><ul>'+tmp.join()+'</ul></td></tr>';
+    str += '</th><td><ul>'+tmp.join('')+'</ul></td></tr>';
 
     str += '</table>';
   }
+  
   saveHtml(exportFolderName, filename, str);
   
   return("Issue Exported");

@@ -66,15 +66,34 @@ var relTechsAndCriteria = {
   '4.1.2': ['G10', 'G108', 'G135', 'H44', 'H64', 'H65', 'H88', 'H91', 'ARIA4', 'ARIA5', 'ARIA14', 'ARIA16', 'PDF10', 'PDF12', 'F15', 'F20', 'F42', 'F59', 'F68', 'F79', 'F86', 'F89']
 };
 
-var techUrls = {
-  'en': 'https://waic.jp/docs/WCAG-TECHS/',
-  'ja': 'https://waic.jp/docs/WCAG-TECHS/'
+var criteriaUrls = {
+  'en-wcag20': 'https://www.w3.org/TR/UNDERSTANDING-WCAG20/',
+  'en-wcag21': 'https://www.w3.org/WAI/WCAG21/Understanding/', // and directory
+  'ja-wcag20': 'https://waic.jp/docs/UNDERSTANDING-WCAG20/',
+  'ja-wcag21': 'https://waic.jp/docs/UNDERSTANDING-WCAG20/'
 };
 
-var criteriaUrls = {
-  'en': 'https://www.w3.org/TR/UNDERSTANDING-WCAG20/',
-  'ja': 'https://waic.jp/docs/UNDERSTANDING-WCAG20/'
+var techUrls = {
+  'en-wcag20': 'https://www.w3.org/TR/WCAG20-TECHS/',
+  'en-wcag21': 'https://www.w3.org/WAI/WCAG21/Techniques/',
+  'ja-wcag20': 'https://waic.jp/docs/WCAG-TECHS/',
+  'ja-wcag21': 'https://waic.jp/docs/WCAG-TECHS/'
 };
+
+var techDirAbbr = {
+  'G': 'general',
+  'H': 'html',
+  'C': 'css',
+  'A': 'aria',
+  'T': 'text',
+  'P': 'pdf',
+  'FL': 'flash',
+  'F': 'failures',
+  'SM': 'smil',
+  'SL': 'silverlight',
+  'SV': 'server-side-script',
+  'SC': 'client-side-script'
+}
 
 /**
  * show techniques dialog

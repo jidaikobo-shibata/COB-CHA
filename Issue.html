@@ -19,6 +19,9 @@
         .isEditIssue();
 
       $('#apply-issue').click(onApplyIssueClick);
+      $(document).on('change','.criteria-chk',function(){
+        changeCriteria();
+      });
     });
     
     /**
@@ -37,33 +40,59 @@
             $('#apply-issue').after('<input type="hidden" id="issue-id" value="'+rets['vals']['issueId']+'">');
 
             for (var i = 0; i < rets['techs'].length; i++) {
-              var classname = rets['techs'][i][0].replace('.', '_');
-              $('#techs').append($('<tr class="'+classname+'"></tr>').append($('<th colspan="3"></th>').html(rets['techs'][i][0])));
+              var classname = rets['techs'][i][0].replace(/\./g, '_');
+              $('#techs').append($('<tr class="'+classname+' tech-row"></tr>').append($('<th colspan="3"></th>').html(rets['techs'][i][0])));
               for (var j = 0; j < rets['techs'][i][1].length; j++) {
                 var each = rets['techs'][i][1][j];
-                $('#techs').append($('<tr></tr>')
+                
+                // Techniques for WCAG 2.1 has directory
+                var url = rets['urlbase']['tech'][rets['docurl']];
+                if (rets['type'] == 'wcag21' && rets['lang'] == 'en') {
+                  var dir = each.charAt(0)+each.charAt(1);
+                  if (['M', 'L', 'V', 'C'].indefOf(each.charAt(1)) < 0) {
+                    dir = dir.charAt(0);
+                  }
+                  url += rets['type']['techDirAbbr'][dir]+'/'+each;
+                } else {
+                  url += each+'.html';
+                }
+                
+                $('#techs').append($('<tr class="'+classname+' tech-row"></tr>')
                            .append($('<td></td>').html('<input type="checkbox" id="'+each+'" value="'+each+'">'))
                            .append($('<td></td>').html('<label for="'+each+'">'+each+': '+rets['techNames'][each]+'</label>'))
-                           .append($('<td></td>').html('<a target="_blank" href="'+rets['urlbase']+each+'.html"><i class="fas fa-external-link-alt"></i><span style="position: absolute;width: 1px;height: 1px;clip: rect(0 0 0 0);">Open '+each+'</span></a>'))
+                           .append($('<td></td>').html('<a target="_blank" href="'+url+'"><i class="fas fa-external-link-alt"></i><span style="position: absolute;width: 1px;height: 1px;clip: rect(0 0 0 0);">Open '+each+'</span></a>'))
                           );
               }
             }
-            
+
             for(var i = 0; i < rets['criteria'].length; i++) {
+              if (rets['type'] == 'wcag20' && rets['criteria21'].indexOf(rets['criteria'][i][1]) >= 0) continue;
+              if (rets['criteria'][i][0].length > rets['level'].length) continue;
+              
+              // complex language selection ...
+              var langPointer = rets['type'] == 'wcag21' ? rets['criteria'][i][4] : rets['criteria'][i][3];
+              langPointer = rets['type'] == 'wcag21' && rets['lang'] == 'ja' ? rets['criteria'][i][3] : langPointer;
+              var urlPointer = rets['docurl'];
+              urlPointer = rets['type'] == 'wcag21' && rets['lang'] == 'ja' ? rets['docurlEn'] : urlPointer;
+              var url = rets['urlbase']['understanding'][urlPointer]+langPointer;
+              if (rets['lang'] == 'ja' && rets['type'] == 'wcag21' && rets['criteria21'].indexOf(rets['criteria'][i][1]) >= 0) {
+                url = rets['urlbase']['understanding']['en-wcag21']+rets['criteria'][i][4];
+              }
+              
               var level = rets['criteria'][i][0];
               var criterion = rets['criteria'][i][1];
               var exp = rets['criteria'][i][2];
-              var classname = criterion.replace('.', '_');
+              var classname = criterion.replace(/\./g, '_');
               $('#criteria').append($('<tr></tr>')
-                         .append($('<td></td>').html('<input type="checkbox" id="'+classname+'" value="'+criterion+'">'))
+                         .append($('<td></td>').html('<input type="checkbox" class="criteria-chk" id="'+classname+'" value="'+criterion+'">'))
                          .append($('<td></td>').html('<label for="'+classname+'">'+criterion+': '+exp+'</label>'))
-                         .append($('<td></td>').html('<a target="_blank" href="'+rets['urlbase']+criterion+'.html"><i class="fas fa-external-link-alt"></i><span style="position: absolute;width: 1px;height: 1px;clip: rect(0 0 0 0);">Open '+criterion+'</span></a>'))
+                         .append($('<td></td>').html('<a target="_blank" href="'+url+'.html"><i class="fas fa-external-link-alt"></i><span style="position: absolute;width: 1px;height: 1px;clip: rect(0 0 0 0);">Open '+criterion+'</span></a>'))
                         );
             }
             
             for(var i = 0; i < rets['places'].length; i++) {
               var place = rets['places'][i];
-              var idname = btoa(place).replace('=', '');
+              var idname = btoa(place).replace(/=/g, '');
               $('#places').append($('<tr></tr>')
                          .append($('<td></td>').html('<input type="checkbox" id="'+idname+'" class="places" value="'+place+'">'))
                          .append($('<td></td>').html('<label for="'+idname+'">'+place+'</label>'))
@@ -147,6 +176,26 @@
             google.script.host.close();
           })
         .applyIssue(vals);
+    }
+    
+    
+    /**
+     * Change Criteria
+     */
+    function changeCriteria() {
+      $('#techs .tech-row').hide();
+      var checked = [];
+      $('.criteria-chk:checked').each(function() {
+        var classname = $(this).val().replace(/\./g, '_');
+        checked.push(classname);
+      });
+      if (checked.length == 0) {
+        $('#techs .tech-row').show();
+      } else {
+        for (var i = 0; i < checked.length; i++) {
+          $('#techs .'+checked[i]).show();
+        }
+      }
     }
 </script>
 </head>
