@@ -195,6 +195,26 @@ function showIssue() {
 }
 
 /**
+ * escape html
+ * thx https://qiita.com/saekis/items/c2b41cd8940923863791
+ */
+function escapeHtml (string) {
+  if (typeof string !== 'string') {
+    return string;
+  }
+  return string.replace(/[&'`"<>]/g, function(match) {
+    return {
+      '&': '&amp;',
+      "'": '&#x27;',
+      '`': '&#x60;',
+      '"': '&quot;',
+      '<': '&lt;',
+      '>': '&gt;',
+    }[match]
+  });
+}
+
+/**
  * export Issue
  */
 function exportIssue() {
@@ -227,7 +247,7 @@ function exportIssue() {
     var name            = dataObj[i][1];
     var issueVisibility = dataObj[i][2];
     var errorNotice     = dataObj[i][3];
-    var html            = dataObj[i][4];
+    var html            = escapeHtml(dataObj[i][4]);
     var explanation     = dataObj[i][5];
     var criteria        = dataObj[i][6];
     var techs           = dataObj[i][7];
@@ -392,5 +412,5 @@ function exportHtml(testType, level) {
     n++;
  }
   
-  return("file");
+  return(n+" file(s) exported");
 }
