@@ -158,12 +158,11 @@ function applyIssue(vals) {
     var targetRow = issueSheet.getLastRow() + 1;
     issueSheet.getRange(targetRow, 1).setValue(targetRow - 2);
   }
- 
+
   for (i = 1; i < vals.length; i++) {
     issueSheet.getRange(targetRow, i + 1).setValue(vals[i]);
   }
   var preview = issueSheet.getRange(targetRow, 11).getValue();
-    Logger.log(preview);
   if (preview) {
     issueSheet.getRange(targetRow, 11).setValue('=IMAGE("https://drive.google.com/uc?export=download&id='+preview+'",1)')
   }
@@ -234,8 +233,6 @@ function exportIssue() {
   var ss = getSpreadSheet();
   var issueSheet = ss.getSheetByName(issueSheetName);
   var dataObj = issueSheet.getDataRange().getValues();
-//  var vals = {};
-  
   var date = new Date();
   var filename = 'issue-report-'+Utilities.formatDate( date, 'Asia/Tokyo', 'yyyy-MM-dd-hh-mm')+'.html';
 
@@ -251,44 +248,125 @@ function exportIssue() {
   */
 
   var lang = getProp('lang');
+  var common = [];
+  var each = {};
+  var commonEach = {};
+  
+  // prepare vals
+  for (var i = 2; i < dataObj.length; i++) {
+    // issueVisibility
+    if (dataObj[i][2] == 'off') continue;
+
+    var places = dataObj[i][8];
+    var targetPlaces = places.split(',');
+    if (targetPlaces.length == 0) continue;
+    var vals = {
+      'issueId':         dataObj[i][0],
+      'name':            dataObj[i][1],
+      'errorNotice':     dataObj[i][3],
+      'html':            escapeHtml(dataObj[i][4]),
+      'explanation':     dataObj[i][5],
+      'criteria':        dataObj[i][6],
+      'techs':           dataObj[i][7],
+      'places':          targetPlaces,
+      'image':           dataObj[i][9]
+    }
+
+    if (targetPlaces.length > 1) {
+      common.push(vals);
+      for (var j = 0; j < targetPlaces.length; j++) {
+        var url = targetPlaces[j].trim();
+        if (commonEach[url] == null) {
+          commonEach[url] = [];
+        }
+        commonEach[url].push(vals);
+      }
+    } else {
+      var url = targetPlaces[0].trim();
+      if (each[url] == null) {
+        each[url] = [];
+      }
+      each[url].push(vals);
+    }
+  }
+
+  // generate html
+  var str = '';
+  str += lang == 'ja' ? '<h1>問題点レポート</h1>' : '<h1>Issue Report</h1>';
+  str += lang == 'ja' ? '<h2>共通の問題</h2>' : '<h2>Common Issue</h2>';
+  if (common.length == 0) {
+    str += lang == 'ja' ? '<p>共通の問題は存在しませんでした。</p>' : '<p>No Common Issue was reported.</p>';
+  } else {
+    str = generateIssueReportHtml(str, common, lang);
+  }
+
+  var allSheets = getAllSheets();
+  for (var i = 0; i < allSheets.length; i++) {
+    var activeSheet = allSheets[i];
+    var url = activeSheet.getRange(2, 2).getValue();
+    var title = activeSheet.getRange(3, 2).getValue();
+    var screenshot = activeSheet.getRange(2, 6).getValue();
+
+    str += '<h2>'+title+'<br>'+url+'</h2>';
+    str += '<div class="screenshot"><img src="'+screenshot+'" alt="screenshot"></div>';
+
+    if (each[url] == null) {
+      str += lang == 'ja' ? '<p>このページに固有の問題は存在しませんでした。</p>' : '<p>No particular issue was reported on this page.</p>';
+    } else {
+       str = generateIssueReportHtml(str, each[url], lang);
+    }
+
+    if (commonEach[url] == null) {
+      str += lang == 'ja' ? '<p>このページに共通の問題は存在しませんでした。</p>' : '<p>No common issue was reported on this page.</p>';
+    } else {
+      var lis = [];
+      for (var j = 0; j < commonEach[url].length; j++) {
+        lis.push('<li>'+commonEach[url][j]['issueId']+': '+commonEach[url][j]['name']+'</li>');
+      }
+      str += lang == 'ja' ? '<h3>このページに存在する共通の問題</h3>' : '<h3>common issue on this page.</h3>';
+      str += '<ul>'+lis.join('')+'</ul>';
+    }
+  }
+
+  saveHtml(exportFolderName, filename, str);
+  
+  return("Issue Exported");
+}
+
+/**
+ * generate issue report html
+ * @param String str
+ * @param Array vals
+ * @param String lang
+ * @return String
+ */
+function generateIssueReportHtml(str, vals, lang) {
+  var ss = getSpreadSheet();
+  var allSheets = getAllSheets();
   var criteriaVals = getLangSet('criteria');
   var techVals = getLangSet('tech');
 
-  var str = '';
-  for (var i = 2; i < dataObj.length; i++) {
-    var issueId         = dataObj[i][0];
-    var name            = dataObj[i][1];
-    var issueVisibility = dataObj[i][2];
-    var errorNotice     = dataObj[i][3];
-    var html            = escapeHtml(dataObj[i][4]);
-    var explanation     = dataObj[i][5];
-    var criteria        = dataObj[i][6];
-    var techs           = dataObj[i][7];
-    var places          = dataObj[i][8];
-//    var memo            = dataObj[i][9];
-    
-    if (issueVisibility == 'off') continue;
-
-    str += '<h2>'+issueId+': '+name+'</h2>';
+  for (var i = 0; i < vals.length; i++) {
+    str += '<h3>'+vals[i]['issueId']+': '+vals[i]['name']+'</h3>';
     str += '<table>';
 
     str += '<tr><th>';
     str += lang == 'ja' ? '重要度' : 'Priority';
-    str += '</th><td>'+errorNotice+'</td></tr>';
+    str += '</th><td>'+vals[i]['errorNotice']+'</td></tr>';
 
     str += '<tr><th>';
     str += lang == 'ja' ? 'HTML' : 'Explanation';
-    str += '</th><td>'+html+'</td></tr>';
+    str += '</th><td>'+vals[i]['html']+'</td></tr>';
 
     str += '<tr><th>';
     str += lang == 'ja' ? '解説' : 'Explanation';
-    str += '</th><td>'+explanation+'</td></tr>';
+    str += '</th><td>'+vals[i]['explanation']+'</td></tr>';
     
     str += '<tr><th>';
     str += lang == 'ja' ? '関連する達成基準' : 'Criteria';
     var tmp = [];
     var n = 0;
-    var targetCriteria = criteria.split(',');
+    var targetCriteria = vals[i]['criteria'].split(',');
     for (var j = 0; j < criteriaVals.length; j++) {
       for (var k = 0; k < targetCriteria.length; k++) {
         var cCriteria = targetCriteria[k].trim();
@@ -302,7 +380,7 @@ function exportIssue() {
     str += '<tr><th>';
     str += lang == 'ja' ? '関連する達成方法' : 'Techniques';
     var tmp = [];
-    var targetTechs = techs.split(',');
+    var targetTechs = vals[i]['techs'].split(',');
     for (var j = 0; j < targetTechs.length; j++) {
       var cTech = targetTechs[j].trim();
       if (techVals[cTech] == null) continue;
@@ -313,22 +391,23 @@ function exportIssue() {
     str += '<tr><th>';
     str += lang == 'ja' ? '問題が存在するページ' : 'URL';
     var tmp = [];
-    var targetPlaces = places.split(',');
-    for (var j = 0; j < targetPlaces.length; j++) {
-      var url = targetPlaces[j].trim();
-      var eachTargetSheet = ss.getSheetByName(url);
-      if (eachTargetSheet == null) continue;
-      var pageTitle = eachTargetSheet.getRange(3, 2).getValue();
-      tmp.push('<li><a href="'+url+'">'+pageTitle+'</a></li>');
+    if (vals[i]['places'].length == allSheets.length) {
+      var msg = lang == 'ja' ? 'すべてのページ' : 'All Page';
+      str += '</th><td>'+msg+'</td></tr>';
+    } else {
+      for (var j = 0; j < vals[i]['places'].length; j++) {
+        var url = vals[i]['places'][j].trim();
+        var eachTargetSheet = ss.getSheetByName(url);
+        if (eachTargetSheet == null) continue;
+        var pageTitle = eachTargetSheet.getRange(3, 2).getValue();
+        tmp.push('<li><a href="'+url+'">'+pageTitle+'</a></li>');
+      }
+      str += '</th><td><ul>'+tmp.join('')+'</ul></td></tr>';
     }
-    str += '</th><td><ul>'+tmp.join('')+'</ul></td></tr>';
 
     str += '</table>';
   }
-  
-  saveHtml(exportFolderName, filename, str);
-  
-  return("Issue Exported");
+  return str;
 }
 
 /**

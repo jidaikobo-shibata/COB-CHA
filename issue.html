@@ -158,7 +158,7 @@
         places.push($(this).val());
       });
 
-      var issueVisibility = $('#issue-visibility').prop('checked') == 'checked' ? 'on' : 'off' ;
+      var issueVisibility = $('#issue-visibility').prop('checked') ? 'on' : 'off' ;
       
       var vals = [
         $('#issue-id').val(),
