@@ -212,10 +212,47 @@ function saveHtml(targetFolder, name, html, overwrite) {
 };
 
 /**
+ * image file upload
+ * @param Object formObj
+ * @return Array [fileName, fileId]
+ */
+function fileUpload(formObj) {
+  if (formObj.imageFile.length == 0) throw new Error('Empty File Uploaded');
+  var formBlob = formObj.imageFile;
+  var driveFile = DriveApp.createFile(formBlob);
+  var targetFolder = getTargetFolder(imagesFolderName);
+  deleteFileIfExists(imagesFolderName, driveFile.getName());
+  targetFolder.addFile(driveFile);
+  driveFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  DriveApp.getRootFolder().removeFile(driveFile);
+  return [driveFile.getName() ,driveFile.getId()];
+}
+
+/**
+ * add image formula
+ * @param String id
+ * @return String
+ */
+function addImageFormula(id) {
+  return('=IMAGE("https://drive.google.com/uc?export=download&id='+id+'",1)');
+};
+
+/**
+ * remove image formula
+ * @param String id
+ * @return String
+ */
+function removeImageFormula(id) {
+  id = id.replace('=IMAGE("https://drive.google.com/uc?export=download&id=' ,'');
+  id = id.replace('",1)', '');
+  return id;
+};
+
+/**
  * show control pannel
  */
 function showSidebar() {
-  var ui = HtmlService.createTemplateFromFile('Sidebar').evaluate().setTitle("COB-CHA Control Panel");
+  var ui = HtmlService.createTemplateFromFile('sidebar').evaluate().setTitle("COB-CHA Control Panel");
   SpreadsheetApp.getUi().showSidebar(ui);
 }
 

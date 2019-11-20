@@ -6,7 +6,7 @@
  * show Issue dialog
  */
 function showIssueDialog() {
-  var output = HtmlService.createTemplateFromFile('Issue');
+  var output = HtmlService.createTemplateFromFile('issue');
   var ss = getSpreadSheet();
   var html = output.evaluate().setSandboxMode(HtmlService.SandboxMode.IFRAME).setWidth(500).setHeight(500);
   ss.show(html);
@@ -69,8 +69,7 @@ function setIssueValue(isEdit) {
       }
       i++;
     }
-    ret['vals']['preview'] = ret['vals']['preview'].replace('=IMAGE("https://drive.google.com/uc?export=download&id=' ,'');
-    ret['vals']['preview'] = ret['vals']['preview'].replace('",1)', '');
+    ret['vals']['preview'] = removeImageFormula(ret['vals']['preview']);
   }
 
   // to keep array order
@@ -102,21 +101,6 @@ function setIssueValue(isEdit) {
   ret['docurlEn'] = 'en'+'-'+ret['type'];
  
   return ret;
-}
-
-/**
- * file upload
- * @param Object formObj
- */
-function fileUpload(formObj) {
-  var formBlob = formObj.imageFile;
-  var driveFile = DriveApp.createFile(formBlob);
-  var targetFolder = getTargetFolder(imagesFolderName);
-  deleteFileIfExists(imagesFolderName, driveFile.getName());
-  targetFolder.addFile(driveFile);
-  driveFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-  DriveApp.getRootFolder().removeFile(driveFile);
-  return [driveFile.getName() ,driveFile.getId()];
 }
 
 /**

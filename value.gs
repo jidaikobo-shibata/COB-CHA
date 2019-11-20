@@ -70,7 +70,7 @@ var relTechsAndCriteria = {
  * show techniques dialog
  */
 function showTechDialog() {
-  var output = HtmlService.createTemplateFromFile('Tech');
+  var output = HtmlService.createTemplateFromFile('tech');
   var ss = getSpreadSheet();
   var html = output.evaluate().setSandboxMode(HtmlService.SandboxMode.IFRAME).setWidth(500).setHeight(500);
   ss.show(html);
@@ -86,7 +86,7 @@ function getContextualTechs() {
   var criterion = activeSheet.getRange(activeRow, 1).getValue();
   var checked = activeSheet.getRange(activeRow, 4).getValue();
   var techLangsSrc = getLangSet('tech');
-
+  
   var rets = [];
   var type = getProp('type');
   if (type.indexOf('tt') >= 0) {
@@ -110,13 +110,9 @@ function getContextualTechs() {
   var lang = getProp('lang');
   var type = getProp('type');
   var techDirAbbr = techDirAbbr;
-  var urlbase = {
-    'tech': techUrls,
-    'understanding': criteriaUrls,
-  };
   var docurl = lang+'-'+type;
   var docurlEn = 'en'+'-'+type;
-
+  
   return {'criterion': criterion, 'techs': rets, 'checked': checked, 'lang': lang, 'type': type, 'techDirAbbr': techDirAbbr, 'urlbase': urlbase, 'docurl': docurl, 'docurlEn': docurlEn};
 }
 

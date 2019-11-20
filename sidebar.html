@@ -37,6 +37,7 @@
       $('#show-issue').click(onShowIssueClick);
       $('#export-html').click(onExportHtmlClick);
       $('#export-issue').click(onExportIssueClick);
+      $('#add-screenshot').click(onAddScreenshotClick);
       
       // menu
       $('#show-sheet').on(
@@ -301,6 +302,13 @@
     }
 
     /**
+     * show Screenshot dialog
+     */
+    function onAddScreenshotClick() {
+      google.script.run.showScreenshotDialog();
+    }
+
+    /**
      * Make same as template
      */
     function onDoMakeSameAsTemplateClick() {
@@ -381,7 +389,6 @@
         .withUserObject(this)
         .addIssue($('#lang').val(), $('#test-type').val(), $('#evaluate-level').val());
     }
-
 
     /**
      * Show Issue
@@ -496,6 +503,11 @@
       <button id="generate-sheets">Generate</button>
       <button id="control-sheets">Get Sheets</button>
       <label><input type="checkbox" id="delete-sheets">Delete</label>
+    </fieldset>
+    
+    <fieldset class="block">
+      <legend><label for="screenshot">Screenshot</label></legend>
+      <button id="add-screenshot">add screenshot</button>
     </fieldset>
     </div>
   

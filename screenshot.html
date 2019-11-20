@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
+  <link href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" rel="stylesheet">
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>
+    /**
+     * events
+     */
+    $(function() {
+      $('#message-area').hide();
+    });
+  
+    /**
+     * Upload Image
+     */
+    function onUploadImageClick(obj) {
+      $('#message-area').hide();
+      $('#upload-image').prop('disabled', true);
+      
+      google.script.run
+        .withSuccessHandler(function (msg){
+          $('#upload-image').prop('disabled', false);
+          
+          $('#message-area').show();
+          $('#sidebar-status').removeClass().html(msg);
+        })
+        .withFailureHandler(function (msg){
+          $('#upload-image').prop('disabled', false);
+          $('#message-area').show();
+          $('#sidebar-status').addClass('error').html('Failed file Uploading');
+        })
+        .screenshotUpload(obj);
+    }
+  </script>
+
+</head>
+<body>
+  <fieldset class="block">
+    <legend><label for="screenshot">Screenshot</label></legend>
+    <form id="upload-form" onsubmit="onUploadImageClick(this)">
+      <input type="file" id="screenshot" name="imageFile">
+      <p><input type="submit" id="upload-image" value="upload"></p>
+    </form>
+  </fieldset>
+  <div id="message-area" style="margin-top:15px;background-color: #eeeeee;padding:5px;">
+    <div id="sidebar-info"></div>
+    <div id="sidebar-status"></div>
+  </div>
+</body>
+</html>
+
+

@@ -187,14 +187,17 @@
      * Upload Image
      */
     function onUploadImageClick(obj) {
+      $('#upload-image').prop('disabled', true);
       google.script.run
         .withSuccessHandler(function (ret){
           $('#upload-image-msg').html('File Uploaded');
           $('#uploaded-file').val(ret[0]);
           $('#uploaded-file-url').val(ret[1]);
+          $('#upload-image').prop('disabled', false);
         })
         .withFailureHandler(function (){
           $('#upload-image-msg').html('Failed file Uploading');
+          $('#upload-image').prop('disabled', false);
         })
         .fileUpload(obj);
     }

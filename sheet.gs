@@ -39,6 +39,7 @@ function generateSheets(urlstr, lang, testType, level) {
     originalSheet.getRange(1, 4).setValue(level).setHorizontalAlignment('center');
     var today = new Date();
     originalSheet.getRange(1, 5).setValue('Date').setBackground(labelColor);
+    originalSheet.getRange(2, 5).setValue('Screenshot').setBackground(labelColor);
     originalSheet.getRange(1, 6).setValue(today);
     originalSheet.getRange(1, 7).setValue('Memo').setBackground(labelColor);
     originalSheet.getRange(2, 1).setValue('URL').setBackground(labelColor);
@@ -201,4 +202,31 @@ function deleteSheets(urlstr) {
 
   generateResultSheet();
   return(count+" sheet(s) deleted");
+}
+
+/**
+ * add screenshot
+ * @param Object formObj
+ */
+function screenshotUpload(formObj) {
+  var activeSheet = getActiveSheet();
+  var activeRow = activeSheet.getActiveCell().getRow();
+  Logger.log(activeSheet.getName());
+  if (activeSheet.getName().charAt(0) == '*') return('Current Sheet is not for webpage');
+  
+  var file = fileUpload(formObj);
+  activeSheet.getRange(2, 6).setValue(file[0])
+  activeSheet.getRange(2, 7).setValue('=IMAGE("https://drive.google.com/uc?export=download&id='+file[1]+'",1)')
+  
+  return('Screenshot Uploaded');
+}
+
+/**
+ * show Screenshot dialog
+ */
+function showScreenshotDialog() {
+  var output = HtmlService.createTemplateFromFile('screenshot');
+  var ss = getSpreadSheet();
+  var html = output.evaluate().setSandboxMode(HtmlService.SandboxMode.IFRAME).setWidth(300).setHeight(200);
+  ss.show(html);
 }
