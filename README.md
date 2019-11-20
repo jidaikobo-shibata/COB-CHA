@@ -1,6 +1,6 @@
 # COB-CHA
 
-[![Build Status](https://scrutinizer-ci.com/g/jidaikobo-shibata/COB-CHA/badges/build.png?b=master)](https://scrutinizer-ci.com/g/jidaikobo-shibata/COB-CHA/build-status/master)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 CollaBorative CHeck tool for Accessibility
 
