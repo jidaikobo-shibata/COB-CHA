@@ -2,7 +2,7 @@
  * COB-CHA: CollaBorative CHeck tool for Accessibility
  * powered by Google Spreadsheet
  * @Author shibata@jidaikobo.com
- * @Licence CC0
+ * @Licence MIT
  */
 
 /**
