@@ -298,16 +298,34 @@
      * show Tech dialog
      */
     function onShowTechDialogClick() {
-      google.script.run.showTechDialog();
+      $('#message-area').hide();
+      google.script.run.showDialog('tech', 500, 400);
     }
 
     /**
      * show Screenshot dialog
      */
     function onAddScreenshotClick() {
-      google.script.run.showScreenshotDialog();
+      $('#message-area').hide();
+      google.script.run.showDialog('screenshot', 300, 200);
     }
 
+    /**
+     * Add Issue
+     */
+    function onAddIssueClick() {
+      $('#message-area').hide();
+      google.script.run.addIssue($('#lang').val(), $('#test-type').val(), $('#evaluate-level').val());
+    }
+
+    /**
+     * Show Issue
+     */
+    function onShowIssueClick() {
+      $('#message-area').hide();
+      google.script.run.showDialog('issuelist', 500, 400);
+    }
+    
     /**
      * Make same as template
      */
@@ -368,48 +386,6 @@
           })
         .withUserObject(this)
         .evaluate($('#lang').val(), $('#test-type').val(), $('#evaluate-level').val());
-    }
-
-    /**
-     * Add Issue
-     */
-    function onAddIssueClick() {
-      $('#message-area').hide();
-      this.disabled = true;
-
-      google.script.run
-        .withSuccessHandler(
-          function(msg, element) {
-            element.disabled = false;
-          })
-        .withFailureHandler(
-          function(msg, element) {
-            element.disabled = false;
-          })
-        .withUserObject(this)
-        .addIssue($('#lang').val(), $('#test-type').val(), $('#evaluate-level').val());
-    }
-
-    /**
-     * Show Issue
-     */
-    function onShowIssueClick() {
-      $('#message-area').hide();
-      this.disabled = true;
-
-      google.script.run
-        .withSuccessHandler(
-          function(msg, element) {
-            showStatus(msg);
-            element.disabled = false;
-          })
-        .withFailureHandler(
-          function(msg, element) {
-            showStatus(msg);
-            element.disabled = false;
-          })
-        .withUserObject(this)
-        .showIssue();
     }
 
     /**

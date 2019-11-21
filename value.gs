@@ -67,16 +67,6 @@ var relTechsAndCriteria = {
 };
 
 /**
- * show techniques dialog
- */
-function showTechDialog() {
-  var output = HtmlService.createTemplateFromFile('tech');
-  var ss = getSpreadSheet();
-  var html = output.evaluate().setSandboxMode(HtmlService.SandboxMode.IFRAME).setWidth(500).setHeight(500);
-  ss.show(html);
-}
-
-/**
  * get contextual techniques
  * @return Array
  */

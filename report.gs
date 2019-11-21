@@ -3,16 +3,6 @@
  */
 
 /**
- * show Issue dialog
- */
-function showIssueDialog() {
-  var output = HtmlService.createTemplateFromFile('issue');
-  var ss = getSpreadSheet();
-  var html = output.evaluate().setSandboxMode(HtmlService.SandboxMode.IFRAME).setWidth(500).setHeight(500);
-  ss.show(html);
-}
-
-/**
  * is Edit or Add
  * @return Bool
  */
@@ -119,10 +109,10 @@ function addIssue(lang, testType, level) {
     issueSheet.getRange("2:2").setBackground(labelColor).setHorizontalAlignment('center');
     issueSheet.setFrozenRows(2);
     
-    issueSheet.getRange(1, 1).setValue('Type').setBackground(labelColor);
-    issueSheet.getRange(1, 2).setValue(lang).setHorizontalAlignment('center');
-    issueSheet.getRange(1, 3).setValue(testType).setHorizontalAlignment('center');
-    issueSheet.getRange(1, 4).setValue(level).setHorizontalAlignment('center');
+    issueSheet.getRange(1,  1).setValue('Type').setBackground(labelColor);
+    issueSheet.getRange(1,  2).setValue(lang).setHorizontalAlignment('center');
+    issueSheet.getRange(1,  3).setValue(testType).setHorizontalAlignment('center');
+    issueSheet.getRange(1,  4).setValue(level).setHorizontalAlignment('center');
     issueSheet.getRange(2,  1).setValue('ID');
     issueSheet.getRange(2,  2).setValue('Name');
     issueSheet.getRange(2,  3).setValue('Issue Visibility');
@@ -137,9 +127,7 @@ function addIssue(lang, testType, level) {
     issueSheet.getRange(2, 13).setValue('Memo');
   };
 
-  var today = new Date();
-
-  showIssueDialog();
+  showDialog('issue', 500, 400);
 }
 
 /**
@@ -175,9 +163,10 @@ function applyIssue(vals) {
 }
 
 /**
- * show Issue
+ * set Issue list
+ * @return Array
  */
-function showIssue() {
+function setIssueList() {
   var ss = getSpreadSheet();
   var issueSheet = ss.getSheetByName(issueSheetName);
   var activeSheet = ss.getActiveSheet();
@@ -189,21 +178,34 @@ function showIssue() {
     var url = activeSheet.getRange(targetRow, 1).getValue();
   } else {
     if (activeSheetName.charAt(0) == '*') {
-      return ("could not specify URL");
+      return {'url': '', 'issues': []};
     } else {
       var url = activeSheet.getRange(2, 2).getValue();
     }
   }
 
   var dataObj = issueSheet.getDataRange().getValues();
+  var issues = [];
   for (var i = 2; i < dataObj.length; i++) {
-    Logger.log(dataObj[i]);
-    
-    /*
-    ここで、URLを含んだものをさがして、エラー名称を返す
-    */
-    
+    var urls = dataObj[i][8].split(',');
+    for (var j = 0; j < urls.length; j++) {
+      var issueurl = urls[j].trim();
+      if (issueurl != url) continue;
+      issues.push(dataObj[i]);
+    }
   }
+  return{'url': url, 'issues': issues};
+}
+
+/**
+ * show each issue
+ * @param Integer row
+ */
+function showEachIssue(row) {
+  var ss = getSpreadSheet();
+  var issueSheet = ss.getSheetByName(issueSheetName);
+  issueSheet.getRange(row, 1).activate();
+  showDialog('issue', 500, 400);
 }
 
 /**

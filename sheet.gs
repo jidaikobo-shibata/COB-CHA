@@ -220,13 +220,3 @@ function screenshotUpload(formObj) {
   
   return('Screenshot Uploaded');
 }
-
-/**
- * show Screenshot dialog
- */
-function showScreenshotDialog() {
-  var output = HtmlService.createTemplateFromFile('screenshot');
-  var ss = getSpreadSheet();
-  var html = output.evaluate().setSandboxMode(HtmlService.SandboxMode.IFRAME).setWidth(300).setHeight(200);
-  ss.show(html);
-}

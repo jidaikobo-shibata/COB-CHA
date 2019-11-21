@@ -257,6 +257,19 @@ function showSidebar() {
 }
 
 /**
+ * show dialog
+ * @param sheetname
+ * @param width
+ * @param height
+ */
+function showDialog(sheetname, width, height) {
+  var output = HtmlService.createTemplateFromFile(sheetname);
+  var ss = getSpreadSheet();
+  var html = output.evaluate().setSandboxMode(HtmlService.SandboxMode.IFRAME).setWidth(width).setHeight(height);
+  ss.show(html);
+}
+
+/**
  * Get Property
  * @param String prop [lang, type, level]
  * @return String

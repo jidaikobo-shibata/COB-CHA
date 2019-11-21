@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
+  <link href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" rel="stylesheet">
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>
+    /**
+     * events
+     */
+    $(function() {
+      google.script.run
+        .withSuccessHandler(
+          function(vals) {
+            if (vals['url'] == '') {
+              $('h1').html('no target url found.');
+            } else {
+              $('h1').html(vals['url']);
+              if (vals['issues'].length == 0) {
+                $('h1').after('<p>no issue found.</p>');
+              } else {
+                for (var i = 0; i < vals['issues'].length; i++) {
+                  var row = parseInt(vals['issues'][i][0]) + 2;
+                  $('#issues').append($('<li></li>').html('<a href="#" data-issuerow="'+row+'">'+vals['issues'][i][1]+'</a>'));
+                }
+              }
+            }
+          })
+        .setIssueList();
+        
+      $(document).on('click','#issues a',function(){
+        google.script.run.showEachIssue($(this).data('issuerow'));
+      });
+    });
+  </script>
+
+</head>
+<body>
+  <h1></h1>
+  <ul id="issues">
+  </ul>
+</body>
+</html>
