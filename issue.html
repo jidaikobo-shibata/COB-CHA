@@ -7,9 +7,36 @@
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
   <script>
     /**
+     * lang
+     */
+    var lang = {};
+    
+    /**
      * events
      */
     $(function() {
+      // UI
+      google.script.run
+        .withSuccessHandler(
+          function(ui) {
+            // Englsih
+            if (ui.length == 0) return;
+            
+            // other language
+            lang.ui = ui;
+            $("#close-btn").html(ui['close-btn']);
+            $("#issue-name-title").html(ui['name']);
+            $("#issue-visibility-title").html(ui['issue-visibility']);
+            $("#issue-image-title").html(ui['image']);
+            $("#upload-image").val(ui['upload']);
+            $("#explanation-title").html(ui['explanation']);
+            $("#criteria-title").html(ui['criterion']);
+            $("#tech-title").html(ui['tech']);
+            $("#places-title").html(ui['places']);
+            $("#memo-title").html(ui['memo']);
+          })
+        .getLangSet('ui');
+        
       google.script.run
         .withSuccessHandler(
           function(isEdit) {
@@ -33,9 +60,11 @@
         .withSuccessHandler(
           function(ret) {
             if (ret['vals']['issueId'] == '') {
-              $('#apply-issue').html('Add New Issue');
+              var msg = lang.ui.length == 0 ? 'Add New Issue' : lang.ui['add-new-issue'];
+              $('#apply-issue').html(msg);
             } else {
-              $('#apply-issue').html('Edit Issue');
+              var msg = lang.ui.length == 0 ? 'Edit Issue' : lang.ui['edit-issue'];
+              $('#apply-issue').html(msg);
             }
             $('#apply-issue').after('<input type="hidden" id="issue-id" value="'+ret['vals']['issueId']+'">');
 
@@ -223,17 +252,17 @@
 </head>
 <body style="padding-bottom: 4em;">
   <div style="position: fixed; width: 100%; bottom: 0; background: #fff; z-index: 9; padding-top: 1em;">
-    <button onclick="google.script.host.close()">Close</button>
+    <button onclick="google.script.host.close()" id="close-btn">Close</button>
     <button id="apply-issue" class="blue"></button>
   </div>
 
   <table style="width:95%;">
   <tr>
-    <th><label for="issue-name">Name</label></th>
+    <th><label for="issue-name" id="issue-name-title">Name</label></th>
     <td><input type="text" id="issue-name" style="width:100%;"></td>
   </tr>
   <tr>
-    <th><label for="issue-visibility">Issue Visibility</label></th>
+    <th><label for="issue-visibility" id="issue-visibility-title">Issue Visibility</label></th>
     <td><input type="checkbox" id="issue-visibility"></td>
   </tr>
   <tr>
@@ -245,34 +274,34 @@
     <td><textarea id="html" style="width:100%;height:100px;"></textarea></td>
   </tr>
   <tr>
-    <th><label for="issue-image">Image</label></th>
+    <th><label for="issue-image" id="issue-image-title">Image</label></th>
     <td>
       <form id="upload-form" onsubmit="onUploadImageClick(this)">
         <input type="file" id="issue-image" name="imageFile"> <input type="submit" id="upload-image" value="upload">
         <input type="text" id="uploaded-file" value="">
-        <input type="text" id="uploaded-file-url" value="">
+        <input type="hidden" id="uploaded-file-url" value="">
       </form>
       <div id="upload-image-msg"></div>
     </td>
   </tr>
   <tr>
-    <th><label for="explanation">Explanation</label></th>
+    <th><label for="explanation" id="explanation-title">Explanation</label></th>
     <td><textarea id="explanation" style="width:100%;height:100px;"></textarea></td>
   </tr>
   <tr>
-    <th>Criteria</th>
+    <th id="criteria-title">Criteria</th>
     <td style="position:relative;height:150px;"><div style="position:absolute;top:0;height:160px;overflow:auto;overflow-x:hidden;padding:5px"><table id="criteria" style="width: 100%"></table></div></td>
   </tr>
   <tr>
-    <th style="vertical-align: top;">Techniques</th>
+    <th style="vertical-align: top;" id="tech-title">Techniques</th>
     <td style="position:relative;height:150px;"><div style="position:absolute;top:0;height:160px;overflow:auto;overflow-x:hidden;padding:5px"><table id="techs" style="width: 100%"></table></div></td>
   </tr>
   <tr>
-    <th>Places<p><label><button onclick="$('.places').prop('checked', 'checked')">Check All</button></label></p></th>
+    <th id="places-title">Places<p><label><button onclick="$('.places').prop('checked', 'checked')">Check All</button></label></p></th>
     <td style="position:relative;height:150px;"><div style="position:absolute;top:0;height:160px;overflow:auto;overflow-x:hidden;padding:5px"><table id="places" style="width: 100%"></table></div></td>
   </tr>
   <tr>
-    <th><label for="memo">Memo</label></th>
+    <th><label for="memo" id="memo-title">Memo</label></th>
     <td><textarea id="memo" style="width:100%;height:100px;"></textarea></td>
   </tr>
   </table>

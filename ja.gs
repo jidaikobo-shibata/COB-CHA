@@ -705,6 +705,7 @@ function getUiJa ()
     'sheet-already-exists': '%s 枚のシートが既に存在していました。',
     'this-pages-all-check-will-be-overwritten': 'このページのすべての「チェック」の値が「T」になります。',
     'caution-using-template': '全ての試験結果がテンプレートの値で上書きされます。',
+    'all-pages-check-will-be-overwritten': '全てのページの値が上書きされます。',
     'config-sheet-already-exists': 'コンフィグシートが既に存在しています。',
     'generate-config-sheet': 'コンフィグシートを生成しました。',
     'current-sheet-is-not-for-webpage': 'このシートはウェブページ用ではありません。',
@@ -716,6 +717,7 @@ function getUiJa ()
     'apply-techniques': '達成方法を反映する',
     'edit-done': '編集しました',
     'add-done': '新規追加しました',
+    'upload': 'アップロード',
     'failed-upload': 'アップロードに失敗しました。',
 
     'name': '名称',

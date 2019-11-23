@@ -149,10 +149,11 @@ function editValue(testType, level) {
  * Bulk Edit
  * @param String target
  * @param String check
+ * @param String tech
  * @param String memo
  * @return String
  */
-function bulkEdit(target, check, memo) {
+function bulkEdit(target, check, tech, memo) {
   var ss = getSpreadSheet();
 
   var n = 0;
@@ -173,7 +174,8 @@ function bulkEdit(target, check, memo) {
     
     // apply
     allSheets[i].getRange(row, 2).setValue(check);
-    allSheets[i].getRange(row, 4).setValue(memo);
+    allSheets[i].getRange(row, 4).setValue(tech);
+    allSheets[i].getRange(row, 5).setValue(memo);
     n++;
   }
   return getUiLang('edit-done', '%s sheet(s) edited.').replace("%s", n);

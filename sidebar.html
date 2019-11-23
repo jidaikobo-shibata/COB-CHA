@@ -322,6 +322,8 @@
      */
     function onDoBulkCheckClick() {
       $('#message-area').hide();
+      var msg = lang.ui.length == 0 ? 'All Page\'s "Check will be overwritten."' : lang.ui['all-pages-check-will-be-overwritten'];
+      if (confirm(msg) === false) return;
 
       google.script.run
         .withSuccessHandler(
@@ -334,7 +336,7 @@
           function(msg, element) {
             showStatus(msg, 'error');
           })
-        .bulkEdit($('#bulk-target').val(), $('#bulk-check').val(), $('#bulk-memo').val());
+        .bulkEdit($('#bulk-target').val(), $('#bulk-check').val(), $('#bulk-tech').val(), $('#bulk-memo').val());
     }
 
     /**
