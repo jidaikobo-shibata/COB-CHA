@@ -7,9 +7,28 @@
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
   <script>
     /**
+     * lang
+     */
+    var lang = {};
+    
+    /**
      * events
      */
     $(function() {
+      // UI
+      google.script.run
+        .withSuccessHandler(
+          function(ui) {
+            // Englsih
+            if (ui.length == 0) return;
+            
+            // other language
+            lang.ui = ui;
+            $("#upload-image").val(ui['add-screenshot']);
+            $("#screenshot-title").html(ui['screenshot']);
+          })
+        .getLangSet('ui');
+        
       $('#message-area').hide();
     });
   
@@ -28,9 +47,10 @@
           $('#sidebar-status').removeClass().html(msg);
         })
         .withFailureHandler(function (msg){
+          var msg = lang.ui.length == 0 ? 'Failed file Uploading' : lang.ui['fail-upload'];
           $('#upload-image').prop('disabled', false);
           $('#message-area').show();
-          $('#sidebar-status').addClass('error').html('Failed file Uploading');
+          $('#sidebar-status').addClass('error').html(msg);
         })
         .screenshotUpload(obj);
     }
@@ -39,7 +59,7 @@
 </head>
 <body>
   <fieldset class="block">
-    <legend><label for="screenshot">Screenshot</label></legend>
+    <legend><label for="screenshot" id="screenshot-title">Screenshot</label></legend>
     <form id="upload-form" onsubmit="onUploadImageClick(this)">
       <input type="file" id="screenshot" name="imageFile">
       <p><input type="submit" id="upload-image" value="upload"></p>

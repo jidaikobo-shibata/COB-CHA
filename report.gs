@@ -109,25 +109,23 @@ function addIssue(lang, testType, level) {
     issueSheet.getRange("2:2").setBackground(labelColor).setHorizontalAlignment('center');
     issueSheet.setFrozenRows(2);
     
-    issueSheet.getRange(1,  1).setValue('Type').setBackground(labelColor);
-    issueSheet.getRange(1,  2).setValue(lang).setHorizontalAlignment('center');
-    issueSheet.getRange(1,  3).setValue(testType).setHorizontalAlignment('center');
-    issueSheet.getRange(1,  4).setValue(level).setHorizontalAlignment('center');
+    setBasicValue(issueSheet, lang, testType, level);
     issueSheet.getRange(2,  1).setValue('ID');
-    issueSheet.getRange(2,  2).setValue('Name');
-    issueSheet.getRange(2,  3).setValue('Issue Visibility');
+    issueSheet.getRange(2,  2).setValue(getUiLang('name', 'Name'));
+    issueSheet.getRange(2,  3).setValue(getUiLang('issue-visibility', 'Issue Visibility'));
     issueSheet.getRange(2,  5).setValue('Error/Notice');
     issueSheet.getRange(2,  6).setValue('HTML');
-    issueSheet.getRange(2,  7).setValue('Explanation');
-    issueSheet.getRange(2,  8).setValue('Criteria');
-    issueSheet.getRange(2,  9).setValue('Techniques');
-    issueSheet.getRange(2, 10).setValue('Places');
-    issueSheet.getRange(2, 11).setValue('Image');
-    issueSheet.getRange(2, 12).setValue('Preview');
-    issueSheet.getRange(2, 13).setValue('Memo');
+    issueSheet.getRange(2,  7).setValue(getUiLang('explanation', 'Explanation'));
+    issueSheet.getRange(2,  8).setValue(getUiLang('criterion', 'Criteria'));
+    issueSheet.getRange(2,  9).setValue(getUiLang('tech', 'Techniques'));
+    issueSheet.getRange(2, 10).setValue(getUiLang('places', 'Places'));
+    issueSheet.getRange(2, 11).setValue(getUiLang('image', 'Image'));
+    issueSheet.getRange(2, 12).setValue(getUiLang('preview', 'Preview'));
+    issueSheet.getRange(2, 13).setValue(getUiLang('memo', 'Memo'));
   };
 
-  showDialog('issue', 500, 400);
+  var title = isEditIssue() ? getUiLang('edit-issue', 'Edit issue') : getUiLang('add-new-issue', 'Add new issue');
+  showDialog('issue', 500, 400, title);
 }
 
 /**
@@ -156,10 +154,9 @@ function applyIssue(vals) {
   }
     
   if (vals[0] > 0) {
-    return("Issue Edited");
-  } else {
-    return("Issue Added");
+    return getUiLang('edit-done', 'Issue Edited');
   }
+  return getUiLang('add-done', 'Issue Added');
 }
 
 /**
@@ -292,12 +289,14 @@ function exportIssue() {
     }
   }
 
+  
+  
   // generate html
   var str = '';
-  str += lang == 'ja' ? '<h1>問題点レポート</h1>' : '<h1>Issue Report</h1>';
-  str += lang == 'ja' ? '<h2>共通の問題</h2>' : '<h2>Common Issue</h2>';
+  str += '<h1>'+getUiLang('issue-report', 'Issue Report')+'</h1>';
+  str += '<h2>'+getUiLang('common-issue', 'Common Issue')+'</h2>';
   if (common.length == 0) {
-    str += lang == 'ja' ? '<p>共通の問題は存在しませんでした。</p>' : '<p>No Common Issue was reported.</p>';
+    str += '<p>'+getUiLang('no-common-issue-was-reported', 'No Common Issue was reported.')+'</p>';
   } else {
     str = generateIssueReportHtml(str, common, lang);
   }
@@ -310,22 +309,24 @@ function exportIssue() {
     var screenshot = activeSheet.getRange(2, 6).getValue();
 
     str += '<h2>'+title+'<br>'+url+'</h2>';
-    str += '<div class="screenshot"><img src="'+screenshot+'" alt="screenshot"></div>';
+    str += '<div class="screenshot"><img src="'+screenshot+'" alt="'+getUiLang('screenshot', 'screenshot')+'"></div>';
 
+    
+    
     if (each[url] == null) {
-      str += lang == 'ja' ? '<p>このページに固有の問題は存在しませんでした。</p>' : '<p>No particular issue was reported on this page.</p>';
+      str += '<p>'+getUiLang('no-particular-issue-was-reported-on-this-page', 'No particular issue was reported on this page.')+'</p>';
     } else {
        str = generateIssueReportHtml(str, each[url], lang);
     }
 
     if (commonEach[url] == null) {
-      str += lang == 'ja' ? '<p>このページに共通の問題は存在しませんでした。</p>' : '<p>No common issue was reported on this page.</p>';
+      str += '<p>'+getUiLang('no-common-issue-was-reported-on-this-page', 'No common issue was reported on this page.')+'</p>';
     } else {
       var lis = [];
       for (var j = 0; j < commonEach[url].length; j++) {
         lis.push('<li>'+commonEach[url][j]['issueId']+': '+commonEach[url][j]['name']+'</li>');
       }
-      str += lang == 'ja' ? '<h3>このページに存在する共通の問題</h3>' : '<h3>common issue on this page.</h3>';
+      str += '<h3>'+getUiLang('common-issue-on-this-page', 'common issue on this page.')+'</h3>';
       str += '<ul>'+lis.join('')+'</ul>';
     }
   }
@@ -353,7 +354,7 @@ function generateIssueReportHtml(str, vals, lang) {
     str += '<table>';
 
     str += '<tr><th>';
-    str += lang == 'ja' ? '重要度' : 'Priority';
+    str += getUiLang('priority', 'Priority');
     str += '</th><td>'+vals[i]['errorNotice']+'</td></tr>';
 
     str += '<tr><th>';
@@ -361,11 +362,11 @@ function generateIssueReportHtml(str, vals, lang) {
     str += '</th><td>'+vals[i]['html']+'</td></tr>';
 
     str += '<tr><th>';
-    str += lang == 'ja' ? '解説' : 'Explanation';
+    str += getUiLang('explanation', 'Explanation');
     str += '</th><td>'+vals[i]['explanation']+'</td></tr>';
     
     str += '<tr><th>';
-    str += lang == 'ja' ? '関連する達成基準' : 'Criteria';
+    str += getUiLang('Criterion', 'Criteria');
     var tmp = [];
     var n = 0;
     var targetCriteria = vals[i]['criteria'].split(',');
@@ -380,7 +381,7 @@ function generateIssueReportHtml(str, vals, lang) {
     str += '</th><td><ul>'+tmp.join()+'</ul></td></tr>';
     
     str += '<tr><th>';
-    str += lang == 'ja' ? '関連する達成方法' : 'Techniques';
+    str += getUiLang('tech', 'Techniques');
     var tmp = [];
     var targetTechs = vals[i]['techs'].split(',');
     for (var j = 0; j < targetTechs.length; j++) {
@@ -391,11 +392,10 @@ function generateIssueReportHtml(str, vals, lang) {
     str += '</th><td><ul>'+tmp.join('')+'</ul></td></tr>';
     
     str += '<tr><th>';
-    str += lang == 'ja' ? '問題が存在するページ' : 'URL';
+    str += 'URL';
     var tmp = [];
     if (vals[i]['places'].length == allSheets.length) {
-      var msg = lang == 'ja' ? 'すべてのページ' : 'All Page';
-      str += '</th><td>'+msg+'</td></tr>';
+      str += '</th><td>'+getUiLang('all-page', 'All Page')+'</td></tr>';
     } else {
       for (var j = 0; j < vals[i]['places'].length; j++) {
         var url = vals[i]['places'][j].trim();

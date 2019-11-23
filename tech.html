@@ -7,9 +7,27 @@
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
   <script>
     /**
+     * lang
+     */
+    var lang = {};
+
+    /**
      * events
      */
     $(function() {
+      // UI
+      google.script.run
+        .withSuccessHandler(
+          function(ui) {
+            // Englsih
+            if (ui.length == 0) return;
+            
+            // other language
+            lang.ui = ui;
+            $("#close-btn").html(ui['close-btn']);
+          })
+        .getLangSet('ui');
+        
       setDefaultValue();
       $('#apply-techs').click(onApplyTechsClick);
     });
@@ -18,14 +36,27 @@
      * set default value
      */
     function setDefaultValue() {
+      var criterion = '';
+      var checked = '';
+      if ($('#criterion').val()) {
+        criterion = $('#criterion').val();
+        checked = $('#checked').val();
+      }
+      
       google.script.run
         .withSuccessHandler(
           function(ret) {
             if (ret['techs'] == '') {
-              $('body').append('<h1>No criterion found</h1><p>Place your cursor below Techs.</p>');
+              var msg1 = lang.ui.length == 0 ? 'No criterion found' : lang.ui['no-criterion-found'];
+              var msg2 = lang.ui.length == 0 ? 'Place your cursor below Techs.' : lang.ui['place-your-cursor-below-techs'];
+              $('body').append('<h1>'+msg1+'</h1><p>'+msg2+'</p>');
               $('#apply-techs').hide();
             } else {
-              $('#apply-techs').append(' ['+ret['criterion']+']');
+              var btn1 = lang.ui.length == 0 ? 'Get Strings' : lang.ui['get-strings'];
+              var btn2 = lang.ui.length == 0 ? 'Apply techniques' : lang.ui['apply-techniques'];
+              var bttn = $('#criterion').val() ? btn1 : btn2 ;
+
+              $('#apply-techs').html(bttn);
               for(var i = 0; i < ret['techs'].length; i++) {
                 var each = ret['techs'][i][0];
                 
@@ -57,7 +88,7 @@
               }
             }
           })
-        .getContextualTechs();
+        .getContextualTechs(criterion, checked);
     }
 
     /**
@@ -68,21 +99,27 @@
       $("#techs :checkbox:checked").each(function() {
         techs.push($(this).val());
       });
-   
-      google.script.run
-        .withSuccessHandler(
-          function() {
-            google.script.host.close();
-          })
-        .setContextualTechs(techs.join(', '));
+      var ret = techs.join(', ');
+      
+      if ($('#criterion').val()) {
+        alert(ret);
+        google.script.host.close();
+      } else {
+        google.script.run
+          .withSuccessHandler(
+            function() {
+              google.script.host.close();
+            })
+          .setContextualTechs(ret);
+      }
     }
 
   </script>
 </head>
 <body style="padding-bottom: 4em;">
   <div style="position: fixed; width: 100%; bottom: 0; background: #fff; z-index: 9; padding-top: 1em;">
-    <button onclick="google.script.host.close()">Close</button>
-    <button id="apply-techs" class="blue">Apply techniques </button>
+    <button onclick="google.script.host.close()" id="close-btn">Close</button>
+    <button id="apply-techs" class="blue"></button>
   </div>
 
   <table id="techs" style="width:90%;">

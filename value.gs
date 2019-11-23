@@ -68,13 +68,17 @@ var relTechsAndCriteria = {
 
 /**
  * get contextual techniques
+ * @param String criterion
+ * @param String checked
  * @return Array
  */
-function getContextualTechs() {
-  var activeSheet = getActiveSheet();
-  var activeRow = activeSheet.getActiveCell().getRow();
-  var criterion = activeSheet.getRange(activeRow, 1).getValue();
-  var checked = activeSheet.getRange(activeRow, 4).getValue();
+function getContextualTechs(criterion, checked) {
+  if (criterion == '') {
+    var activeSheet = getActiveSheet();
+    var activeRow = activeSheet.getActiveCell().getRow();
+    var criterion = activeSheet.getRange(activeRow, 1).getValue();
+    var checked = activeSheet.getRange(activeRow, 4).getValue();
+  }
   var techLangsSrc = getLangSet('tech');
   
   var rets = [];
@@ -125,7 +129,7 @@ function setContextualTechs(techs) {
 function editValue(testType, level) {
   var ttCriteria = getLangSet('ttCriteria');
   var activeSheet = getActiveSheet();
-  if (activeSheet.getName() == resultSheetName) return(resultSheetName+' is not a checkable sheet');
+  if (activeSheet.getName() == resultSheetName) return getUiLang('current-sheet-is-not-for-webpage', 'Current sheet is not for webpage');
 
   var rows = 61; // WCAG 2.0 AAA
   rows = testType == 'wcag20' && level == 'A'   ? 25 : rows;
@@ -138,7 +142,7 @@ function editValue(testType, level) {
   for (var i = 1; i <= rows; i++) {
     activeSheet.getRange(i+4, 2).setValue('T');
   }
-  return("Value Edited");
+  return getUiLang('edit-done', 'Value Edited');
 }
 
 /**
@@ -172,7 +176,7 @@ function bulkEdit(target, check, memo) {
     allSheets[i].getRange(row, 4).setValue(memo);
     n++;
   }
-  return(n+" sheet(s) edited.");
+  return getUiLang('edit-done', '%s sheet(s) edited.').replace("%s", n);
 }
 
 /**
@@ -182,7 +186,7 @@ function bulkEdit(target, check, memo) {
 function makeSameAsTemplate() {
   var ss = getSpreadSheet();
   var tpl = ss.getSheetByName(templateSheetName);
-  if (tpl == null) return("No template exists");
+  if (tpl == null) return getUiLang('no-template-found', 'No template exists.');
 
   // extract template data  
   var dataObj = tpl.getDataRange().getValues();
@@ -208,5 +212,5 @@ function makeSameAsTemplate() {
     n++;
   }
   
-  return(n+" sheet(s) edited.");
+  return getUiLang('edit-done', '%s sheet(s) edited.').replace("%s", n);
 }

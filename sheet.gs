@@ -3,16 +3,31 @@
  */
 
 /**
+ * set basic value
+ * @param Object sheet
+ * @param String lang
+ * @param String testType
+ * @param String level
+ */
+function setBasicValue(sheet, lang, testType, level) {
+  sheet.getRange(1, 1).setValue('Type').setBackground(labelColor);
+  sheet.getRange(1, 2).setValue(lang).setHorizontalAlignment('center');
+  sheet.getRange(1, 3).setValue(testType).setHorizontalAlignment('center');
+  sheet.getRange(1, 4).setValue(level).setHorizontalAlignment('center');
+}
+
+/**
  * Generate Sheets
  * @param String urlstr
  * @param String lang
  * @param String testType
  * @param String level
- * @return String
+ * @param Object targetId
+ * @return Array
  */
-function generateSheets(urlstr, lang, testType, level) {
+function generateSheets(urlstr, lang, testType, level, targetId) {
   var urls = urlstr.replace(/^\s+|\s+$|\n\n/g, '').split(/\n/);
-  if (urls.length == 0) return("No target Page Exists");
+  if (urls.length == 0) return {'msg': getUiLang('no-target-page-exists', "No target Page Exists"), 'targetId': targetId};
 
   var pullDown = SpreadsheetApp.newDataValidation();
   pullDown.requireValueInList(['Yet', 'DNA', 'T', 'F'], true);
@@ -26,22 +41,19 @@ function generateSheets(urlstr, lang, testType, level) {
     alreadyExists.push(urls[0]);
     var originalSheet = ss.getSheetByName(urls[0]);
   } else {
-    var isEvalateTarget = urls[0].charAt(0) != '*';
+    var isEvaluateTarget = urls[0].charAt(0) != '*';
     
     var originalSheet = ss.getActiveSheet();
     
-    var res = isEvalateTarget ? getHtmlAndTitle(urls[0]) : false;
+    var res = isEvaluateTarget ? getHtmlAndTitle(urls[0]) : false;
     
     // meta
-    originalSheet.getRange(1, 1).setValue('Type').setBackground(labelColor);
-    originalSheet.getRange(1, 2).setValue(lang).setHorizontalAlignment('center');
-    originalSheet.getRange(1, 3).setValue(testType).setHorizontalAlignment('center');
-    originalSheet.getRange(1, 4).setValue(level).setHorizontalAlignment('center');
+    setBasicValue(originalSheet, lang, testType, level);
     var today = new Date();
-    originalSheet.getRange(1, 5).setValue('Date').setBackground(labelColor);
-    originalSheet.getRange(2, 5).setValue('Screenshot').setBackground(labelColor);
+    originalSheet.getRange(1, 5).setValue(getUiLang('date', 'Date')).setBackground(labelColor);
+    originalSheet.getRange(2, 5).setValue(getUiLang('screenshot', 'Screenshot')).setBackground(labelColor);
     originalSheet.getRange(1, 6).setValue(today);
-    originalSheet.getRange(1, 7).setValue('Memo').setBackground(labelColor);
+    originalSheet.getRange(1, 7).setValue(getUiLang('memo', 'Memo')).setBackground(labelColor);
     originalSheet.getRange(2, 1).setValue('URL').setBackground(labelColor);
     originalSheet.getRange(2, 2).setValue(urls[0]);
     originalSheet.getRange(3, 1).setValue('title').setBackground(labelColor);
@@ -52,11 +64,11 @@ function generateSheets(urlstr, lang, testType, level) {
     originalSheet.setFrozenRows(4);
     
     // header
-    originalSheet.getRange(4, 1).setValue('Criterion').setBackground(labelColor);
-    originalSheet.getRange(4, 2).setValue('Check').setBackground(labelColor);
-    originalSheet.getRange(4, 3).setValue('Level').setBackground(labelColor);
-    originalSheet.getRange(4, 4).setValue('Techs').setBackground(labelColor);
-    originalSheet.getRange(4, 5).setValue('Memo').setBackground(labelColor);
+    originalSheet.getRange(4, 1).setValue(getUiLang('criterion', 'Criterion')).setBackground(labelColor);
+    originalSheet.getRange(4, 2).setValue(getUiLang('check', 'Check')).setBackground(labelColor);
+    originalSheet.getRange(4, 3).setValue(getUiLang('level', 'Level')).setBackground(labelColor);
+    originalSheet.getRange(4, 4).setValue(getUiLang('tech', 'Techs')).setBackground(labelColor);
+    originalSheet.getRange(4, 5).setValue(getUiLang('memo', 'Memo')).setBackground(labelColor);
     
     // appearance
     originalSheet.setColumnWidth(1, 60);
@@ -67,7 +79,6 @@ function generateSheets(urlstr, lang, testType, level) {
     // test type
     var set = testType.indexOf('wcag') >= 0 ? 'criteria' : 'ttCriteria' ;
     var usingCriteria = getLangSet(set);
-    
     
     // complex language selection ...
     var docurl = lang+'-'+testType;
@@ -138,12 +149,32 @@ function generateSheets(urlstr, lang, testType, level) {
   originalSheet.activate();
   
   var msg = [];
-  msg.push(added+" sheet(s) generated");
+  msg.push(getUiLang('sheet-generated', "%s sheet(s) generated").replace('%s', added));
   if (alreadyExists.length > 0) {
-    msg.push(alreadyExists.length+' sheet(s) were already exists:<br>'+alreadyExists.join('<br>'));
+    msg.push(getUiLang('sheet-already-exists', "%s sheet(s) were already exists:<br>").replace('%s', alreadyExists.length)+alreadyExists.join('<br>'));
   }
 
-  return(msg.join('<br>'));
+  return({'msg': msg.join('<br>'), 'targetId': targetId});
+}
+
+/**
+ * Generate Config Sheet
+ * @param String lang
+ * @param String testType
+ * @param String level
+ * @return String
+ */
+function generateConfigSheets(lang, testType, level) {
+  var ss = getSpreadSheet();
+  var configSheet = ss.getSheetByName(configSheetName);
+  if (configSheet) return getUiLang('config-sheet-already-exists', "Config Sheet is already exists.");
+  ss.insertSheet(configSheetName, 0);
+  var configsheet = ss.getSheetByName(configSheetName);
+  configsheet.activate();
+  setBasicValue(configsheet, lang, testType, level);
+  configsheet.getRange(2, 1).setValue('Name').setBackground(labelColor);
+  configsheet.getRange(3, 1).setValue('Report Date').setBackground(labelColor);
+  return getUiLang('generate-config-sheet', "Generate Config Sheet.");
 }
 
 /**
@@ -201,7 +232,7 @@ function deleteSheets(urlstr) {
   }
 
   generateResultSheet();
-  return(count+" sheet(s) deleted");
+  return getUiLang('sheet-deleted', "%s sheet(s) deleted.").replace("%s", count);
 }
 
 /**
@@ -212,11 +243,11 @@ function screenshotUpload(formObj) {
   var activeSheet = getActiveSheet();
   var activeRow = activeSheet.getActiveCell().getRow();
   Logger.log(activeSheet.getName());
-  if (activeSheet.getName().charAt(0) == '*') return('Current Sheet is not for webpage');
+  if (activeSheet.getName().charAt(0) == '*') return getUiLang('current-sheet-is-not-for-webpage', "Current Sheet is not for webpage.");
   
   var file = fileUpload(formObj);
   activeSheet.getRange(2, 6).setValue(file[0])
   activeSheet.getRange(2, 7).setValue('=IMAGE("https://drive.google.com/uc?export=download&id='+file[1]+'",1)')
   
-  return('Screenshot Uploaded');
+  return getUiLang('screenshot-uploaded', "Screenshot Uploaded.");
 }

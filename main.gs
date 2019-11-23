@@ -69,6 +69,7 @@ var techDirAbbr = {
  */
 var resultSheetName = '*Result*';
 var issueSheetName = '*Issue*';
+var configSheetName = '*Config*';
 var templateSheetName = '*Template*';
 var resourceFolderName = 'resource';
 var exportFolderName = 'export';
@@ -93,7 +94,7 @@ function onInstall(e) {
  */
 function onOpen (e) {
   var menu = SpreadsheetApp.getUi().createAddonMenu();
-  menu.addItem('Show Control Panel', 'showSidebar');
+  menu.addItem(getUiLang('show-control-panel', 'Show Control Panel'), 'showSidebar');
   menu.addToUi();
 }
 
@@ -252,21 +253,41 @@ function removeImageFormula(id) {
  * show control pannel
  */
 function showSidebar() {
-  var ui = HtmlService.createTemplateFromFile('sidebar').evaluate().setTitle("COB-CHA Control Panel");
+  var ui = HtmlService.createTemplateFromFile('sidebar').evaluate().setTitle('COB-CHA'+getUiLang('control-panel-title', 'Control Panel'));
   SpreadsheetApp.getUi().showSidebar(ui);
 }
 
 /**
  * show dialog
- * @param sheetname
- * @param width
- * @param height
+ * @param String sheetname
+ * @param Integer width
+ * @param Integer height
+ * @param String title
+ * @param String html
  */
-function showDialog(sheetname, width, height) {
+function showDialog(sheetname, width, height, title, html) {
   var output = HtmlService.createTemplateFromFile(sheetname);
   var ss = getSpreadSheet();
-  var html = output.evaluate().setSandboxMode(HtmlService.SandboxMode.IFRAME).setWidth(width).setHeight(height);
+  title = title == null ? '' : title;
+  html = html == null ? '' : html;
+  var html = output.evaluate().setSandboxMode(HtmlService.SandboxMode.IFRAME)
+                              .setWidth(width)
+                              .setHeight(height)
+                              .setTitle(title)
+                              .append(html);
   ss.show(html);
+}
+
+/**
+ * Get First Column
+ * @return String
+ */
+function getFirstColumn() {
+  var activeSheet = getActiveSheet();
+  var activeRow = activeSheet.getActiveCell().getRow();
+  var criterion = activeSheet.getRange(activeRow, 1).getValue();
+  criterion = criterion.match(/^\d\.\d\.\d+/) ? criterion : '';
+  return criterion;
 }
 
 /**
@@ -301,6 +322,7 @@ function getLangSet(setName) {
       case 'ttCriteria': return getTtCriteriaJa();
       case 'ttCheckVal': return getTtCheckValJa();
       case 'tech':       return getTechValJa();
+      case 'ui':         return getUiJa();
     }
   }
 
@@ -310,7 +332,22 @@ function getLangSet(setName) {
     case 'ttCriteria': return getTtCriteriaEn();
     case 'ttCheckVal': return getTtCheckValEn();
     case 'tech':       return getTechValEn();
+    case 'ui':         return {};
   }
+}
+
+/**
+ * Get Language UI Set
+ * @param String uiname
+ * @param String defaultStr
+ * @return String
+ */
+function getUiLang(uiname, defaultStr) {
+  var ui = getLangSet('ui');
+  if (ui.length == 0 || ui[uiname] == null) {
+    return defaultStr;
+  }
+  return ui[uiname];
 }
 
 /**
