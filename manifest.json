@@ -1,4 +1,5 @@
 {
+  "name": "COB-CHA",
   "timeZone": "Asia/Tokyo",
   "dependencies": {
   },
@@ -8,25 +9,5 @@
                   "https://www.googleapis.com/auth/spreadsheets"
   ],  "exceptionLogging": "STACKDRIVER",
   "sheets": {
-    "macros": [{
-      "menuName": "selectCellTransEnToJa",
-      "functionName": "selectCellTransEnToJa"
-    }, {
-      "menuName": "selectCellTransJaToEn",
-      "functionName": "selectCellTransJaToEn"
-    }, {
-      "menuName": "sheetRangeTranslate",
-      "functionName": "sheetRangeTranslate"
-    }, {
-      "menuName": "hideRowSample",
-      "functionName": "hideRowSample"
-    }, {
-      "menuName": "hideRowsSample",
-      "functionName": "hideRowsSample"
-    }, {
-      "menuName": "toggleHideRows",
-      "functionName": "toggleHideRows",
-      "defaultShortcut": "Ctrl+Alt+Shift+1"
-    }]
   }
 }
