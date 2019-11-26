@@ -1,7 +1,6 @@
 {
   "name": "COB-CHA",
   "version": 1,
-  "manifest_version": 2,
   "timeZone": "Asia/Tokyo",
   "dependencies": {
   },
