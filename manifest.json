@@ -2,7 +2,7 @@
   "name": "COB-CHA",
   "manifest_version": 2,
   "version": "1.0",
-  "description": "COB-CHA (CollaBorative CHeck tool for Accessibility) is an add-on that helps you record and summarize the achievement status of JIS X 8341-3:2016, WCAG 2.0, and WCAG 2.1 by Google Spreadsheet.",
+  "description": "COB-CHA is an add-on that helps you record the achievement status of JIS X 8341-3:2016, WCAG 2.0, and WCAG 2.1 by Google Spreadsheet.",
 
   "timeZone": "Asia/Tokyo",
   "dependencies": {
