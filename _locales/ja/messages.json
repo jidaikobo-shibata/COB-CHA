@@ -1,0 +1,8 @@
+{
+  "appName": {
+    "message": "COB-CHA"
+  },
+  "appDesc": {
+    "message": "COB-CHAは、Google Spreadsheetによる、JIS X 8341-3:2016、WCAG 2.0、WCAG 2.1の達成状況を記録し、集計することを助けるアドオンです。"
+  }
+}
