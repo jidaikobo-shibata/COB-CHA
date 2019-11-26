@@ -1,0 +1,32 @@
+{
+  "timeZone": "Asia/Tokyo",
+  "dependencies": {
+  },
+  "oauthScopes": ["https://www.googleapis.com/auth/drive",
+                  "https://www.googleapis.com/auth/script.container.ui",
+                  "https://www.googleapis.com/auth/script.external_request",
+                  "https://www.googleapis.com/auth/spreadsheets"
+  ],  "exceptionLogging": "STACKDRIVER",
+  "sheets": {
+    "macros": [{
+      "menuName": "selectCellTransEnToJa",
+      "functionName": "selectCellTransEnToJa"
+    }, {
+      "menuName": "selectCellTransJaToEn",
+      "functionName": "selectCellTransJaToEn"
+    }, {
+      "menuName": "sheetRangeTranslate",
+      "functionName": "sheetRangeTranslate"
+    }, {
+      "menuName": "hideRowSample",
+      "functionName": "hideRowSample"
+    }, {
+      "menuName": "hideRowsSample",
+      "functionName": "hideRowsSample"
+    }, {
+      "menuName": "toggleHideRows",
+      "functionName": "toggleHideRows",
+      "defaultShortcut": "Ctrl+Alt+Shift+1"
+    }]
+  }
+}
