@@ -1,10 +1,9 @@
 {
-  "name": "COB-CHA",
+  "name": "__MSG_appName__",
+  "description": "__MSG_appDesc__",
   "manifest_version": 2,
   "version": "1.0",
-  "description": "COB-CHA is an add-on that helps you record the achievement of JIS X 8341-3:2016, WCAG 2.0, and WCAG 2.1 by Google Spreadsheet.",
-
-  "timeZone": "Asia/Tokyo",
+  "default_locale": "ja",
   "dependencies": {
   },
   "oauthScopes": ["https://www.googleapis.com/auth/drive",
