@@ -359,6 +359,17 @@ function getUiLang(uiname, defaultStr) {
  */
 function addSheet(sheetname, template) {
   var ss = getSpreadSheet();
+  if (sheetname.length > 95) {
+    var tmpbase = sheetname.substr(0, 95);
+    var tmp = tmpbase;
+    var i = 1;
+    while(ss.getSheetByName(tmp)) {
+      var tmp = tmpbase+'-'+i;
+      i++;
+    }
+    sheetname = tmp;
+  }
+  
   var targetSheet = ss.getSheetByName(sheetname);
   var sheetIndex  = sheetname.charAt(0) == '*' ? 0 : ss.getSheets().length+1;
 
@@ -381,8 +392,13 @@ function addSheet(sheetname, template) {
  * @return Array
  */
 function getHtmlAndTitle(url) {
+  var options = {
+    "muteHttpExceptions" : true,
+    "validateHttpsCertificates" : false,
+    "followRedirects" : false,
+  }
   try {
-    var res = UrlFetchApp.fetch(url).getContentText();
+    var res = UrlFetchApp.fetch(url, options).getContentText();
     var title = res.match(/<title>.+?<\/title>/ig);
     title = String(title).replace(/<\/*title>/ig, '');
     return {'title': title, 'html': res};
