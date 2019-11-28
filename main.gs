@@ -387,7 +387,7 @@ function addSheet(sheetname, template) {
 }
 
 /**
- * Get HTML and it's title
+ * Get HTML and its title
  * @param String url
  * @return Array
  */
