@@ -32,10 +32,10 @@
             // other language
             lang.ui = ui;
             $("#close-btn").html(ui['close-btn']);
+            setDefaultValue();
           })
         .getLangSet('ui');
         
-      setDefaultValue();
       $('#apply-techs').click(onApplyTechsClick);
     });
     
@@ -62,7 +62,7 @@
               var btn1 = Object.keys(lang.ui).length == 0 ? 'Get Strings' : lang.ui['get-strings'];
               var btn2 = Object.keys(lang.ui).length == 0 ? 'Apply techniques' : lang.ui['apply-techniques'];
               var bttn = $('#criterion').val() ? btn1 : btn2 ;
-
+              
               $('#apply-techs').html(bttn);
               
               for(var i = 0; i < ret['techs'].length; i++) {
