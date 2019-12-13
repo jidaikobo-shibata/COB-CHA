@@ -305,6 +305,7 @@ function getProp(prop) {
   var userLocale = Session.getActiveUserLocale();
   userLocale    = ['en', 'ja'].indexOf(userLocale) > -1 ? userLocale : 'en';
   vals['lang']  = ['en', 'ja'].indexOf(rets[0][0]) > -1 ? rets[0][0] : userLocale;
+  vals['lang'] = 'en';
   vals['type']  = ['wcag20', 'wcag21', 'tt20'].indexOf(rets[0][1]) > -1 ? rets[0][1] : 'wcag21';
   vals['level'] = ['A', 'AA', 'AAA'].indexOf(rets[0][2]) > -1 ? rets[0][2] : 'AA';
   getProp.vals = vals;

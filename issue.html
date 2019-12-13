@@ -60,10 +60,10 @@
         .withSuccessHandler(
           function(ret) {
             if (ret['vals']['issueId'] == '') {
-              var msg = lang.ui.length == 0 ? 'Add New Issue' : lang.ui['add-new-issue'];
+              var msg = Object.keys(lang.ui).length == 0 ? 'Add New Issue' : lang.ui['add-new-issue'];
               $('#apply-issue').html(msg);
             } else {
-              var msg = lang.ui.length == 0 ? 'Edit Issue' : lang.ui['edit-issue'];
+              var msg = Object.keys(lang.ui).length == 0 ? 'Edit Issue' : lang.ui['edit-issue'];
               $('#apply-issue').html(msg);
             }
             $('#apply-issue').after('<input type="hidden" id="issue-id" value="'+ret['vals']['issueId']+'">');

@@ -47,7 +47,7 @@
           $('#sidebar-status').removeClass().html(msg);
         })
         .withFailureHandler(function (msg){
-          var msg = lang.ui.length == 0 ? 'Failed file Uploading' : lang.ui['fail-upload'];
+          var msg = Object.keys(lang.ui).length == 0 ? 'Failed file Uploading' : lang.ui['fail-upload'];
           $('#upload-image').prop('disabled', false);
           $('#message-area').show();
           $('#sidebar-status').addClass('error').html(msg);
