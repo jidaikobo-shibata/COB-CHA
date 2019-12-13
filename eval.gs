@@ -198,5 +198,5 @@ function generateExpression(testType, currentCriterion, row) {
     }
     ret = '='+ret;
   }
-  return(ret);
+  return ret;
 }

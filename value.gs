@@ -70,7 +70,7 @@ var relTechsAndCriteria = {
  * get contextual techniques
  * @param String criterion
  * @param String checked
- * @return Array
+ * @return Object
  */
 function getContextualTechs(criterion, checked) {
   if (criterion == '') {
@@ -112,6 +112,7 @@ function getContextualTechs(criterion, checked) {
 /**
  * set contextual techniques
  * @param String techs
+ * @return Void
  */
 function setContextualTechs(techs) {
   var activeSheet = getActiveSheet();

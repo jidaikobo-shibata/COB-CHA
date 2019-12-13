@@ -84,6 +84,7 @@ var doubleAColor = '#eeeefe';
 /**
  * onInstall
  * @param Object e
+ * @return Void
  */
 function onInstall(e) {
   onOpen(e);
@@ -92,6 +93,7 @@ function onInstall(e) {
 /**
  * onOpen
  * @param Object e
+ * @return Void
  */
 function onOpen (e) {
   var menu = SpreadsheetApp.getUi().createAddonMenu();
@@ -186,6 +188,7 @@ function getTargetFolder(target) {
  * delete file if exists
  * @param String target
  * @param String name
+ * @return Void
  */
 function deleteFileIfExists(targetFolder, name) {
   var targetFolder = getTargetFolder(targetFolder);
@@ -204,6 +207,7 @@ function deleteFileIfExists(targetFolder, name) {
  * @param String name
  * @param String html
  * @param Bool overwrite
+ * @return Void
  */
 function saveHtml(targetFolder, name, html, overwrite) {
   if (overwrite) {
@@ -236,7 +240,7 @@ function fileUpload(formObj) {
  * @return String
  */
 function addImageFormula(id) {
-  return('=IMAGE("https://drive.google.com/uc?export=download&id='+id+'",1)');
+  return '=IMAGE("https://drive.google.com/uc?export=download&id='+id+'",1)';
 };
 
 /**
@@ -252,9 +256,12 @@ function removeImageFormula(id) {
 
 /**
  * show control pannel
+ * @return Void
  */
 function showSidebar() {
-  var ui = HtmlService.createTemplateFromFile('sidebar').evaluate().setTitle('COB-CHA'+getUiLang('control-panel-title', 'Control Panel'));
+  var ui = HtmlService.createTemplateFromFile('sidebar')
+                      .evaluate()
+                      .setTitle('COB-CHA'+getUiLang('control-panel-title', 'Control Panel'));
   SpreadsheetApp.getUi().showSidebar(ui);
 }
 
@@ -265,17 +272,19 @@ function showSidebar() {
  * @param Integer height
  * @param String title
  * @param String html
+ * @return Void
  */
 function showDialog(sheetname, width, height, title, html) {
   var output = HtmlService.createTemplateFromFile(sheetname);
   var ss = getSpreadSheet();
   title = title == null ? '' : title;
   html = html == null ? '' : html;
-  var html = output.evaluate().setSandboxMode(HtmlService.SandboxMode.IFRAME)
-                              .setWidth(width)
-                              .setHeight(height)
-                              .setTitle(title)
-                              .append(html);
+  var html = output.evaluate()
+                   .setSandboxMode(HtmlService.SandboxMode.IFRAME)
+                   .setWidth(width)
+                   .setHeight(height)
+                   .setTitle(title)
+                   .append(html);
   ss.show(html);
 }
 
@@ -392,7 +401,7 @@ function addSheet(sheetname, template) {
 /**
  * Get HTML and its title
  * @param String url
- * @return Array
+ * @return Object
  */
 function getHtmlAndTitle(url) {
   var options = {

@@ -775,6 +775,9 @@ function getUiJa ()
     'issue-report': '問題点レポート',
     'export-reprot-title': 'レポート出力',
     'export-html': '試験結果HTMLを出力',
+    'issue-exported': '問題点レポートを出力しました。',
+    'export-html': '試験結果HTMLを出力',
+    'file-exported': '%s のファイルを生成しました。',
     'export-issues': '問題点レポートを出力'
   };
 }

@@ -8,6 +8,7 @@
  * @param String lang
  * @param String testType
  * @param String level
+ * @return Void
  */
 function setBasicValue(sheet, lang, testType, level) {
   sheet.getRange(1, 1).setValue('Type').setBackground(labelColor);
@@ -23,7 +24,7 @@ function setBasicValue(sheet, lang, testType, level) {
  * @param String testType
  * @param String level
  * @param Object targetId
- * @return Array
+ * @return Object
  */
 function generateSheets(urlstr, lang, testType, level, targetId) {
   var urls = urlstr.replace(/^\s+|\s+$|\n\n/g, '').split(/\n/);
@@ -154,7 +155,7 @@ function generateSheets(urlstr, lang, testType, level, targetId) {
     msg.push(getUiLang('sheet-already-exists', "%s sheet(s) were already exists:<br>").replace('%s', alreadyExists.length)+alreadyExists.join('<br>'));
   }
 
-  return({'msg': msg.join('<br>'), 'targetId': targetId});
+  return {'msg': msg.join('<br>'), 'targetId': targetId};
 }
 
 /**
@@ -179,6 +180,7 @@ function generateConfigSheets(lang, testType, level) {
 
 /**
  * Generate Result Sheet
+ * @return Void
  */
 function generateResultSheet() {
   var ss = getSpreadSheet();
@@ -191,6 +193,7 @@ function generateResultSheet() {
 
 /**
  * Clean up Sheet
+ * @return Void
  */
 function cleanUpSheet() {
   var ss = getSpreadSheet();
@@ -204,6 +207,7 @@ function cleanUpSheet() {
 
 /**
  * Get Sheets Names
+ * @return String
  */
 function getSheets() {
   var allSheets = getAllSheets()
@@ -217,6 +221,8 @@ function getSheets() {
 
 /**
  * Delete Sheets
+ * @param String urlstr
+ * @return String
  */
 function deleteSheets(urlstr) {
   var ss = getSpreadSheet();
@@ -238,6 +244,7 @@ function deleteSheets(urlstr) {
 /**
  * add screenshot
  * @param Object formObj
+ * @return String
  */
 function screenshotUpload(formObj) {
   var activeSheet = getActiveSheet();

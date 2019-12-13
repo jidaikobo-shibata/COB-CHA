@@ -20,11 +20,12 @@ function isEditIssue() {
   var activeRow = issueSheet.getActiveCell().getRow();
   var issueId = issueSheet.getRange(activeRow, 1).getValue();
   
-  return(String(issueId).length > 0);
+  return (String(issueId).length > 0);
 }
 
 /**
  * set issue value
+ * @param Bool isEdit
  * @return Array
  */
 function setIssueValue(isEdit) {
@@ -98,6 +99,7 @@ function setIssueValue(isEdit) {
  * @param String lang
  * @param String testType
  * @param String level
+ * @return Void
  */
 function addIssue(lang, testType, level) {
   // generate Issue sheet
@@ -131,6 +133,7 @@ function addIssue(lang, testType, level) {
 /**
  * apply Issue
  * @param Array vals
+ * @return String
  */
 function applyIssue(vals) {
   var ss = getSpreadSheet();
@@ -161,7 +164,7 @@ function applyIssue(vals) {
 
 /**
  * set Issue list
- * @return Array
+ * @return Object
  */
 function setIssueList() {
   var ss = getSpreadSheet();
@@ -191,12 +194,13 @@ function setIssueList() {
       issues.push(dataObj[i]);
     }
   }
-  return{'url': url, 'issues': issues};
+  return {'url': url, 'issues': issues};
 }
 
 /**
  * show each issue
  * @param Integer row
+ * @return Void
  */
 function showEachIssue(row) {
   var ss = getSpreadSheet();
@@ -207,7 +211,8 @@ function showEachIssue(row) {
 
 /**
  * escape html
- * thx https://qiita.com/saekis/items/c2b41cd8940923863791
+ * @thx https://qiita.com/saekis/items/c2b41cd8940923863791
+ * @return Void
  */
 function escapeHtml (string) {
   if (typeof string !== 'string') {
@@ -227,6 +232,7 @@ function escapeHtml (string) {
 
 /**
  * export Issue
+ * @return String
  */
 function exportIssue() {
   var ss = getSpreadSheet();
@@ -288,8 +294,6 @@ function exportIssue() {
       each[url].push(vals);
     }
   }
-
-  
   
   // generate html
   var str = '';
@@ -310,8 +314,6 @@ function exportIssue() {
 
     str += '<h2>'+title+'<br>'+url+'</h2>';
     str += '<div class="screenshot"><img src="'+screenshot+'" alt="'+getUiLang('screenshot', 'screenshot')+'"></div>';
-
-    
     
     if (each[url] == null) {
       str += '<p>'+getUiLang('no-particular-issue-was-reported-on-this-page', 'No particular issue was reported on this page.')+'</p>';
@@ -333,7 +335,7 @@ function exportIssue() {
 
   saveHtml(exportFolderName, filename, str);
   
-  return("Issue Exported");
+  return getUiLang('issue-exported', "Issue Exported");
 }
 
 /**
@@ -416,6 +418,7 @@ function generateIssueReportHtml(str, vals, lang) {
  * export Html
  * @param String testType
  * @param String level
+ * @return String
  */
 function exportHtml(testType, level) {
   var ss = getSpreadSheet();
@@ -506,5 +509,5 @@ function exportHtml(testType, level) {
     n++;
  }
   
-  return(n+" file(s) exported");
+  return getUiLang('file-exported', "%s file(s) exported").replace('%s', n);
 }
