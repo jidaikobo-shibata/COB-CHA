@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <base target="_top">
   <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
@@ -10,6 +10,13 @@
      * events
      */
     $(function() {
+      google.script.run
+        .withSuccessHandler(
+          function(ret) {
+            $("html").attr('lang', ret);
+          })
+        .getProp('lang');
+        
       google.script.run
         .withSuccessHandler(
           function(vals) {

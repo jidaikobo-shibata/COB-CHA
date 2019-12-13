@@ -13,7 +13,7 @@ var criteria21 = [
   '1.3.4', '1.3.5', '1.3.6', '1.4.10', '1.4.11', '1.4.12', '1.4.13',
   '2.1.4', '2.2.6', '2.3.3', '2.5.1', '2.5.2', '2.5.3', '2.5.4', '2.5.5', '2.5.6',
   '4.1.3'
-]
+];
 
 /**
  * WCAG 2.0/2.1 Single-A criteria
@@ -63,7 +63,7 @@ var techDirAbbr = {
   'SL': 'silverlight',
   'SV': 'server-side-script',
   'SC': 'client-side-script'
-}
+};
 
 /**
  * global variables
@@ -305,7 +305,7 @@ function getProp(prop) {
   var userLocale = Session.getActiveUserLocale();
   userLocale    = ['en', 'ja'].indexOf(userLocale) > -1 ? userLocale : 'en';
   vals['lang']  = ['en', 'ja'].indexOf(rets[0][0]) > -1 ? rets[0][0] : userLocale;
-  vals['lang'] = 'en';
+//  vals['lang']  = 'en';
   vals['type']  = ['wcag20', 'wcag21', 'tt20'].indexOf(rets[0][1]) > -1 ? rets[0][1] : 'wcag21';
   vals['level'] = ['A', 'AA', 'AAA'].indexOf(rets[0][2]) > -1 ? rets[0][2] : 'AA';
   getProp.vals = vals;

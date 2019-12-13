@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <base target="_top">
   <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
@@ -15,6 +15,13 @@
      * events
      */
     $(function() {
+      google.script.run
+        .withSuccessHandler(
+          function(ret) {
+            $("html").attr('lang', ret);
+          })
+        .getProp('lang');
+
       // UI
       google.script.run
         .withSuccessHandler(
@@ -65,10 +72,10 @@
                 if (ret['type'] == 'wcag21' && ret['lang'] == 'en') {
                   var dir = each.charAt(0)+each.charAt(1);
                   // flash, smil, silverlight, server-side-script, client-side-script has a second english character
-                  if (['M', 'L', 'V', 'C'].indefOf(each.charAt(1)) < 0) {
+                  if (['M', 'L', 'V', 'C'].indexOf(each.charAt(1)) < 0) {
                     dir = dir.charAt(0);
                   }
-                  url += ret['type']['techDirAbbr'][dir]+'/'+each;
+                  url += ret['techDirAbbr'][dir]+'/'+each;
                 } else {
                   url += each+'.html';
                 }
