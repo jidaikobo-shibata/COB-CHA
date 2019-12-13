@@ -129,6 +129,7 @@
         .withSuccessHandler(
           function(ret) {
             $("#lang").val(ret);
+            $("html").attr('lang', ret);
           })
         .getProp('lang');
 
@@ -302,7 +303,7 @@
      */
     function onDoEditValueClick() {
       $('#message-area').hide();
-      var msg = lang.ui.length == 0 ? 'This Page\'s All "Check will be overwritten."' : lang.ui['this-pages-all-check-will-be-overwritten'];
+      var msg = Object.keys(lang.ui).length == 0 ? 'This Page\'s All "Check will be overwritten."' : lang.ui['this-pages-all-check-will-be-overwritten'];
       if (confirm(msg) === false) return;
       
       google.script.run
@@ -322,7 +323,7 @@
      */
     function onDoBulkCheckClick() {
       $('#message-area').hide();
-      var msg = lang.ui.length == 0 ? 'All Page\'s "Check will be overwritten."' : lang.ui['all-pages-check-will-be-overwritten'];
+      var msg = Object.keys(lang.ui).length == 0 ? 'All Page\'s check will be overwritten.' : lang.ui['all-pages-check-will-be-overwritten'];
       if (confirm(msg) === false) return;
 
       google.script.run
@@ -347,8 +348,8 @@
       google.script.run
         .withSuccessHandler(
           function(criterion) {
-            var msg1 = lang.ui.length == 0 ? 'No appropriate criterion found.' : lang.ui['no-criterion-found'];
-            var msg2 = lang.ui.length == 0 ? 'Techniques for '+criterion : lang.ui['tech-for'].replace("%s", criterion);
+            var msg1 = Object.keys(lang.ui).length == 0 ? 'No appropriate criterion found.' : lang.ui['no-criterion-found'];
+            var msg2 = Object.keys(lang.ui).length == 0 ? 'Techniques for '+criterion : lang.ui['tech-for'].replace("%s", criterion);
             var title = criterion == '' ? msg1 : msg2 ;
             google.script.run.showDialog('tech', 500, 400, title);
           })
@@ -363,7 +364,7 @@
       var criterion = $('#bulk-target').val();
       var checked = $('#bulk-tech').val();
       var html = '<input type="hidden" id="criterion" value="'+criterion+'"><input type="hidden" id="checked" value="'+checked+'">';
-      var title = lang.ui.length == 0 ? 'Techniques for '+criterion : lang.ui['tech-for'].replace("%s", criterion);
+      var title = Object.keys(lang.ui).length == 0 ? 'Techniques for '+criterion : lang.ui['tech-for'].replace("%s", criterion);
       google.script.run.showDialog('tech', 500, 400, title, html);
     }
 
@@ -372,7 +373,7 @@
      */
     function onAddScreenshotClick() {
       $('#message-area').hide();
-      var title = lang.ui.length == 0 ? 'Screenshot"' : lang.ui['screenshot'];
+      var title = Object.keys(lang.ui).length == 0 ? 'Screenshot' : lang.ui['screenshot'];
       google.script.run.showDialog('screenshot', 300, 200, title);
     }
 
@@ -389,7 +390,7 @@
      */
     function onShowIssueClick() {
       $('#message-area').hide();
-      var title = lang.ui.length == 0 ? 'Issue List"' : lang.ui['issue-list'];
+      var title = Object.keys(lang.ui).length == 0 ? 'Issue List"' : lang.ui['issue-list'];
       google.script.run.showDialog('issuelist', 500, 400, title);
     }
     
@@ -398,7 +399,7 @@
      */
     function onDoMakeSameAsTemplateClick() {
       $('#message-area').hide();
-      var msg = lang.ui.length == 0 ? 'CAUTION: All result will be overwritten."' : lang.ui['caution-using-template'];
+      var msg = Object.keys(lang.ui).length == 0 ? 'CAUTION: All result will be overwritten.' : lang.ui['caution-using-template'];
       if (confirm(msg) === false) return;
       
       google.script.run
@@ -417,8 +418,8 @@
      * change control status
      */
     function changeControlStatus() {
-      var deleteUi    = lang.ui.length == 0 ? 'DELETE"' : lang.ui['delete'];
-      var getSheetsUi = lang.ui.length == 0 ? 'Get Sheets"' : lang.ui['get-sheets'];
+      var deleteUi    = Object.keys(lang.ui).length == 0 ? 'DELETE"' : lang.ui['delete'];
+      var getSheetsUi = Object.keys(lang.ui).length == 0 ? 'Get Sheets"' : lang.ui['get-sheets'];
       if ($('#delete-sheets').prop('checked')) {
         $('#urls').css({'color':'#ffffff', 'background-color':'#aaaaaa'});
         $('#control-sheets').html(deleteUi);

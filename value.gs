@@ -100,10 +100,9 @@ function getContextualTechs(criterion, checked) {
       rets.push([techs[i], techLangsSrc[techs[i]]]);
     }
   }
-  
+
   var lang = getProp('lang');
   var type = getProp('type');
-  var techDirAbbr = techDirAbbr;
   var docurl = lang+'-'+type;
   var docurlEn = 'en'+'-'+type;
   

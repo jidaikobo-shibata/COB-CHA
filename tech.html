@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <base target="_top">
   <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
@@ -15,6 +15,13 @@
      * events
      */
     $(function() {
+      google.script.run
+        .withSuccessHandler(
+          function(ret) {
+            $("html").attr('lang', ret);
+          })
+        .getProp('lang');
+
       // UI
       google.script.run
         .withSuccessHandler(
@@ -47,13 +54,13 @@
         .withSuccessHandler(
           function(ret) {
             if (ret['techs'] == '') {
-              var msg1 = lang.ui.length == 0 ? 'No criterion found' : lang.ui['no-criterion-found'];
-              var msg2 = lang.ui.length == 0 ? 'Place your cursor below Techs.' : lang.ui['place-your-cursor-below-techs'];
+              var msg1 = Object.keys(lang.ui).length == 0 ? 'No criterion found' : lang.ui['no-criterion-found'];
+              var msg2 = Object.keys(lang.ui).length == 0 ? 'Place your cursor below Techs.' : lang.ui['place-your-cursor-below-techs'];
               $('body').append('<h1>'+msg1+'</h1><p>'+msg2+'</p>');
               $('#apply-techs').hide();
             } else {
-              var btn1 = lang.ui.length == 0 ? 'Get Strings' : lang.ui['get-strings'];
-              var btn2 = lang.ui.length == 0 ? 'Apply techniques' : lang.ui['apply-techniques'];
+              var btn1 = Object.keys(lang.ui).length == 0 ? 'Get Strings' : lang.ui['get-strings'];
+              var btn2 = Object.keys(lang.ui).length == 0 ? 'Apply techniques' : lang.ui['apply-techniques'];
               var bttn = $('#criterion').val() ? btn1 : btn2 ;
 
               $('#apply-techs').html(bttn);
@@ -65,10 +72,10 @@
                 if (ret['type'] == 'wcag21' && ret['lang'] == 'en') {
                   var dir = each.charAt(0)+each.charAt(1);
                   // flash, smil, silverlight, server-side-script, client-side-script has a second english character
-                  if (['M', 'L', 'V', 'C'].indefOf(each.charAt(1)) < 0) {
+                  if (['M', 'L', 'V', 'C'].indexOf(each.charAt(1)) < 0) {
                     dir = dir.charAt(0);
                   }
-                  url += ret['type']['techDirAbbr'][dir]+'/'+each;
+                  url += ret['techDirAbbr'][dir]+'/'+each;
                 } else {
                   url += each+'.html';
                 }
