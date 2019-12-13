@@ -1,5 +1,5 @@
 /**
- * COB-CHA: CollaBorative CHeck tool for Accessibility!
+ * COB-CHA: CollaBorative CHeck tool for Accessibility
  * powered by Google Spreadsheet
  * @Author shibata@jidaikobo.com
  *         arimatsu@jidaikobo.com
@@ -302,7 +302,9 @@ function getProp(prop) {
   var activeSheet = getActiveSheet();
   var rets = activeSheet.getRange(1, 2, 1, 3).getValues();
   var vals = {};
-  vals['lang']  = ['en', 'ja'].indexOf(rets[0][0]) > -1 ? rets[0][0] : 'en';
+  var userLocale = Session.getActiveUserLocale();
+  userLocale    = ['en', 'ja'].indexOf(userLocale) > -1 ? userLocale : 'en';
+  vals['lang']  = ['en', 'ja'].indexOf(rets[0][0]) > -1 ? rets[0][0] : userLocale;
   vals['type']  = ['wcag20', 'wcag21', 'tt20'].indexOf(rets[0][1]) > -1 ? rets[0][1] : 'wcag21';
   vals['level'] = ['A', 'AA', 'AAA'].indexOf(rets[0][2]) > -1 ? rets[0][2] : 'AA';
   getProp.vals = vals;
@@ -359,6 +361,17 @@ function getUiLang(uiname, defaultStr) {
  */
 function addSheet(sheetname, template) {
   var ss = getSpreadSheet();
+  if (sheetname.length > 95) {
+    var tmpbase = sheetname.substr(0, 95);
+    var tmp = tmpbase;
+    var i = 1;
+    while(ss.getSheetByName(tmp)) {
+      var tmp = tmpbase+'-'+i;
+      i++;
+    }
+    sheetname = tmp;
+  }
+  
   var targetSheet = ss.getSheetByName(sheetname);
   var sheetIndex  = sheetname.charAt(0) == '*' ? 0 : ss.getSheets().length+1;
 
@@ -376,13 +389,18 @@ function addSheet(sheetname, template) {
 }
 
 /**
- * Get HTML and it's title
+ * Get HTML and its title
  * @param String url
  * @return Array
  */
 function getHtmlAndTitle(url) {
+  var options = {
+    "muteHttpExceptions" : true,
+    "validateHttpsCertificates" : false,
+    "followRedirects" : false,
+  }
   try {
-    var res = UrlFetchApp.fetch(url).getContentText();
+    var res = UrlFetchApp.fetch(url, options).getContentText();
     var title = res.match(/<title>.+?<\/title>/ig);
     title = String(title).replace(/<\/*title>/ig, '');
     return {'title': title, 'html': res};

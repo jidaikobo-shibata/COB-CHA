@@ -35,7 +35,7 @@ function generateSheets(urlstr, lang, testType, level, targetId) {
   var ss = getSpreadSheet();
   var alreadyExists = [];
   var added = 0;
-
+  
   // generate original sheet
   if (addSheet(urls[0]) == false) {
     alreadyExists.push(urls[0]);
