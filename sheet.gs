@@ -242,7 +242,6 @@ function deleteSheets(urlstr) {
 function screenshotUpload(formObj) {
   var activeSheet = getActiveSheet();
   var activeRow = activeSheet.getActiveCell().getRow();
-  Logger.log(activeSheet.getName());
   if (activeSheet.getName().charAt(0) == '*') return getUiLang('current-sheet-is-not-for-webpage', "Current Sheet is not for webpage.");
   
   var file = fileUpload(formObj);
