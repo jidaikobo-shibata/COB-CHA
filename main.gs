@@ -97,9 +97,25 @@ function onInstall(e) {
  */
 function onOpen (e) {
   var menu = SpreadsheetApp.getUi().createAddonMenu();
-  menu.addItem(getUiLang('show-control-panel', 'Show Control Panel'), 'showSidebar');
+  if(e && e.authMode == 'NONE'){
+    menu.addItem('Getting Started', 'askEnabled');
+  } else {
+    menu.addItem(getUiLang('show-control-panel', 'Show Control Panel'), 'showSidebar');
+  }
   menu.addToUi();
 }
+
+/**
+ * askEnabled
+ * @param Object e
+ * @return Void
+ */
+function askEnabled() {
+  var title = 'COB-CHA';
+  var msg = 'Script has been enabled.';
+  var ui = SpreadsheetApp.getUi();
+  ui.alert(title, msg, ui.ButtonSet.OK);
+};
 
 /**
  * Get Spreadsheet
