@@ -646,7 +646,7 @@ function getUiJa ()
 {
   return {
     'lang': 'ja',
-    
+
     'control-panel-title': 'コントロールパネル',
     'show-control-panel': 'コントロールパネルを表示',
     'help': 'ヘルプ',
@@ -690,7 +690,7 @@ function getUiJa ()
     'no-common-issue-was-reported': '共通の問題は存在しませんでした。',
     'common-issue-on-this-page': 'このページに存在する共通の問題',
     'all-page': 'すべてのページ',
-    
+
     'sheet': 'シート',
     'examination': '試験',
     'value': '値',
@@ -741,16 +741,15 @@ function getUiJa ()
     'export-issues': '問題点レポートを出力',
     'do-evaluate': '試験結果を集計する',
     'do-evaluate-icl': '実装チェックリストを集計する',
-    
+
     'testtype-exp': 'WCAG 2.0、2.1もしくはTrusted Testerのいずれかから試験の方式を選択し、あわせて達成レベルを選択してください',
     'sheetcontrol-exp': '1行に1つのURLを入力し、「シート生成」を押すと、URLの数だけシートが生成されます。 「シート取得」を押すと、すべてのURLのシートがtextareaに取得されます。「削除」をチェックすると、textareaにあるシートを削除できます。',
     'addscreenshot-exp': 'ウェブページのスクリーンショットをアップロードできます。アスタリスク付きの名前のシート以外をアクティブにする必要があります。',
     'generateconfig-exp': '「*Config*」という名前のコンフィグ用シートを生成します',
     'usingtemplate-exp': '「テンプレートの使用」の下の「テンプレートの生成」を押すことで、テストの種類とレベルに応じてテンプレートシートを生成します。「適用する」を押して、URLのシートにテンプレートを適用します。',
     'inserttechniques-exp': '「達成方法をシートに挿入」を押すと、WCAGの達成基準に従ってダイアログが表示されます。アクティブセルは列Dに配置する必要があります。',
-    'bulkedit-exp': 'すべてのURLシートで、各達成基準に設定したテスト結果を適用できます。',
     'selectcheck-exp': '「すべてTにする」を押すと、URLのアクティブシートのテスト結果がTに変わります。',
-    'addeditissue-exp': '「*Issue*」という名前のシートを生成し（存在しない場合）、ダイアログで入力した課題を*Issue*シートに追加します。アクティブセルが既存の問題点にある場合は、編集します。',
+    'addeditissue-exp': '「*Issue*」という名前のシートを生成し、ダイアログで入力した課題を*Issue*シートに追加します。アクティブセルが既存の問題点にある場合は、編集します。',
     'showissue-exp': 'アクティブなURLシートに関連する問題点を表示します。',
     'exportissues-exp': 'ウェブサイトの問題点を記載したHTMLファイルをGoogleドライブに生成します。',
     'exportreport-exp': '「試験結果HTMLを出力」を押し​​て、ウェブサイトのテスト結果を記載したHTMLファイルをGoogleドライブに生成します。',

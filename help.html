@@ -10,7 +10,7 @@
      * lang
      */
     var lang = {};
-    
+
     /**
      * events
      */
@@ -21,13 +21,13 @@
             $("html").attr('lang', ret);
           })
         .getProp('lang');
-        
+
       google.script.run
         .withSuccessHandler(
           function(ui) {
             // Englsih
             if (Object.keys(ui).length == 0) return;
-            
+
             // other language
             lang.ui = ui;
             $("#testtype").html(ui['test-type']);
@@ -43,8 +43,6 @@
             $("#value").html(ui['value']);
             $("#inserttechniques").html(ui['insert-techniques-sheet']);
             $("#inserttechniques-exp").html(ui['inserttechniques-exp']);
-            $("#bulkedit").html(ui['bulk-edit']);
-            $("#bulkedit-exp").html(ui['bulkedit-exp']);
             $("#selectcheck").html(ui['select-check']);
             $("#selectcheck-exp").html(ui['selectcheck-exp']);
             $("#report").html(ui['report']);
@@ -61,7 +59,7 @@
           })
         .getLangSet('ui');
     });
-  
+
   </script>
 
 </head>
@@ -98,10 +96,6 @@
 	<td id="inserttechniques-exp">By pressing "Insert Techs to sheet" techniques dialogue shows up according to WCAG criterion. Your active cell must be placed column D.</td>
 </tr>
 <tr>
-	<th id="bulkedit">Bulk edit</th>
-	<td id="bulkedit-exp">You can apply configured test result for each criterion at all URLs' sheets.</td>
-</tr>
-<tr>
 	<th id="selectcheck">Select "Check"</th>
 	<td id="selectcheck-exp">By pressing "Set all to 'T'", test results turns to T at active sheet for URL.</td>
 </tr>
@@ -109,6 +103,14 @@
 
 <h2 id="report">Report</h2>
 <table>
+<tr>
+	<th id="evaluate">Evaluate</th>
+	<td id="evaluate-exp">Evaluate test results according to URLs' sheet records. Generate test result sheet named "*Result*" if not existed.</td>
+</tr>
+<tr>
+	<th id="exportreport">Export Report</th>
+	<td id="exportreport-exp">By pressing "Export HTML", Generate HTML file that contains test results of website to Google Drive.</td>
+</tr>
 <tr>
 	<th id="addeditissue">Add/Edit Issue</th>
 	<td id="addeditissue-exp">Generate sheet named "*Issue*" (If not exist), and show up issue dialogue to add row to issue sheet. If your active cell is at existed issue row, edit it.</td>
@@ -127,11 +129,5 @@
 </tr>
 </table>
 
-<h2 id="evaluate">Evaluate</h2>
-
-<p id="evaluate-exp">Evaluate test results according to URLs' sheet records. Generate test result sheet named "*Result*" if not existed.</p>
-
 </body>
 </html>
-
-
