@@ -3,6 +3,16 @@
  */
 
 /**
+ * get Google Spreadsheet Url
+ * @param String ssId
+ * @param String currentId
+ * @return String
+ */
+function getGoogleSpreadsheetUrl(ssId, currentId) {
+  return "https://docs.google.com/spreadsheets/d/"+ssId+"/edit#gid="+currentId;
+}
+
+/**
  * evaluate
  * @param String lang
  * @param String testType
@@ -11,7 +21,10 @@
  */
 function evaluate(lang, testType, level) {
   var ss = getSpreadSheet();
-  var allSheets = getAllSheets()
+  var allSheets = getAllSheets();
+  if (allSheets.length == 0) {
+     throw new Error(getUiLang('no-target-page-exists', "No Target Page Exists."));
+  }
 
   // enable iterative calculation
   if (ss.isIterativeCalculationEnabled() == false) {
@@ -86,9 +99,8 @@ function evaluate(lang, testType, level) {
   var row = 3;
   for (var i = 0; i < allSheets.length; i++) {
     if (allSheets[i].getName().charAt(0) == '*') continue;
-    var goosleSpreadsheetUrl = "https://docs.google.com/spreadsheets/d/"+ss.getId()+"/edit#gid="+allSheets[i].getSheetId();
     var targetUrl = allSheets[i].getSheetName();
-    activeSheet.getRange(row, 1).setValue('=HYPERLINK("'+goosleSpreadsheetUrl+'","'+targetUrl+'")');
+    activeSheet.getRange(row, 1).setValue('=HYPERLINK("'+getGoogleSpreadsheetUrl(ss.getId(), allSheets[i].getSheetId())+'","'+targetUrl+'")');
     activeSheet.getRange(row, 1).setComment(allSheets[i].getRange(3, 2).getValue());
    
     // each check value
@@ -179,7 +191,6 @@ function generateExpression(testType, currentCriterion, row) {
     ret = '=VLOOKUP("'+currentCriterion+'", INDIRECT('+row+'&"!A:B") , 2, false)';
   } else {
     var conditions = [];
-    var ttCheckVal = getLangSet('ttCheckVal');
     var strs = ["DNA", "F", "T"];
     if (typeof ttCheckVal[currentCriterion] === 'undefined') return('');
     for (var j = 0; j < strs.length; j++) {
@@ -199,4 +210,68 @@ function generateExpression(testType, currentCriterion, row) {
     ret = '='+ret;
   }
   return ret;
+}
+
+/**
+ * evaluate Icl
+ * @param String testType
+ * @param String level
+ * @return Void
+ */
+function evaluateIcl(testType, level) {
+  // generate Sheet
+  var ss = getSpreadSheet();
+  var iclSheet = ss.getSheetByName(iclSheetName);
+  if (iclSheet) {
+    ss.deleteSheet(iclSheet);
+  }
+  ss.insertSheet(iclSheetName, 0);
+  var iclSheet = ss.getSheetByName(iclSheetName);
+  iclSheet.activate();
+  generateIcl(iclSheet, 2, getUsingCriteria(testType), level);
+  
+  iclSheet.setColumnWidth(1, 60);
+  iclSheet.deleteColumn(2);
+  iclSheet.setColumnWidth(2, 50);
+  iclSheet.setColumnWidth(3, 50);
+  iclSheet.setFrozenRows(1);
+  iclSheet.setFrozenColumns(3);
+  
+  // detect ICL Rows
+  var allSheets = getAllSheets();
+  if (allSheets.length == 0) {
+     throw new Error(getUiLang('no-target-page-exists', "No Target Page Exists."));
+  }
+  allSheets[0].activate();
+  var found = false;
+  var iclFirstRow = 1;
+  while ( ! found) {
+    if (allSheets[0].getRange(iclFirstRow, 1).getValue() != '') {
+      iclFirstRow++;
+      continue;
+    }
+    found = true;
+  }
+  iclFirstRow = iclFirstRow + 3;
+  var iclLastRow = allSheets[0].getLastRow();
+  var rows = iclLastRow - iclFirstRow;
+  iclSheet.activate();
+
+  // copy value
+  var col = 5;
+  var numId = 1;
+
+  for (var i = 0; i < allSheets.length; i++) {
+    if (allSheets[i].getName().charAt(0) == '*') continue;
+    var targetUrl = allSheets[i].getSheetName();
+    iclSheet.getRange(1, col).setValue('=HYPERLINK("'+getGoogleSpreadsheetUrl(ss.getId(), allSheets[i].getSheetId())+'","'+numId+'")');
+    iclSheet.getRange(1, col).setComment(targetUrl);
+    iclSheet.setColumnWidth(col, 40)
+    allSheets[i].getRange(iclFirstRow, 2, rows, 1).copyTo(iclSheet.getRange(4, col), {contentsOnly:true});
+    iclSheet.getRange(1, col, iclSheet.getLastRow(), 1).setHorizontalAlignment('center');
+    numId++;
+    col++;
+  }
+
+  return getUiLang('generate-icl-sheet', "Generate ICL Sheet.");
 }

@@ -80,13 +80,12 @@ function getContextualTechs(criterion, checked) {
     var checked = activeSheet.getRange(activeRow, 4).getValue();
   }
   var techLangsSrc = getLangSet('tech');
-  
+
   var rets = [];
   var type = getProp('type');
   if (type.indexOf('tt') >= 0) {
-    var ttCheckValSrc = getLangSet('ttCheckVal');
-    for (var key in ttCheckValSrc) {
-      if (ttCheckValSrc[key].indexOf(criterion) < 0) continue;
+    for (var key in ttCheckVal) {
+      if (ttCheckVal[key].indexOf(criterion) < 0) continue;
       var techs = relTechsAndCriteria[key] ? relTechsAndCriteria[key] : [] ;
       for (var i = 0; i < techs.length; i++) {
         if (techLangsSrc[techs[i]] == null) continue;
@@ -105,7 +104,7 @@ function getContextualTechs(criterion, checked) {
   var type = getProp('type');
   var docurl = lang+'-'+type;
   var docurlEn = 'en'+'-'+type;
-  
+
   return {'criterion': criterion, 'techs': rets, 'checked': checked, 'lang': lang, 'type': type, 'techDirAbbr': techDirAbbr, 'urlbase': urlbase, 'docurl': docurl, 'docurlEn': docurlEn};
 }
 
@@ -126,7 +125,7 @@ function setContextualTechs(techs) {
  * @param String level
  * @return String
  */
-function editValue(testType, level) {
+function setAllToT(testType, level) {
   var ttCriteria = getLangSet('ttCriteria');
   var activeSheet = getActiveSheet();
   if (activeSheet.getName() == resultSheetName) return getUiLang('current-sheet-is-not-for-webpage', 'Current sheet is not for webpage');
@@ -146,73 +145,47 @@ function editValue(testType, level) {
 }
 
 /**
- * Bulk Edit
- * @param String target
- * @param String check
- * @param String tech
- * @param String memo
- * @return String
- */
-function bulkEdit(target, check, tech, memo) {
-  var ss = getSpreadSheet();
-
-  var n = 0;
-  var allSheets = getAllSheets()
-  for (i = 0; i < allSheets.length; i++) {
-    if (String(allSheets[i].getName()).charAt(0) == '*') continue;
-
-    // search row
-    var dat = allSheets[i].getDataRange().getValues();
-    var row = 0;
-    for (var j = 1; j < dat.length; j++) {
-      if (dat[j][0] === target) {
-        row = j + 1;
-        break;
-      }
-    }
-    if (row == 0) continue;
-    
-    // apply
-    allSheets[i].getRange(row, 2).setValue(check);
-    allSheets[i].getRange(row, 4).setValue(tech);
-    allSheets[i].getRange(row, 5).setValue(memo);
-    n++;
-  }
-  return getUiLang('edit-done', '%s sheet(s) edited.').replace("%s", n);
-}
-
-/**
  * Make same as template
  * @return String
  */
-function makeSameAsTemplate() {
+function templateApplyAll() {
   var ss = getSpreadSheet();
   var tpl = ss.getSheetByName(templateSheetName);
   if (tpl == null) return getUiLang('no-template-found', 'No template exists.');
 
-  // extract template data  
-  var dataObj = tpl.getDataRange().getValues();
-  var vals = {};
-  for (var i = 1; i < dataObj.length; i++) {
-    var key = dataObj[i].shift();
-    if (['URL', 'title', 'Criterion'].indexOf(key) >= 0) continue;
-    if (key.length > 0) {
-      vals[i+1] = dataObj[i];
-    }
-  }
-
-  // edit values
   var n = 0;
-  var allSheets = getAllSheets()
+  var allSheets = getAllSheets();
   for (i = 0; i < allSheets.length; i++) {
     if (String(allSheets[i].getName()).charAt(0) == '*') continue;
-    for (var row in vals){
-      allSheets[i].getRange(row, 2).setValue(vals[row][0]);
-      allSheets[i].getRange(row, 4).setValue(vals[row][2]);
-      allSheets[i].getRange(row, 5).setValue(vals[row][3]);
-    }
+    tpl.getRange(5, 2, tpl.getLastRow(), 4).copyTo(allSheets[i].getRange(5, 2));
     n++;
   }
-  
-  return getUiLang('edit-done', '%s sheet(s) edited.').replace("%s", n);
+
+  return getUiLang('sheet-edited', '%s sheet(s) edited.').replace("%s", n);
+}
+
+/**
+ * Make same as template row
+ * @return String
+ */
+function templateApplyRow() {
+  var ss = getSpreadSheet();
+  var tpl = ss.getSheetByName(templateSheetName);
+  if (tpl == null) throw new Error(getUiLang('no-template-found', 'No template exists.'));
+
+  var activeSheet = getActiveSheet();
+  if (templateSheetName != activeSheet.getName()) throw new Error(getUiLang('is-not-template', 'Current Sheet is not template.'));
+
+  var activeRow = activeSheet.getActiveCell().getRow();
+  if (activeRow < 5) throw new Error(getUiLang('is-not-appropriate-row', 'Current Row is not Result.'));
+
+  var n = 0;
+  var allSheets = getAllSheets();
+  for (i = 0; i < allSheets.length; i++) {
+    if (String(allSheets[i].getName()).charAt(0) == '*') continue;
+    tpl.getRange(activeRow, 2, activeRow, tpl.getLastColumn()).copyTo(allSheets[i].getRange(activeRow, 2));
+    n++;
+  }
+
+  return getUiLang('sheet-edited', '%s sheet(s) edited.').replace("%s", n);
 }

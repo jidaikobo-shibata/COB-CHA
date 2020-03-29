@@ -18,6 +18,16 @@ function setBasicValue(sheet, lang, testType, level) {
 }
 
 /**
+ * get pulldown menu
+ * @return Object
+ */
+function getPulldownMenu() {
+  var pullDown = SpreadsheetApp.newDataValidation();
+  pullDown.requireValueInList(['NT', 'DNA', 'T', 'F'], true);
+  return pullDown;
+}
+
+/**
  * Generate Sheets
  * @param String urlstr
  * @param String lang
@@ -27,12 +37,9 @@ function setBasicValue(sheet, lang, testType, level) {
  * @return Object
  */
 function generateSheets(urlstr, lang, testType, level, targetId) {
-  var urls = urlstr.replace(/^\s+|\s+$|\n\n/g, '').split(/\n/);
-  if (urls.length == 0) return {'msg': getUiLang('no-target-page-exists', "No target Page Exists"), 'targetId': targetId};
-
-  var pullDown = SpreadsheetApp.newDataValidation();
-  pullDown.requireValueInList(['Yet', 'DNA', 'T', 'F'], true);
-  
+  var urls = urlstr.trim().replace(/^\s+|\s+$|\n\n/g, '').split(/\n/);
+  if (urls.length == 1 && urls[0] == '') return {'msg': getUiLang('no-target-page-exists', "No target Page Exists"), 'targetId': targetId};
+    
   var ss = getSpreadSheet();
   var alreadyExists = [];
   var added = 0;
@@ -65,11 +72,16 @@ function generateSheets(urlstr, lang, testType, level, targetId) {
     originalSheet.setFrozenRows(4);
     
     // header
-    originalSheet.getRange(4, 1).setValue(getUiLang('criterion', 'Criterion')).setBackground(labelColor);
-    originalSheet.getRange(4, 2).setValue(getUiLang('check', 'Check')).setBackground(labelColor);
-    originalSheet.getRange(4, 3).setValue(getUiLang('level', 'Level')).setBackground(labelColor);
-    originalSheet.getRange(4, 4).setValue(getUiLang('tech', 'Techs')).setBackground(labelColor);
-    originalSheet.getRange(4, 5).setValue(getUiLang('memo', 'Memo')).setBackground(labelColor);
+    if (testType == 'tt20') {
+      originalSheet.getRange(4, 1).setValue(getUiLang('test-id', 'Test ID')).setBackground(labelColor);
+    } else {
+      originalSheet.getRange(4, 1).setValue(getUiLang('criterion', 'Criterion')).setBackground(labelColor);
+    }
+    originalSheet.getRange(4, 2).setValue(getUiLang('check', 'Check'));
+    originalSheet.getRange(4, 3).setValue(getUiLang('level', 'Level'));
+    originalSheet.getRange(4, 4).setValue(getUiLang('tech', 'Techs'));
+    originalSheet.getRange(4, 5).setValue(getUiLang('memo', 'Memo'));
+    originalSheet.getRange("4:4").setBackground(labelColorDark).setFontColor(labelColorDarkText).setFontWeight('bold');
     
     // appearance
     originalSheet.setColumnWidth(1, 60);
@@ -78,8 +90,7 @@ function generateSheets(urlstr, lang, testType, level, targetId) {
     originalSheet.getRange('4:4').setHorizontalAlignment('center');
     
     // test type
-    var set = testType.indexOf('wcag') >= 0 ? 'criteria' : 'ttCriteria' ;
-    var usingCriteria = getLangSet(set);
+    var usingCriteria = getUsingCriteria(testType);
     
     // complex language selection ...
     var docurl = lang+'-'+testType;
@@ -99,12 +110,24 @@ function generateSheets(urlstr, lang, testType, level, targetId) {
         url = urlbase['understanding']['en-wcag21']+usingCriteria[j][4];
       }
       
-      originalSheet.getRange(row, 1).setValue('=HYPERLINK("'+url+'", "'+usingCriteria[j][1]+'")').setHorizontalAlignment('center');
-      originalSheet.getRange(row, 2).setDataValidation(pullDown).setHorizontalAlignment('center').setComment(usingCriteria[j][2]);
+      if (testType == 'tt20') {
+        originalSheet.getRange(row, 1).setValue(usingCriteria[j][1]).setHorizontalAlignment('center');
+      } else {
+        originalSheet.getRange(row, 1).setValue('=HYPERLINK("'+url+'", "'+usingCriteria[j][1]+'")').setHorizontalAlignment('center');
+      }
+      originalSheet.getRange(row, 2).setDataValidation(getPulldownMenu()).setHorizontalAlignment('center').setComment(usingCriteria[j][2]);
       originalSheet.getRange(row, 3).setValue(usingCriteria[j][0]).setHorizontalAlignment('center');
       row++;
     }
-    
+
+    // ICL: Japanese Only
+    if (getProp('lang') == 'ja' && testType == 'wcag20') {
+      row++;
+      var ret = generateIcl(originalSheet, row, usingCriteria, level);
+      row = ret['row'];
+      originalSheet = ret['originalSheet'];
+    }
+
     // conditioned cell
     var conditionedRange = originalSheet.getRange("B:B");
     var ruleForF = SpreadsheetApp.newConditionalFormatRule()
@@ -156,6 +179,49 @@ function generateSheets(urlstr, lang, testType, level, targetId) {
   }
 
   return {'msg': msg.join('<br>'), 'targetId': targetId};
+}
+
+/**
+ * Generate ICL
+ * @param Object originalSheet
+ * @param Integer row
+ * @param Array usingCriteria
+ * @param String level
+ * @return Array [originalSheet, row]
+ */
+function generateIcl(originalSheet, row, usingCriteria, level) {
+  var iclSituation = getLangSet('iclSituation');
+  var iclTest      = getLangSet('iclTest');
+  
+  for (var j = 0; j < usingCriteria.length; j++) {
+    if (criteria21.indexOf(usingCriteria[j][1]) >= 0) continue;
+    if (usingCriteria[j][0].length > level.length) continue;
+    var clevel = usingCriteria[j][0];
+    var cCriterion = usingCriteria[j][1];
+    originalSheet.getRange(row, 1).setValue(cCriterion+': '+usingCriteria[j][2]);
+    originalSheet.getRange(row+":"+row).setBackground(labelColorDark).setFontColor(labelColorDarkText).setFontWeight('bold');
+    
+    row++;
+    for (let testId of Object.keys(iclSituation[cCriterion])) {
+      if (iclSituation[cCriterion][testId] != '') {
+        originalSheet.getRange(row, 1).setValue(iclSituation[cCriterion][testId]);
+        originalSheet.getRange(row+":"+row).setBackground(labelColor);
+        row++;
+      }
+      var eachNum = 1;
+      for (var l = 0; l < iclTest[testId].length; l++) {
+        originalSheet.getRange(row, 1).setValue(testId+'-'+eachNum);
+        originalSheet.getRange(row, 2).setDataValidation(getPulldownMenu()).setHorizontalAlignment('center');
+        originalSheet.getRange(row, 3).setValue(clevel).setHorizontalAlignment('center');
+        originalSheet.getRange(row, 4).setValue(iclTest[testId][l]['implement'].join("\n"));
+        originalSheet.getRange(row, 5).setValue(iclTest[testId][l]['test']);
+        originalSheet.getRange(row+":"+row).setVerticalAlignment('top');
+        row++;
+        eachNum++;
+      }
+    }
+  }
+  return {'row': row, 'originalSheet':originalSheet};
 }
 
 /**

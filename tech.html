@@ -27,7 +27,7 @@
         .withSuccessHandler(
           function(ui) {
             // Englsih
-            if (ui.length == 0) return;
+            if (Object.keys(ui).length == 0) return;
             
             // other language
             lang.ui = ui;

@@ -27,7 +27,7 @@
         .withSuccessHandler(
           function(ui) {
             // Englsih
-            if (ui.length == 0) return;
+            if (Object.keys(ui).length == 0) return;
             
             // other language
             lang.ui = ui;
@@ -37,6 +37,7 @@
             $("#issue-image-title").html(ui['image']);
             $("#upload-image").val(ui['upload']);
             $("#explanation-title").html(ui['explanation']);
+            $("#test-id-title").html(ui['test-id']);
             $("#criteria-title").html(ui['criterion']);
             $("#tech-title").html(ui['tech']);
             $("#places-title").html(ui['places']);
@@ -80,7 +81,7 @@
               $('#techs').append($('<tr class="'+classname+' tech-row"></tr>').append($('<th colspan="3"></th>').html(ret['techs'][i][0])));
               for (var j = 0; j < ret['techs'][i][1].length; j++) {
                 var each = ret['techs'][i][1][j];
-                
+                                
                 // Techniques for WCAG 2.1 has directory
                 var url = ret['urlbase']['tech'][ret['docurl']];
                 if (ret['type'] == 'wcag21' && ret['lang'] == 'en') {
@@ -101,6 +102,16 @@
               }
             }
 
+            for(var i = 0; i < ret['test-id'].length; i++) {
+              var criterion = ret['test-id'][i][1];
+              var idname = criterion.replace(/\./g, '_');
+              $('#test-id').append($('<tr></tr>')
+                         .append($('<td></td>').html('<input type="checkbox" id="'+idname+'" value="'+criterion+'">'))
+                         .append($('<td></td>').html('<label for="'+idname+'">'+criterion+'</label>'))
+                        );
+            }
+
+
             for(var i = 0; i < ret['criteria'].length; i++) {
               if (ret['type'] == 'wcag20' && ret['criteria21'].indexOf(ret['criteria'][i][1]) >= 0) continue;
               if (ret['criteria'][i][0].length > ret['level'].length) continue;
@@ -118,10 +129,10 @@
               var level = ret['criteria'][i][0];
               var criterion = ret['criteria'][i][1];
               var exp = ret['criteria'][i][2];
-              var classname = criterion.replace(/\./g, '_');
+              var idname = criterion.replace(/\./g, '_')+'-criterion';
               $('#criteria').append($('<tr></tr>')
-                         .append($('<td></td>').html('<input type="checkbox" class="criteria-chk" id="'+classname+'" value="'+criterion+'">'))
-                         .append($('<td></td>').html('<label for="'+classname+'">'+criterion+': '+exp+'</label>'))
+                         .append($('<td></td>').html('<input type="checkbox" class="criteria-chk" id="'+idname+'" value="'+criterion+'">'))
+                         .append($('<td></td>').html('<label for="'+idname+'">'+criterion+': '+exp+'</label>'))
                          .append($('<td></td>').html('<a target="_blank" href="'+url+'.html"><i class="fas fa-external-link-alt"></i><span style="position: absolute;width: 1px;height: 1px;clip: rect(0 0 0 0);">Open '+criterion+'</span></a>'))
                         );
             }
@@ -159,7 +170,7 @@
               $("input#common").prop('checked', 'checked');
             }
 
-            var checkboxes = ['checked', 'techs', 'places'];
+            var checkboxes = ['testId', 'checked', 'techs', 'places'];
             for (var i = 0; i < checkboxes.length; i++) {
               var checked = ret['vals'][checkboxes[i]].split(/,/);
               for (var j = 0; j < checked.length; j++) {
@@ -177,6 +188,11 @@
      */
     function onApplyIssueClick() {
       $('#message-area').hide();
+      
+      var testIds = [];
+      $('#test-id').find(':checked').each(function(){
+        testIds.push($(this).val());
+      });
       
       var checked = [];
       $('#criteria').find(':checked').each(function(){
@@ -202,6 +218,7 @@
         $('#error-notice').val(),
         $('#html').val(),
         $('#explanation').val(),
+        testIds.join(', '), // TT20 Only
         checked.join(', '),
         techs.join(', '),
         places.join(', '),
@@ -294,6 +311,10 @@
   <tr>
     <th><label for="explanation" id="explanation-title">Explanation</label></th>
     <td><textarea id="explanation" style="width:100%;height:100px;"></textarea></td>
+  </tr>
+  <tr>
+    <th id="test-id-title">Test ID</th>
+    <td style="position:relative;height:150px;"><div style="position:absolute;top:0;height:160px;overflow:auto;overflow-x:hidden;padding:5px"><table id="test-id" style="width: 100%"></table></div></td>
   </tr>
   <tr>
     <th id="criteria-title">Criteria</th>

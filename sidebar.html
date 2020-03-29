@@ -9,7 +9,7 @@
      * lang
      */
     var lang = {};
-  
+
     /**
      * events
      */
@@ -19,14 +19,14 @@
         .withSuccessHandler(
           function(ui) {
             // Englsih
-            if (ui.length == 0) return;
-            
-            // other language
+            if (Object.keys(ui).length == 0) return;
+
+            // other languages
+            // ui['lang'] is exist. if button width must be changed. use this variable.
             lang.ui = ui;
-            $("#show-sheet").html(ui['sheet']);
-            $("#show-value").html(ui['value']);
+            $("#show-examination").html(ui['examination']);
             $("#show-report").html(ui['report']);
-            $("#evaluate").html(ui['evaluate']);
+            $("#value-title").html(ui['value']);
             $("#test-type-title").html(ui['test-type']);
             $("#urls-title").html(ui['sheet-control']);
             $("#generate-sheets").html(ui['generate']);
@@ -38,84 +38,82 @@
             $("#genarate-config").html(ui['generate-config-sheet']);
             $("#insert-techniques-title").html(ui['insert-techniques-sheet']);
             $("#do-insert-tech").html(ui['insert-techniques-sheet']);
-            $("#do-bulk-insert-tech").html(ui['get-techniques']);
-            $("#bulk-edit-title").html(ui['bulk-edit']);
-            $("#bulk-criterion-title").html(ui['criterion']);
-            $("#bulk-check-title").html(ui['check']);
-            $("#bulk-tech-title").html(ui['tech']);
-            $("#bulk-memo-title").html(ui['memo']);
-            $("#do-bulk-edit").html(ui['apply']);
             $("#select-check-title").html(ui['select-check']);
-            $("#do-edit-value").html(ui['set-all-to-t']);
+            $("#do-set-all-to-t").html(ui['set-all-to-t']);
             $("#using-template-title").html(ui['using-template']);
-            $("#make-same-as-template-title").html(ui['using-template']);
-            $("#do-make-same-as-template").html(ui['apply']);
+            $("#do-template-apply-all").html(ui['apply-tpl-all']);
+            $("#do-template-apply-row").html(ui['apply-tpl-row']);
             $("#generate-template").html(ui['generate-template']);
             $("#template-caution").html(ui['template-caution']);
-            $("#do-make-same-as-template").html(ui['enable-apply']);
             $("#issue-control-title").html(ui['issue-control-title']);
             $("#add-edit-issue").html(ui['add-edit-issue']);
             $("#show-issue").html(ui['show-issue']);
-            $("#export-reprot-title").html(ui['export-reprot-title']);
+            $("#export-html-title").html(ui['export-html-title']);
             $("#export-html").html(ui['export-html']);
             $("#export-issue").html(ui['export-issues']);
+            $("#evaluate-title").html(ui['evaluate']);
+            $("#do-evaluate").html(ui['do-evaluate']);
+            $("#do-evaluate-icl").html(ui['do-evaluate-icl']);
           })
         .getLangSet('ui');
-        
+
       // on load
       $('#template-caution').hide();
       $('#message-area').hide();
-      $('#pannel-value').hide();
       $('#pannel-report').hide();
 
       // on change
       $('#test-type').change(changeTestType);
       $('#evaluate-level').change(generateBulkCriteia);
-      $('#make-same-as-template').change(changeMakeSameAsTemplate);
       $('#delete-sheets').change(changeControlStatus);
 
       // on click
       $('#generate-sheets').bind('click', {sheets:"*urls*", targetId:'#generate-sheets'}, onGenerateSheetClick);
       $('#generate-template').bind('click', {sheets:"*Template*", targetId:'#generate-template'}, onGenerateSheetClick);
       $('#control-sheets').click(onControlSheetClick);
-      $('#evaluate').click(onEvaluateClick);
-      $('#do-edit-value').click(onDoEditValueClick);
-      $('#do-bulk-edit').click(onDoBulkCheckClick);
-      $('#do-make-same-as-template').click(onDoMakeSameAsTemplateClick);
+      $('#do-evaluate').click(onEvaluateClick);
+      $('#do-evaluate-icl').click(onEvaluateIclClick);
+      $('#do-set-all-to-t').click(onDoSetAllToTClick);
+      $('#do-template-apply-all').click(onDoTemplateApplyAllClick);
+      $('#do-template-apply-row').click(onDoTemplateApplyRowClick);
       $('#do-insert-tech').click(onShowTechDialogClick);
-      $('#do-bulk-insert-tech').click(onShowBulkTechDialogClick);
       $('#add-edit-issue').click(onAddIssueClick);
       $('#show-issue').click(onShowIssueClick);
-      $('#export-html').click(onExportHtmlClick);
       $('#export-issue').click(onExportIssueClick);
+      $('#export-html').click(onExportHtmlClick);
+      $('#export-icl-html').click(onExportIclHtmlClick);
       $('#add-screenshot').click(onAddScreenshotClick);
       $('#genarate-config').click(onGenarateConfigClick);
 
       // menu
-      $('#show-sheet').on(
+      $('#show-examination').on(
         'click',
         function(){
-          $('#pannel-sheet').show();
-          $('#pannel-value').hide();
-          $('#pannel-report').hide();
-        }
-      );
-      $('#show-value').on(
-        'click',
-        function(){
-          $('#pannel-sheet').hide();
-          $('#pannel-value').show();
+          $('#show-examination').addClass('blue');
+          $('#show-report').removeClass('blue');
+          $('#pannel-examination').show();
           $('#pannel-report').hide();
         }
       );
       $('#show-report').on(
         'click',
         function(){
-          $('#pannel-sheet').hide();
-          $('#pannel-value').hide();
+          $('#show-examination').removeClass('blue');
+          $('#show-report').addClass('blue');
+          $('#pannel-examination').hide();
           $('#pannel-report').show();
         }
       );
+
+      // ICL (Japanese Only)
+      google.script.run
+        .withSuccessHandler(
+          function(ret) {
+            if (ret != 'ja') {
+              $('#do-evaluate-icl').hide();
+            }
+          })
+        .getProp('lang');
 
       // default value
       setDefaultValue();
@@ -213,19 +211,6 @@
     }
 
     /**
-     * change Make same as template
-     */
-    function changeMakeSameAsTemplate() {
-      if ($('#make-same-as-template').prop('checked')) {
-        $('#do-make-same-as-template').prop('disabled', false);
-        $('#template-caution').show();
-      } else {
-        $('#do-make-same-as-template').prop('disabled', true);
-        $('#template-caution').hide();
-      }
-    }
-
-    /**
      * Generate Sheets
      * @param Object sheetsObj
      */
@@ -248,7 +233,7 @@
           })
         .generateSheets(sheets, $('#lang').val(), $('#test-type').val(), $('#evaluate-level').val(), targetId);
     }
-    
+
     /**
      * Generate Config Sheets
      */
@@ -297,15 +282,15 @@
           .getSheets();
       }
     }
-    
+
     /**
      * Edit Value
      */
-    function onDoEditValueClick() {
+    function onDoSetAllToTClick() {
       $('#message-area').hide();
       var msg = Object.keys(lang.ui).length == 0 ? 'This Page\'s All "Check will be overwritten."' : lang.ui['this-pages-all-check-will-be-overwritten'];
       if (confirm(msg) === false) return;
-      
+
       google.script.run
         .withSuccessHandler(
           function(msg) {
@@ -315,29 +300,7 @@
           function(msg) {
             showStatus(msg, 'error');
           })
-        .editValue($('#test-type').val(), $('#evaluate-level').val());
-    }
-
-    /**
-     * Bulk Edit
-     */
-    function onDoBulkCheckClick() {
-      $('#message-area').hide();
-      var msg = Object.keys(lang.ui).length == 0 ? 'All Page\'s check will be overwritten.' : lang.ui['all-pages-check-will-be-overwritten'];
-      if (confirm(msg) === false) return;
-
-      google.script.run
-        .withSuccessHandler(
-          function(msg, element) {
-            showStatus(msg);
-            $('#do-edit-value').prop('disabled', true);
-            $('#edit-value').prop('checked', false);
-          })
-        .withFailureHandler(
-          function(msg, element) {
-            showStatus(msg, 'error');
-          })
-        .bulkEdit($('#bulk-target').val(), $('#bulk-check').val(), $('#bulk-tech').val(), $('#bulk-memo').val());
+        .setAllToT($('#test-type').val(), $('#evaluate-level').val());
     }
 
     /**
@@ -354,18 +317,6 @@
             google.script.run.showDialog('tech', 500, 400, title);
           })
         .getFirstColumn();
-    }
-
-    /**
-     * show Tech dialog
-     */
-    function onShowBulkTechDialogClick() {
-      $('#message-area').hide();
-      var criterion = $('#bulk-target').val();
-      var checked = $('#bulk-tech').val();
-      var html = '<input type="hidden" id="criterion" value="'+criterion+'"><input type="hidden" id="checked" value="'+checked+'">';
-      var title = Object.keys(lang.ui).length == 0 ? 'Techniques for '+criterion : lang.ui['tech-for'].replace("%s", criterion);
-      google.script.run.showDialog('tech', 500, 400, title, html);
     }
 
     /**
@@ -393,15 +344,17 @@
       var title = Object.keys(lang.ui).length == 0 ? 'Issue List"' : lang.ui['issue-list'];
       google.script.run.showDialog('issuelist', 500, 400, title);
     }
-    
+
     /**
      * Make same as template
      */
-    function onDoMakeSameAsTemplateClick() {
+    function onDoTemplateApplyAllClick() {
       $('#message-area').hide();
       var msg = Object.keys(lang.ui).length == 0 ? 'CAUTION: All result will be overwritten.' : lang.ui['caution-using-template'];
       if (confirm(msg) === false) return;
-      
+      var msg = Object.keys(lang.ui).length == 0 ? 'Now overwriting' : lang.ui['now-overwriting'];
+      showStatus(msg);
+
       google.script.run
         .withSuccessHandler(
           function(msg) {
@@ -411,7 +364,29 @@
           function(msg) {
             showStatus(msg, 'error');
           })
-        .makeSameAsTemplate();
+        .templateApplyAll();
+    }
+
+    /**
+     * Make same as template row
+     */
+    function onDoTemplateApplyRowClick() {
+      $('#message-area').hide();
+      var msg = Object.keys(lang.ui).length == 0 ? 'CAUTION: All result will be overwritten.' : lang.ui['caution-using-template'];
+      if (confirm(msg) === false) return;
+      var msg = Object.keys(lang.ui).length == 0 ? 'Now overwriting' : lang.ui['now-overwriting'];
+      showStatus(msg);
+
+      google.script.run
+        .withSuccessHandler(
+          function(msg) {
+            showStatus(msg);
+          })
+        .withFailureHandler(
+          function(msg) {
+            showStatus(msg, 'error');
+          })
+        .templateApplyRow();
     }
 
     /**
@@ -436,17 +411,41 @@
      */
     function onEvaluateClick() {
       $('#message-area').hide();
+      $('#do-evaluate').prop('disabled', true);
 
       google.script.run
         .withSuccessHandler(
           function(msg, element) {
             showStatus(msg);
+            $('#do-evaluate').prop('disabled', false);
           })
         .withFailureHandler(
           function(msg, element) {
             showStatus(msg, 'error');
+            $('#do-evaluate').prop('disabled', false);
           })
         .evaluate($('#lang').val(), $('#test-type').val(), $('#evaluate-level').val());
+    }
+
+    /**
+     * Evaluate ICL
+     */
+    function onEvaluateIclClick() {
+      $('#message-area').hide();
+      $('#do-evaluate-icl').prop('disabled', true);
+
+      google.script.run
+        .withSuccessHandler(
+          function(msg, element) {
+            showStatus(msg);
+            $('#do-evaluate-icl').prop('disabled', false);
+          })
+        .withFailureHandler(
+          function(msg, element) {
+            showStatus(msg, 'error');
+            $('#do-evaluate-icl').prop('disabled', false);
+          })
+        .evaluateIcl($('#test-type').val(), $('#evaluate-level').val());
     }
 
     /**
@@ -465,6 +464,24 @@
             showStatus(msg);
           })
         .exportHtml($('#test-type').val(), $('#evaluate-level').val());
+    }
+
+    /**
+     * Export ICL HTML
+     */
+    function onExportIclHtmlClick() {
+      $('#message-area').hide();
+
+      google.script.run
+        .withSuccessHandler(
+          function(msg, element) {
+            showStatus(msg);
+          })
+        .withFailureHandler(
+          function(msg, element) {
+            showStatus(msg);
+          })
+        .exportIclHtml();
     }
 
     /**
@@ -500,13 +517,11 @@
 
 <body>
   <div class="sidebar branding-below">
-      <button id="show-sheet" style="width:4.5em;min-width:4.5em;">Sheet</button>
-      <button id="show-value" style="width:4.5em;min-width:4.5em;">Value</button>
-      <button id="show-report" style="width:5.5em;min-width:5.5em;">Report</button>
-      <button id="evaluate" class="blue" style="width:5.5em;min-width:5.5em;">Evaluate</button>
+      <button id="show-examination" class="blue">Exam.</button>
+      <button id="show-report">Report</button>
       <hr>
 
-    <div id="pannel-sheet">
+    <div id="pannel-examination">
     <fieldset class="block">
       <legend id="test-type-title">Test type</legend>
       <select id="lang" title="Language" style="width:3.5em;min-width:3.5em;">
@@ -525,80 +540,35 @@
         <option value="AAA">AAA</option>
       </select>
     </fieldset>
-    
+
     <fieldset class="block">
       <legend><label for="urls" id="urls-title">Sheet control</label></legend>
       <textarea style="width:100%;" id="urls"></textarea>
       <button id="generate-sheets">Generate</button>
-      <button id="control-sheets">Get Sheets</button>
+      <button id="control-sheets">Get sheets</button>
       <input type="checkbox" id="delete-sheets"><label id="delete-sheets-title" for="delete-sheets">Delete</label>
-    </fieldset>
-    
-    <fieldset class="block">
-      <legend><label for="screenshot" id="screenshot-title">Screenshot</label></legend>
-      <button id="add-screenshot">Add screenshot</button>
-    </fieldset>
-
-    <fieldset class="block">
-      <legend><label for="genarate-config" id="config-title">Config</label></legend>
-      <button id="genarate-config">Generate config sheet</button>
+      <p><button id="genarate-config">Generate config sheet</button></p>
+      <hr>
+      <p><button id="generate-template">Generate template sheet</button></p>
+      <p><button id="do-template-apply-all">Apply all</button></p>
+      <p><button id="do-template-apply-row">Apply current row</button></p>
     </fieldset>
 
     <fieldset class="block">
-      <legend id="using-template-title">Using template</legend>
-      <button id="generate-template">Generate</button>
-      <button id="do-make-same-as-template">Apply</button>
+      <legend id="value-title">Value</legend>
+      <p><button id="add-screenshot">Add screenshot</button></p>
+      <p><button id="do-set-all-to-t">Set all to 'T'</button></p>
+      <p><button id="do-insert-tech">Insert Techs to sheet</button></p>
     </fieldset>
     </div>
-  
-    <div id="pannel-value">
 
-    <fieldset class="block">
-      <legend id="insert-techniques-title">Insert techniques</legend>
-      <button id="do-insert-tech">Insert Techs to sheet</button>
-    </fieldset>
-    
-    <fieldset class="block">
-      <legend id="bulk-edit-title">Bulk edit</legend>
-      <table>
-      <tr>
-        <th style="white-space:nowrap;padding: 5px;"><label for="bulk-target" id="bulk-criterion-title">Criterion</label></th>
-        <td>
-        <select id="bulk-target" style="width:5em;min-width:5em;">
-          <option></option>
-        </select>
-        </td>
-      </tr>
-      <tr>
-        <th><label for="bulk-check" id="bulk-check-title">Check</label></th>
-        <td>
-        <select id="bulk-check" style="width:4.5em;min-width:4.5em;">
-          <option value="Yet">Yet</option>
-          <option value="DNA">DNA</option>
-          <option value="T">T</option>
-          <option value="F">F</option>
-        </select>
-        </td>
-      </tr>
-      <tr>
-        <th><label for="bulk-tech" id="bulk-tech-title">Tech</label></th>
-        <td><input type="text" id="bulk-tech" style="width:4.5em;min-width:4.5em;"> <button id="do-bulk-insert-tech">Get Techs</button></td>
-      </tr>
-      <tr>
-        <th><label for="bulk-memo" id="bulk-memo-title">Memo</label></th>
-        <td><input type="text" id="bulk-memo"></td>
-      </tr>
-      </table>
-      <button id="do-bulk-edit">Apply</button>
-    </fieldset>
-
-    <fieldset class="block">
-      <legend id="select-check-title">Select "Check"</legend>
-      <button id="do-edit-value">Set all to 'T'</button>
-    </fieldset>
-    </div>
-    
     <div id="pannel-report">
+    <fieldset class="block">
+      <legend id="evaluate-title">Evaluate</legend>
+      <p><button id="do-evaluate">Evaluate</button></p>
+      <p><button id="do-evaluate-icl">Evaluate ICL</button></p>
+    </fieldset>
+
     <fieldset class="block">
       <legend id="issue-control-title">Issue Control</legend>
       <p><button id="add-edit-issue">Add/Edit Issue</button></p>
@@ -606,11 +576,11 @@
       <p><button id="export-issue">Export Issues</button></p>
     </fieldset>
     <fieldset class="block">
-      <legend id="export-reprot-title">Export Reprot</legend>
+      <legend id="export-html-title">Export Report</legend>
       <button id="export-html">Export HTML</button>
     </fieldset>
     </div>
-    
+
     <div id="message-area" style="margin-top:15px;background-color: #eeeeee;padding:5px;">
       <div id="sidebar-info"></div>
       <div id="sidebar-status"></div>

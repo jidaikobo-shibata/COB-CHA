@@ -3,7 +3,6 @@
  * Language file must contains following function:
  * - getCriteria[Lang] (example: getCriteriaEn)
  * - getTtCriteria[Lang]
- * - getTtCheckVal[Lang]
  * - getTechVal[Lang]
  */
 
@@ -111,7 +110,7 @@ function getTtCriteriaJa ()
     ['A',  '2.B',  '2.2.2-点滅、動き、スクロール: ユーザは、点滅、またはコンテンツをスクロール、停止、または非表示の移動を一時停止することができます。'],
     ['A',  '2.C',  '2.2.2-自動更新: ユーザは、自動的に更新されるコンテンツの更新頻度について、停止、非表示、一時停止といった制御をすることができます。'],
     ['A',  '2.D',  '4.1.2-自動更新の通知: ページには、コンテンツ内の各自動更新/変更の通知を提供します。'],
-    ['A',  '3.A',  '2.3.1-閃光: 閃光を放つコンテンツが発見されない場合、このテスト条件は、DNA（Do Not Apply）とします。閃光を放つコンテンツが見つかった場合、このYetと記録されるべきです。'],
+    ['A',  '3.A',  '2.3.1-閃光: 閃光を放つコンテンツが発見されない場合、このテスト条件は、DNA（Does Not Apply）とします。閃光を放つコンテンツが見つかった場合、このNT(Not Tested)と記録されるべきです。'],
     ['A',  '4.A',  '2.1.1-キーボードアクセス: すべての機能は、キーボードのみを使用してアクセスして実行することができます。'],
     ['A',  '4.B',  '2.1.1-キーストロークのタイミング非依存: 個々のキーストロークは、機能の活性化のための具体的なタイミングを必要としません。'],
     ['A',  '4.C',  '2.1.2-キーボードトラップなし: キーボードトラップは存在しません。'],
@@ -167,56 +166,8 @@ function getTtCriteriaJa ()
 //    ['',   '17.F', '503.4.2-description-control: User controls for audio descriptions are provided at the same menu level as the user controls for volume or program selection.'],
     ['AA', '18.A', '1.4.4-テキストのサイズ変更: コンテンツや機能を失うことなく、元のサイズの少なくとも200％にテキストを拡大するためのメカニズムがあります。'],
     ['AA', '19.A', '2.4.5-複数の手段: ウェブページのセット内のウェブページを検索する二つ以上の方法があります。'],
-    ['A',  '20.A', '4.1.1-構文解析: このテストでは、Yetと記録されるべきです。']
+    ['A',  '20.A', '4.1.1-構文解析: このテストでは、NT(Not Tested)と記録されるべきです。']
   ];
-}
-
-/**
- * trusted tester's check value
- * @return Array
- */
-function getTtCheckValJa ()
-{
-  return {
-    '1.1.1': ['7.A', '7.B', '7.C', '7.D', '7.E'],
-    '1.2.1': ['16.A', '16.B'],
-    '1.2.2': ['17.A'],
-    '1.2.3': ['16.A', '16.B'], // same as 1.2.1 temporary
-    '1.2.4': ['17.C'],
-    '1.2.5': ['17.B'],
-    '1.3.1': ['5.C', '10.B', '10.C', '10.D', '14.A', '14.B', '14.C', '15.A'],
-    '1.3.2': ['15.B'],
-    '1.3.3': ['13.B'],
-    '1.4.1': ['13.A'],
-    '1.4.2': ['2.A'],
-    '1.4.3': ['13.C'],
-    '1.4.4': ['18.A'],
-    '1.4.5': ['7.E'],
-    '2.1.1': ['4.A', '4.B'],
-    '2.1.2': ['4.C'],
-    '2.2.1': ['8.A'],
-    '2.2.2': ['2.B', '2.C'],
-    '2.3.1': ['3.A'],
-    '2.4.1': ['9.A'],
-    '2.4.2': ['12.A', '12.B'],
-    '2.4.3': ['4.F', '4.G', '4.H'],
-    '2.4.4': ['6.A'],
-    '2.4.5': ['19.A'],
-    '2.4.6': ['5.B', '10.A'],
-    '2.4.7': ['4.D'],
-    '3.1.1': ['11.A'],
-    '3.1.2': ['11.B'],
-    '3.2.1': ['4.E'],
-    '3.2.2': ['5.D'],
-    '3.2.3': ['9.B'],
-    '3.2.4': ['9.C'],
-    '3.3.1': ['5.F'],
-    '3.3.2': ['5.A'],
-    '3.3.3': ['5.G'],
-    '3.3.4': ['5.H'],
-    '4.1.1': ['20.A'],
-    '4.1.2': ['2.D', '5.E', '6.B', '12.C', '12.D']
-  };
 }
 
 /**
@@ -694,8 +645,11 @@ function getTechValJa ()
 function getUiJa ()
 {
   return {
+    'lang': 'ja',
+    
     'control-panel-title': 'コントロールパネル',
     'show-control-panel': 'コントロールパネルを表示',
+    'help': 'ヘルプ',
     'no-target-page-exists': '対象のページが存在しません。',
     'date': '日付',
     'level': 'レベル',
@@ -708,6 +662,7 @@ function getUiJa ()
     'all-pages-check-will-be-overwritten': '全てのページの値が上書きされます。',
     'config-sheet-already-exists': 'コンフィグシートが既に存在しています。',
     'generate-config-sheet': 'コンフィグシートを生成しました。',
+    'generate-icl-sheet': '実装チェックリストを生成しました。',
     'current-sheet-is-not-for-webpage': 'このシートはウェブページ用ではありません。',
     'screenshot-uploaded': 'スクリーンショットを登録しました。',
     'close-btn': '閉じる',
@@ -737,6 +692,7 @@ function getUiJa ()
     'all-page': 'すべてのページ',
     
     'sheet': 'シート',
+    'examination': '試験',
     'value': '値',
     'report': 'レポート',
     'evaluate': '集計',
@@ -753,31 +709,51 @@ function getUiJa ()
     'generate-config-sheet': 'コンフィグシート生成',
     'get-techniques': '達成方法を取得',
     'insert-techniques-sheet': '達成方法をシートに挿入',
-    'bulk-edit': '一括編集',
     'criterion': '達成基準',
+    'test-id': 'テストID',
     'check': 'チェック',
     'tech': '達成方法',
     'tech-for': '%s の達成方法',
     'memo': '備考',
-    'apply': '適用する',
+    'apply-tpl-all': 'テンプレートを適用',
+    'apply-tpl-row': 'テンプレートの選択行のみ適用',
     'select-check': '「チェック」を選択',
     'set-all-to-t': 'すべてTにする',
     'enable-set-all-to-t': '「すべてTにする」を有効化',
     'using-template': 'テンプレートの使用',
-    'no-template-found': 'テンプレートが見つかりませんでした。',
-    'generate-template': 'テンプレートの生成',
-    'make-same-as-template-title': '「適用する」を有効化',
+    'no-template-found': 'テンプレートが見つかりませんでした',
+    'is-not-template': 'このシートはテンプレートではありません',
+    'is-not-appropriate-row': '値の行のみが対象です',
+    'generate-template': 'テンプレートシートの生成',
     'template-caution': '注意！: 全てのシートの値が上書きされます',
+    'now-overwriting': '上書きしています',
     'issue-control-title': '問題点レポート',
     'add-edit-issue': '問題点を新規作成/編集',
     'show-issue': 'このページの問題点一覧',
     'issue-list': '問題点一覧',
     'issue-report': '問題点レポート',
-    'export-reprot-title': 'レポート出力',
+    'export-html-title': 'レポート出力',
     'export-html': '試験結果HTMLを出力',
+    'report-criterion-site': 'サイトで達成している達成レベル',
+    'report-criterion-page': 'ページで達成している達成レベル',
     'issue-exported': '問題点レポートを出力しました。',
-    'export-html': '試験結果HTMLを出力',
     'file-exported': '%s のファイルを生成しました。',
-    'export-issues': '問題点レポートを出力'
+    'export-issues': '問題点レポートを出力',
+    'do-evaluate': '試験結果を集計する',
+    'do-evaluate-icl': '実装チェックリストを集計する',
+    
+    'testtype-exp': 'WCAG 2.0、2.1もしくはTrusted Testerのいずれかから試験の方式を選択し、あわせて達成レベルを選択してください',
+    'sheetcontrol-exp': '1行に1つのURLを入力し、「シート生成」を押すと、URLの数だけシートが生成されます。 「シート取得」を押すと、すべてのURLのシートがtextareaに取得されます。「削除」をチェックすると、textareaにあるシートを削除できます。',
+    'addscreenshot-exp': 'ウェブページのスクリーンショットをアップロードできます。アスタリスク付きの名前のシート以外をアクティブにする必要があります。',
+    'generateconfig-exp': '「*Config*」という名前のコンフィグ用シートを生成します',
+    'usingtemplate-exp': '「テンプレートの使用」の下の「テンプレートの生成」を押すことで、テストの種類とレベルに応じてテンプレートシートを生成します。「適用する」を押して、URLのシートにテンプレートを適用します。',
+    'inserttechniques-exp': '「達成方法をシートに挿入」を押すと、WCAGの達成基準に従ってダイアログが表示されます。アクティブセルは列Dに配置する必要があります。',
+    'bulkedit-exp': 'すべてのURLシートで、各達成基準に設定したテスト結果を適用できます。',
+    'selectcheck-exp': '「すべてTにする」を押すと、URLのアクティブシートのテスト結果がTに変わります。',
+    'addeditissue-exp': '「*Issue*」という名前のシートを生成し（存在しない場合）、ダイアログで入力した課題を*Issue*シートに追加します。アクティブセルが既存の問題点にある場合は、編集します。',
+    'showissue-exp': 'アクティブなURLシートに関連する問題点を表示します。',
+    'exportissues-exp': 'ウェブサイトの問題点を記載したHTMLファイルをGoogleドライブに生成します。',
+    'exportreport-exp': '「試験結果HTMLを出力」を押し​​て、ウェブサイトのテスト結果を記載したHTMLファイルをGoogleドライブに生成します。',
+    'evaluate-exp': 'URLのシートの記録に従ってテスト結果を評価します。存在しない場合、「*Result*」という名前のテスト結果シートを生成します。'
   };
 }

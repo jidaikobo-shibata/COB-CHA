@@ -26,6 +26,50 @@ var cCheckVal = [
 ];
 
 /**
+ * trusted tester's check value
+ */
+var ttCheckVal = {
+  '1.1.1': ['7.A', '7.B', '7.C', '7.D', '7.E'],
+  '1.2.1': ['16.A', '16.B'],
+  '1.2.2': ['17.A'],
+  '1.2.3': ['16.A', '16.B'], // same as 1.2.1 temporary
+  '1.2.4': ['17.C'],
+  '1.2.5': ['17.B'],
+  '1.3.1': ['5.C', '10.B', '10.C', '10.D', '14.A', '14.B', '14.C', '15.A'],
+  '1.3.2': ['15.B'],
+  '1.3.3': ['13.B'],
+  '1.4.1': ['13.A'],
+  '1.4.2': ['2.A'],
+  '1.4.3': ['13.C'],
+  '1.4.4': ['18.A'],
+  '1.4.5': ['7.E'],
+  '2.1.1': ['4.A', '4.B'],
+  '2.1.2': ['4.C'],
+  '2.2.1': ['8.A'],
+  '2.2.2': ['2.B', '2.C'],
+  '2.3.1': ['3.A'],
+  '2.4.1': ['9.A'],
+  '2.4.2': ['12.A', '12.B'],
+  '2.4.3': ['4.F', '4.G', '4.H'],
+  '2.4.4': ['6.A'],
+  '2.4.5': ['19.A'],
+  '2.4.6': ['5.B', '10.A'],
+  '2.4.7': ['4.D'],
+  '3.1.1': ['11.A'],
+  '3.1.2': ['11.B'],
+  '3.2.1': ['4.E'],
+  '3.2.2': ['5.D'],
+  '3.2.3': ['9.B'],
+  '3.2.4': ['9.C'],
+  '3.3.1': ['5.F'],
+  '3.3.2': ['5.A'],
+  '3.3.3': ['5.G'],
+  '3.3.4': ['5.H'],
+  '4.1.1': ['20.A'],
+  '4.1.2': ['2.D', '5.E', '6.B', '12.C', '12.D']
+};
+
+/**
  * Non-Interference
  */
 var nonInterference = [
@@ -68,18 +112,21 @@ var techDirAbbr = {
 /**
  * global variables
  */
-var resultSheetName = '*Result*';
-var issueSheetName = '*Issue*';
-var configSheetName = '*Config*';
-var templateSheetName = '*Template*';
+var resultSheetName    = '*Result*';
+var issueSheetName     = '*Issue*';
+var configSheetName    = '*Config*';
+var templateSheetName  = '*Template*';
+var iclSheetName       = '*ICL*'; // Japanese Only
 var resourceFolderName = 'resource';
-var exportFolderName = 'export';
-var imagesFolderName = 'images';
-var issueFileName = 'issue-report';
-var trueColor    = '#f5fff3';
-var falseColor   = '#f7f3ff';
-var labelColor   = '#eeeeee';
-var doubleAColor = '#eeeefe';
+var exportFolderName   = 'export';
+var imagesFolderName   = 'images';
+var issueFileName      = 'issue-report';
+var trueColor          = '#f5fff3';
+var falseColor         = '#f7f3ff';
+var labelColor         = '#eeeeee';
+var doubleAColor       = '#eeeefe';
+var labelColorDark     = '#87823e';
+var labelColorDarkText = '#ffffff';
 
 /**
  * onInstall
@@ -101,6 +148,7 @@ function onOpen (e) {
     menu.addItem('Getting Started', 'askEnabled');
   } else {
     menu.addItem(getUiLang('show-control-panel', 'Show Control Panel'), 'showSidebar');
+    menu.addItem(getUiLang('help', 'Help'), 'showHelp');
   }
   menu.addToUi();
 }
@@ -282,6 +330,14 @@ function showSidebar() {
 }
 
 /**
+ * show help
+ * @return Void
+ */
+function showHelp() {
+  showDialog('help', 500, 400, getUiLang('help', 'Help'));
+}
+
+/**
  * show dialog
  * @param String sheetname
  * @param Integer width
@@ -312,7 +368,7 @@ function getFirstColumn() {
   var activeSheet = getActiveSheet();
   var activeRow = activeSheet.getActiveCell().getRow();
   var criterion = activeSheet.getRange(activeRow, 1).getValue();
-  criterion = criterion.match(/^\d\.\d\.\d+/) ? criterion : '';
+  criterion = criterion.match(/^\d\.\d\.\d+/) || criterion.match(/^\d+\.\w/) ? criterion : '';
   return criterion;
 }
 
@@ -349,9 +405,11 @@ function getLangSet(setName) {
     switch (setName) {
       case 'criteria':   return getCriteriaJa();
       case 'ttCriteria': return getTtCriteriaJa();
-      case 'ttCheckVal': return getTtCheckValJa();
       case 'tech':       return getTechValJa();
       case 'ui':         return getUiJa();
+      // ICL: Japanese Only
+      case 'iclSituation': return getIclSituation();
+      case 'iclTest':      return getIclTest();
     }
   }
   
@@ -359,7 +417,6 @@ function getLangSet(setName) {
   switch (setName) {
     case 'criteria':   return getCriteriaEn();
     case 'ttCriteria': return getTtCriteriaEn();
-    case 'ttCheckVal': return getTtCheckValEn();
     case 'tech':       return getTechValEn();
     case 'ui':         return {};
   }
@@ -377,6 +434,16 @@ function getUiLang(uiname, defaultStr) {
     return defaultStr;
   }
   return ui[uiname];
+}
+
+/**
+ * Get Using Criteria Set
+ * @param String testType
+ * @return Array
+ */
+function getUsingCriteria(testType) {
+  var set = testType.indexOf('wcag') >= 0 ? 'criteria' : 'ttCriteria' ;
+  return getLangSet(set);
 }
 
 /**
@@ -425,6 +492,7 @@ function getHtmlAndTitle(url) {
     "validateHttpsCertificates" : false,
     "followRedirects" : false,
   }
+  
   try {
     var res = UrlFetchApp.fetch(url, options).getContentText();
     var title = res.match(/<title>.+?<\/title>/ig);
@@ -433,4 +501,41 @@ function getHtmlAndTitle(url) {
   } catch(e) {
     return {'title': '', 'html': ''};
   }
+}
+
+/**
+ * wrapHtmlHeaderAndFooter
+ * @param String title
+ * @param String body
+ * @return String
+ */
+function wrapHtmlHeaderAndFooter(title, body) {
+  return '<!DOCTYPE html><html lang="'
+  +getProp('lang')
+  +'"><head><meta charset="utf-8"><title>'
+  +title
+  +'</title></head><body>'
+  +body
+  +'</body></html>';
+}
+
+/**
+ * escape html
+ * @thx https://qiita.com/saekis/items/c2b41cd8940923863791
+ * @return Void
+ */
+function escapeHtml (string) {
+  if (typeof string !== 'string') {
+    return string;
+  }
+  return string.replace(/[&'`"<>]/g, function(match) {
+    return {
+      '&': '&amp;',
+      "'": '&#x27;',
+      '`': '&#x60;',
+      '"': '&quot;',
+      '<': '&lt;',
+      '>': '&gt;',
+    }[match]
+  });
 }
