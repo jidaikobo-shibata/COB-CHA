@@ -18,9 +18,12 @@
       google.script.run
         .withSuccessHandler(
           function(ui) {
-            // Englsih
-            if (Object.keys(ui).length == 0) return;
-
+            // English
+            if (Object.keys(ui).length == 0) {
+              lang.ui = {};
+              return;
+            }
+            
             // other languages
             // ui['lang'] is exist. if button width must be changed. use this variable.
             lang.ui = ui;
@@ -453,15 +456,18 @@
      */
     function onExportHtmlClick() {
       $('#message-area').hide();
+      $('#export-html').prop('disabled', true);
 
       google.script.run
         .withSuccessHandler(
           function(msg, element) {
             showStatus(msg);
+            $('#export-html').prop('disabled', false);
           })
         .withFailureHandler(
           function(msg, element) {
             showStatus(msg);
+            $('#export-html').prop('disabled', false);
           })
         .exportHtml($('#test-type').val(), $('#evaluate-level').val());
     }
@@ -471,15 +477,18 @@
      */
     function onExportIclHtmlClick() {
       $('#message-area').hide();
+      $('#export-icl-html').prop('disabled', true);
 
       google.script.run
         .withSuccessHandler(
           function(msg, element) {
             showStatus(msg);
+            $('#export-icl-html').prop('disabled', false);
           })
         .withFailureHandler(
           function(msg, element) {
             showStatus(msg);
+            $('#export-icl-html').prop('disabled', false);
           })
         .exportIclHtml();
     }

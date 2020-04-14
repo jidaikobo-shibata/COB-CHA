@@ -14,6 +14,19 @@
     /**
      * events
      */
+    function preventFormSubmit() {
+      var forms = document.querySelectorAll('form');
+      for (var i = 0; i < forms.length; i++) {
+        forms[i].addEventListener('submit', function(event) {
+          event.preventDefault();
+        });
+      }
+    }
+    window.addEventListener('load', preventFormSubmit);
+    
+    /**
+     * events
+     */
     $(function() {
       google.script.run
         .withSuccessHandler(
@@ -26,8 +39,11 @@
       google.script.run
         .withSuccessHandler(
           function(ui) {
-            // Englsih
-            if (Object.keys(ui).length == 0) return;
+            // English
+            if (Object.keys(ui).length == 0) {
+              lang.ui = {};
+              return;
+            }
             
             // other language
             lang.ui = ui;
@@ -49,12 +65,11 @@
       google.script.run
         .withSuccessHandler(function (msg){
           $('#upload-image').prop('disabled', false);
-          
           $('#message-area').show();
           $('#sidebar-status').removeClass().html(msg);
         })
         .withFailureHandler(function (msg){
-          var msg = Object.keys(lang.ui).length == 0 ? 'Failed file Uploading' : lang.ui['fail-upload'];
+          var msg = Object.keys(lang.ui).length == 0 ? 'Failed file Uploading' : lang.ui['failed-upload'];
           $('#upload-image').prop('disabled', false);
           $('#message-area').show();
           $('#sidebar-status').addClass('error').html(msg);

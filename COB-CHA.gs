@@ -143,14 +143,13 @@ function onInstall(e) {
  * @return Void
  */
 function onOpen (e) {
-  var menu = SpreadsheetApp.getUi().createAddonMenu();
   if(e && e.authMode == 'NONE'){
+    var menu = SpreadsheetApp.getUi().createAddonMenu();
     menu.addItem('Getting Started', 'askEnabled');
+    menu.addToUi();
   } else {
-    menu.addItem(getUiLang('show-control-panel', 'Show Control Panel'), 'showSidebar');
-    menu.addItem(getUiLang('help', 'Help'), 'showHelp');
+    addShowControlPannel();
   }
-  menu.addToUi();
 }
 
 /**
@@ -163,6 +162,19 @@ function askEnabled() {
   var msg = 'Script has been enabled.';
   var ui = SpreadsheetApp.getUi();
   ui.alert(title, msg, ui.ButtonSet.OK);
+  var menu = SpreadsheetApp.getUi().createAddonMenu();
+  addShowControlPannel(menu)
+};
+
+/**
+ * add "Show Control Pannel" to menu
+ * @return Void
+ */
+function addShowControlPannel() {
+  var menu = SpreadsheetApp.getUi().createAddonMenu();
+  menu.addItem(getUiLang('show-control-panel', 'Show Control Panel'), 'showSidebar');
+  menu.addItem(getUiLang('help', 'Help'), 'showHelp');
+  menu.addToUi();
 };
 
 /**
@@ -325,7 +337,7 @@ function removeImageFormula(id) {
 function showSidebar() {
   var ui = HtmlService.createTemplateFromFile('sidebar')
                       .evaluate()
-                      .setTitle('COB-CHA'+getUiLang('control-panel-title', 'Control Panel'));
+                      .setTitle('COB-CHA'+getUiLang('control-panel-title', ' Control Panel'));
   SpreadsheetApp.getUi().showSidebar(ui);
 }
 
@@ -384,11 +396,13 @@ function getProp(prop) {
   var rets = activeSheet.getRange(1, 2, 1, 3).getValues();
   var vals = {};
   var userLocale = Session.getActiveUserLocale();
+  //  activeSheet.getRange(1,1).setValue(userLocale);
+  
   userLocale    = ['en', 'ja'].indexOf(userLocale) > -1 ? userLocale : 'en';
   vals['lang']  = ['en', 'ja'].indexOf(rets[0][0]) > -1 ? rets[0][0] : userLocale;
   vals['type']  = ['wcag20', 'wcag21', 'tt20'].indexOf(rets[0][1]) > -1 ? rets[0][1] : 'wcag21';
   vals['level'] = ['A', 'AA', 'AAA'].indexOf(rets[0][2]) > -1 ? rets[0][2] : 'AA';
-//  vals['lang']  = 'en';
+  //  vals['lang']  = 'en';
   getProp.vals = vals;
   
   return getProp.vals[prop];

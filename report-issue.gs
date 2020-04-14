@@ -55,12 +55,31 @@ function setIssueValue(isEdit) {
   }
   
   if (isEdit) {
+    var cellPlace = {
+      'issueId': 1,
+      'issueName': 2,
+      'issueVisibility': 3,
+      'errorNotice': 4,
+      'html': 5,
+      'explanation': 6,
+      'testId': 7,
+      'checked': 8,
+      'techs': 9,
+      'places': 10,
+      'image': 11,
+      'preview': 12,
+      'memo': 13
+    };
+    
     // issue sheet must be existed and activated
     var ss = getSpreadSheet();
     var issueSheet = ss.getSheetByName(issueSheetName);
     var activeRow = issueSheet.getActiveCell().getRow();
-    var i = 1;
+
     for (var key in ret['vals']) {
+      var i = cellPlace[key];
+      if (ret['type'] != 'tt20' && key == 'testId') continue;
+      i = ret['type'] != 'tt20' && i >= 7 ? i - 1 : i;
       var val = issueSheet.getRange(activeRow, i).getValue();
       if (val) {
         ret['vals'][key] = issueSheet.getRange(activeRow, i).getValue();
@@ -71,7 +90,7 @@ function setIssueValue(isEdit) {
     }
     ret['vals']['preview'] = removeImageFormula(ret['vals']['preview']);
   }
-
+    
   // to keep array order
   var criteria = getLangSet('criteria');
   var tmp = relTechsAndCriteria;

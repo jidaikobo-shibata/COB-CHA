@@ -26,13 +26,17 @@
       google.script.run
         .withSuccessHandler(
           function(ui) {
-            // Englsih
-            if (Object.keys(ui).length == 0) return;
+            setDefaultValue();
+            
+            // English
+            if (Object.keys(ui).length == 0) {
+              lang.ui = {};
+              return;
+            }
             
             // other language
             lang.ui = ui;
             $("#close-btn").html(ui['close-btn']);
-            setDefaultValue();
           })
         .getLangSet('ui');
         

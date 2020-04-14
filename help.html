@@ -25,8 +25,11 @@
       google.script.run
         .withSuccessHandler(
           function(ui) {
-            // Englsih
-            if (Object.keys(ui).length == 0) return;
+            // English
+            if (Object.keys(ui).length == 0) {
+              lang.ui = {};
+              return;
+            }
 
             // other language
             lang.ui = ui;

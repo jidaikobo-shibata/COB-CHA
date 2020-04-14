@@ -104,7 +104,7 @@ function getContextualTechs(criterion, checked) {
   var type = getProp('type');
   var docurl = lang+'-'+type;
   var docurlEn = 'en'+'-'+type;
-
+  
   return {'criterion': criterion, 'techs': rets, 'checked': checked, 'lang': lang, 'type': type, 'techDirAbbr': techDirAbbr, 'urlbase': urlbase, 'docurl': docurl, 'docurlEn': docurlEn};
 }
 
