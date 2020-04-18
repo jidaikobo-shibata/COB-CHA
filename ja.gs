@@ -649,7 +649,7 @@ function getUiJa ()
 
     'control-panel-title': 'コントロールパネル',
     'show-control-panel': 'コントロールパネルを表示',
-    'help': 'ヘルプ',
+    'help': 'COB-CHA ヘルプ',
     'no-target-page-exists': '対象のページが存在しません。',
     'date': '日付',
     'level': 'レベル',

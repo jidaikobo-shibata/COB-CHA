@@ -162,9 +162,6 @@ function generateSheets(urlstr, lang, testType, level, targetId) {
       added++;
     }
   }
-
-  // clean up sheet
-  cleanUpSheet();
   
   // generate result sheet
   generateResultSheet();
@@ -260,20 +257,6 @@ function generateResultSheet() {
     ss.deleteSheet(resultSheet);
   }
   ss.insertSheet(resultSheetName, 0);
-}
-
-/**
- * Clean up Sheet
- * @return Void
- */
-function cleanUpSheet() {
-  var ss = getSpreadSheet();
-  var defaultSheetNames = ['シート1', 'sheet1']; // There must be better code... :(
-  for (i = 0; i < defaultSheetNames.length; i++) {
-    if (ss.getSheetByName(defaultSheetNames[i])) {
-      ss.deleteSheet(ss.getSheetByName(defaultSheetNames[i]));
-    }
-  }
 }
 
 /**
