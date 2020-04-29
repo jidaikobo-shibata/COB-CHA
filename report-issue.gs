@@ -75,7 +75,6 @@ function setIssueValue(isEdit) {
     var ss = getSpreadSheet();
     var issueSheet = ss.getSheetByName(issueSheetName);
     var activeRow = issueSheet.getActiveCell().getRow();
-
     for (var key in ret['vals']) {
       var i = cellPlace[key];
       if (ret['type'] != 'tt20' && key == 'testId') continue;
@@ -89,8 +88,10 @@ function setIssueValue(isEdit) {
       i++;
     }
     ret['vals']['preview'] = removeImageFormula(ret['vals']['preview']);
+  } else {
+    ret['vals']['places'] = getUrlFromSheet(getActiveSheet());
   }
-    
+  
   // to keep array order
   var criteria = getLangSet('criteria');
   var tmp = relTechsAndCriteria;
@@ -109,7 +110,7 @@ function setIssueValue(isEdit) {
   ret['places'] = [];
   var all = getAllSheets();
   for (i = 0; i < all.length; i++) {
-    ret['places'].push(all[i].getName());
+    ret['places'].push(getUrlFromSheet(all[i]));
   }
  
   ret['urlbase'] = urlbase;
@@ -145,7 +146,7 @@ function addIssue(lang, testType, level) {
     issueSheet.getRange(2,  6).setValue(getUiLang('explanation', 'Explanation'));
     var col = 7;
     if (testType == 'tt20') {
-      issueSheet.getRange(2,  col).setValue(getUiLang('test-id', 'Test ID')); col++;
+      issueSheet.getRange(2, col).setValue(getUiLang('test-id', 'Test ID')); col++;
     }
     issueSheet.getRange(2, col).setValue(getUiLang('criterion', 'Criteria')); col++;
     issueSheet.getRange(2, col).setValue(getUiLang('tech', 'Techniques')); col++;
@@ -167,6 +168,10 @@ function addIssue(lang, testType, level) {
 function applyIssue(vals) {
   var ss = getSpreadSheet();
   var issueSheet = ss.getSheetByName(issueSheetName);
+  var testType = getProp('type');
+  if (testType != 'tt20') {
+    vals.splice(6, 1);
+  }
   
   // issue id - edit
   if (vals[0] > 0) {
@@ -438,7 +443,7 @@ function generateIssueReportHtml(str, vals, lang) {
     } else {
       for (var j = 0; j < vals[i]['places'].length; j++) {
         var url = vals[i]['places'][j].trim();
-        var eachTargetSheet = ss.getSheetByName(url);
+        var eachTargetSheet = getSheetByUrl(url);
         if (eachTargetSheet == null) continue;
         var pageTitle = eachTargetSheet.getRange(3, 2).getValue();
         tmp.push('<li><a href="'+url+'">'+pageTitle+'</a></li>');

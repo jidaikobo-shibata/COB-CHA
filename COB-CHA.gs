@@ -385,6 +385,33 @@ function getFirstColumn() {
 }
 
 /**
+ * Get URL from sheet
+ * @param Object sheet
+ * @return String
+ */
+function getUrlFromSheet(sheet) {
+  return sheet.getRange(2, 2).getValue();
+}
+
+/**
+ * Get sheet by URL
+ * @param String url
+ * @return Object
+ */
+function getSheetByUrl(url) {
+  if (getSheetByUrl.vals && getSheetByUrl.vals[url]) return getSheetByUrl.vals[url];
+
+  var vals = {};
+  var allSheets = getAllSheets();
+  for (var i = 0; i < allSheets.length; i++) {
+    var url = getUrlFromSheet(allSheets[i]);
+    vals[url] = allSheets[i];
+  }
+  getSheetByUrl.vals = vals;
+  return getSheetByUrl.vals[url];
+}
+
+/**
  * Get Property
  * @param String prop [lang, type, level]
  * @return String
@@ -468,10 +495,15 @@ function getUsingCriteria(testType) {
  */
 function addSheet(sheetname, template) {
   var ss = getSpreadSheet();
-  if (sheetname.length > 95) {
-    var tmpbase = sheetname.substr(0, 95);
+  // Microsoft Excel compatible
+  // Excel's sheetname cannot use : and /
+  sheetname = String(sheetname).replace(/https*:\/\//ig, '');
+ 
+  // Excel's sheetname must be under 31 chars
+  if (sheetname.length > 28) {
+    var tmpbase = sheetname.substr(0, 28);
     var tmp = tmpbase;
-    var i = 1;
+    var i = 2;
     while(ss.getSheetByName(tmp)) {
       var tmp = tmpbase+'-'+i;
       i++;

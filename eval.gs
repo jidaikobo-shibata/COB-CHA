@@ -99,7 +99,7 @@ function evaluate(lang, testType, level) {
   var row = 3;
   for (var i = 0; i < allSheets.length; i++) {
     if (allSheets[i].getName().charAt(0) == '*') continue;
-    var targetUrl = allSheets[i].getSheetName();
+    var targetUrl = getUrlFromSheet(allSheets[i]);
     activeSheet.getRange(row, 1).setValue('=HYPERLINK("'+getGoogleSpreadsheetUrl(ss.getId(), allSheets[i].getSheetId())+'","'+targetUrl+'")');
     activeSheet.getRange(row, 1).setComment(allSheets[i].getRange(3, 2).getValue());
    
@@ -263,7 +263,7 @@ function evaluateIcl(testType, level) {
 
   for (var i = 0; i < allSheets.length; i++) {
     if (allSheets[i].getName().charAt(0) == '*') continue;
-    var targetUrl = allSheets[i].getSheetName();
+    var targetUrl = getUrlFromSheet(allSheets[i]);
     iclSheet.getRange(1, col).setValue('=HYPERLINK("'+getGoogleSpreadsheetUrl(ss.getId(), allSheets[i].getSheetId())+'","'+numId+'")');
     iclSheet.getRange(1, col).setComment(targetUrl);
     iclSheet.setColumnWidth(col, 40)
