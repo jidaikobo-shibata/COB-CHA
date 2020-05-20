@@ -130,11 +130,12 @@ function setAllToT(testType, level) {
   var activeSheet = getActiveSheet();
   if (activeSheet.getName() == resultSheetName) return getUiLang('current-sheet-is-not-for-webpage', 'Current sheet is not for webpage');
 
+  var additionalCriteria = getAdditionalCriteria().split(/,/);
   var rows = 61; // WCAG 2.0 AAA
-  rows = testType == 'wcag20' && level == 'A'   ? 25 : rows;
-  rows = testType == 'wcag20' && level == 'AA'  ? 38 : rows;
-  rows = testType == 'wcag21' && level == 'A'   ? 30 : rows;
-  rows = testType == 'wcag21' && level == 'AA'  ? 50 : rows;
+  rows = testType == 'wcag20' && level == 'A'   ? 25 + additionalCriteria.length : rows;
+  rows = testType == 'wcag20' && level == 'AA'  ? 38 + additionalCriteria.length : rows;
+  rows = testType == 'wcag21' && level == 'A'   ? 30 + additionalCriteria.length : rows;
+  rows = testType == 'wcag21' && level == 'AA'  ? 50 + additionalCriteria.length : rows;
   rows = testType == 'wcag21' && level == 'AAA' ? 78 : rows;
   rows = testType == 'tt20' ? ttCriteria.length : rows;
 

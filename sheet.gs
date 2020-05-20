@@ -43,7 +43,7 @@ function generateSheets(urlstr, lang, testType, level, targetId) {
   var ss = getSpreadSheet();
   var alreadyExists = [];
   var added = 0;
-  
+
   // generate original sheet
   if (addSheet(urls[0]) == false) {
     alreadyExists.push(urls[0]);
@@ -90,7 +90,7 @@ function generateSheets(urlstr, lang, testType, level, targetId) {
     originalSheet.getRange('4:4').setHorizontalAlignment('center');
     
     // test type
-    var usingCriteria = getUsingCriteria(testType);
+    var usingCriteria = getUsingCriteria(testType, level);
     
     // complex language selection ...
     var docurl = lang+'-'+testType;
@@ -98,9 +98,6 @@ function generateSheets(urlstr, lang, testType, level, targetId) {
     // each row
     var row = 5;
     for (var j = 0; j < usingCriteria.length; j++) {
-      if (testType == 'wcag20' && criteria21.indexOf(usingCriteria[j][1]) >= 0) continue;
-      if (usingCriteria[j][0].length > level.length) continue;
-
       var langPointer = testType == 'wcag21' ? usingCriteria[j][4] : usingCriteria[j][3];
       langPointer = testType == 'wcag21' && lang == 'ja' ? usingCriteria[j][3] : langPointer;
       var urlPointer = docurl;
@@ -191,8 +188,6 @@ function generateIcl(originalSheet, row, usingCriteria, level) {
   var iclTest      = getLangSet('iclTest');
   
   for (var j = 0; j < usingCriteria.length; j++) {
-    if (criteria21.indexOf(usingCriteria[j][1]) >= 0) continue;
-    if (usingCriteria[j][0].length > level.length) continue;
     var clevel = usingCriteria[j][0];
     var cCriterion = usingCriteria[j][1];
     originalSheet.getRange(row, 1).setValue(cCriterion+': '+usingCriteria[j][2]);
@@ -224,26 +219,6 @@ function generateIcl(originalSheet, row, usingCriteria, level) {
     }
   }
   return {'row': row, 'originalSheet':originalSheet};
-}
-
-/**
- * Generate Config Sheet
- * @param String lang
- * @param String testType
- * @param String level
- * @return String
- */
-function generateConfigSheets(lang, testType, level) {
-  var ss = getSpreadSheet();
-  var configSheet = ss.getSheetByName(configSheetName);
-  if (configSheet) return getUiLang('config-sheet-already-exists', "Config Sheet is already exists.");
-  ss.insertSheet(configSheetName, 0);
-  var configsheet = ss.getSheetByName(configSheetName);
-  configsheet.activate();
-  setBasicValue(configsheet, lang, testType, level);
-  configsheet.getRange(2, 1).setValue('Name').setBackground(labelColor);
-  configsheet.getRange(3, 1).setValue('Report Date').setBackground(labelColor);
-  return getUiLang('generate-config-sheet', "Generate Config Sheet.");
 }
 
 /**

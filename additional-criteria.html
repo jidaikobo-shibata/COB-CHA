@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base target="_top">
+  <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
+  <link href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" rel="stylesheet">
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>
+    /**
+     * lang
+     */
+    var lang = {};
+    
+    /**
+     * events
+     */
+    $(function() {
+      google.script.run
+        .withSuccessHandler(
+          function(ret) {
+            $("html").attr('lang', ret);
+          })
+        .getProp('lang');
+        
+      // UI
+      google.script.run
+        .withSuccessHandler(
+          function(ui) {
+            // English
+            if (Object.keys(ui).length == 0) {
+              lang.ui = {};
+              return;
+            }
+            
+            // other language
+            lang.ui = ui;
+            $("#close-btn").html(ui['close-btn']);
+            $("#criteria-title").html(ui['criterion']);
+            $("#apply-additional-criteria").html(ui['set-additional-criteria']);
+          })
+        .getLangSet('ui');
+        
+      setDefaultValue();
+      $('#apply-additional-criteria').click(onApplyAdditionalCriteriaClick);
+    });
+    
+    /**
+     * set default value
+     * @param bool isEdit
+     */
+    function setDefaultValue() {
+      google.script.run
+        .withSuccessHandler(
+          function(ret) {
+
+            for(var i = 0; i < ret['criteria'].length; i++) {
+              if (ret['type'] == 'wcag20' && ret['criteria21'].indexOf(ret['criteria'][i][1]) >= 0) continue;
+              if (ret['criteria'][i][0].length <= ret['level'].length) continue;
+              
+              // complex language selection ...
+              var langPointer = ret['type'] == 'wcag21' ? ret['criteria'][i][4] : ret['criteria'][i][3];
+              langPointer = ret['type'] == 'wcag21' && ret['lang'] == 'ja' ? ret['criteria'][i][3] : langPointer;
+              var urlPointer = ret['docurl'];
+              urlPointer = ret['type'] == 'wcag21' && ret['lang'] == 'ja' ? ret['docurlEn'] : urlPointer;
+              var url = ret['urlbase']['understanding'][urlPointer]+langPointer;
+              if (ret['lang'] == 'ja' && ret['type'] == 'wcag21' && ret['criteria21'].indexOf(ret['criteria'][i][1]) >= 0) {
+                url = ret['urlbase']['understanding']['en-wcag21']+ret['criteria'][i][4];
+              }
+
+              var level = ret['criteria'][i][0];
+              var criterion = ret['criteria'][i][1];
+              var exp = ret['criteria'][i][2];
+              var idname = criterion.replace(/\./g, '_')+'-criterion';
+              $('#criteria').append($('<tr></tr>')
+                         .append($('<td></td>').html('<input type="checkbox" class="criteria-chk" id="'+idname+'" value="'+criterion+'">'))
+                         .append($('<td></td>').html('<label for="'+idname+'">'+criterion+': '+exp+'</label>'))
+                         .append($('<td></td>').html('<a target="_blank" href="'+url+'.html"><i class="fas fa-external-link-alt"></i><span style="position: absolute;width: 1px;height: 1px;clip: rect(0 0 0 0);">Open '+criterion+'</span></a>'))
+                        );
+            }
+            
+            var checked = ret['checked'].split(/,/);
+            for (var j = 0; j < checked.length; j++) {
+              var thisvalue = checked[j].trim();
+              if ($("input[value='"+thisvalue+"']").val().length < 0) continue;
+              $("input[value='"+thisvalue+"']").prop('checked', 'checked');
+            }
+          })
+        .setAdditionalCriteriaValue();
+    }
+
+    /**
+     * Apply Additional Criteria
+     */
+    function onApplyAdditionalCriteriaClick() {
+      $('#message-area').hide();
+      
+      var checked = [];
+      $('#criteria').find(':checked').each(function(){
+        checked.push($(this).val());
+      });
+      
+      google.script.run
+        .withSuccessHandler(
+          function(msg, element) {
+            google.script.host.close();
+          })
+        .applyAdditionalCriteria(checked.join(', '));
+    }
+</script>
+</head>
+<body style="padding-bottom: 4em;">
+  <div style="position: fixed; width: 100%; bottom: 0; background: #fff; z-index: 9; padding-top: 1em;">
+    <button onclick="google.script.host.close()" id="close-btn">Close</button>
+    <button id="apply-additional-criteria" class="blue">Set additional criteria</button>
+  </div>
+
+  <table style="width:94%;">
+  <tr>
+    <th id="criteria-title">Criteria</th>
+    <td><table id="criteria" style="width: 98%"></table></td>
+  </tr>
+  </table>
+</body>
+</html>

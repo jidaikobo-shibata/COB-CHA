@@ -106,8 +106,8 @@
             }
 
             if (ret['type'] == 'tt20') {
-              for(var i = 0; i < ret['test-id'].length; i++) {
-                var criterion = ret['test-id'][i][1];
+              for(var i = 0; i < ret['usingCriteria'].length; i++) {
+                var criterion = ret['usingCriteria'][i][1];
                 var idname = criterion.replace(/\./g, '_');
                 $('#test-id').append($('<tr></tr>')
                              .append($('<td></td>').html('<input type="checkbox" id="'+idname+'" value="'+criterion+'">'))
@@ -118,10 +118,7 @@
               $('#trusted-tester-test-id').hide();
             }
 
-            for(var i = 0; i < ret['criteria'].length; i++) {
-              if (ret['type'] == 'wcag20' && ret['criteria21'].indexOf(ret['criteria'][i][1]) >= 0) continue;
-              if (ret['criteria'][i][0].length > ret['level'].length) continue;
-              
+            for(var i = 0; i < ret['usingCriteria'].length; i++) {
               // complex language selection ...
               var langPointer = ret['type'] == 'wcag21' ? ret['criteria'][i][4] : ret['criteria'][i][3];
               langPointer = ret['type'] == 'wcag21' && ret['lang'] == 'ja' ? ret['criteria'][i][3] : langPointer;

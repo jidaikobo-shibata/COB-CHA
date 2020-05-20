@@ -480,11 +480,33 @@ function getUiLang(uiname, defaultStr) {
 /**
  * Get Using Criteria Set
  * @param String testType
+ * @param String level
  * @return Array
  */
-function getUsingCriteria(testType) {
+function getUsingCriteria(testType, level) {
   var set = testType.indexOf('wcag') >= 0 ? 'criteria' : 'ttCriteria' ;
-  return getLangSet(set);
+  var usingCriteria = getLangSet(set);
+  if (set == 'ttCriteria') return usingCriteria;
+  
+  var additionalCriteriaArr = getAdditionalCriteria().split(/,/);
+  var additionalCriteria = [];
+  for (var i = 0; i < additionalCriteriaArr.length; i++) {
+    additionalCriteria.push(additionalCriteriaArr[i].trim());
+  }
+  
+  for (var j = 0; j < usingCriteria.length; j++) {
+    if (
+      (testType == 'wcag20' && criteria21.indexOf(usingCriteria[j][1]) >= 0) ||
+      usingCriteria[j][0].length > level.length
+    ) {
+      if (additionalCriteria.indexOf(usingCriteria[j][1]) >= 0) continue;
+      delete usingCriteria[j];
+    }
+  }
+
+  return usingCriteria.filter(function(x){
+	return !(x === null || x === undefined || x === ""); 
+  });
 }
 
 /**
@@ -498,6 +520,7 @@ function addSheet(sheetname, template) {
   // Microsoft Excel compatible
   // Excel's sheetname cannot use : and /
   sheetname = String(sheetname).replace(/https*:\/\//ig, '');
+  sheetname = String(sheetname).replace(/\//ig, ' ');
  
   // Excel's sheetname must be under 31 chars
   if (sheetname.length > 28) {

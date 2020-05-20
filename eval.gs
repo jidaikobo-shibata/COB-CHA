@@ -54,10 +54,8 @@ function evaluate(lang, testType, level) {
   activeSheet.getRange(2, 1).setValue('URL');
   activeSheet.getRange(2, 2).setValue(getUiLang('result', 'Result'));
   activeSheet.setColumnWidth(2, 35);
-  var criteria = getLangSet('criteria');
+  var criteria = getUsingCriteria(testType, level);
   for (var i = 0; i < criteria.length; i++) {
-    if ((testType == 'wcag20' || testType == 'tt20') && criteria21.indexOf(criteria[i][1]) >= 0) continue;
-    if (criteria[i][0].length > level.length) continue;
     activeSheet.getRange(2, col).setValue(criteria[i][1]);
     activeSheet.setColumnWidth(col, 30);
     if (cCheckVal.indexOf(criteria[i][1]) == -1) {
@@ -100,7 +98,8 @@ function evaluate(lang, testType, level) {
   for (var i = 0; i < allSheets.length; i++) {
     if (allSheets[i].getName().charAt(0) == '*') continue;
     var targetUrl = getUrlFromSheet(allSheets[i]);
-    activeSheet.getRange(row, 1).setValue('=HYPERLINK("'+getGoogleSpreadsheetUrl(ss.getId(), allSheets[i].getSheetId())+'","'+targetUrl+'")');
+    var targetSheet = allSheets[i].getName();
+    activeSheet.getRange(row, 1).setValue('=HYPERLINK("'+getGoogleSpreadsheetUrl(ss.getId(), allSheets[i].getSheetId())+'","'+targetSheet+'")');
     activeSheet.getRange(row, 1).setComment(allSheets[i].getRange(3, 2).getValue());
    
     // each check value
@@ -187,7 +186,7 @@ function evaluate(lang, testType, level) {
  */
 function generateExpression(testType, currentCriterion, row) {
   var ret = '';
-  if (testType.indexOf('wcag') >= 0){
+  if (testType.indexOf('wcag') >= 0) {
     ret = '=VLOOKUP("'+currentCriterion+'", INDIRECT('+row+'&"!A:B") , 2, false)';
   } else {
     var conditions = [];
@@ -228,7 +227,7 @@ function evaluateIcl(testType, level) {
   ss.insertSheet(iclSheetName, 0);
   var iclSheet = ss.getSheetByName(iclSheetName);
   iclSheet.activate();
-  generateIcl(iclSheet, 2, getUsingCriteria(testType), level);
+  generateIcl(iclSheet, 2, getUsingCriteria(testType, level), level);
   
   iclSheet.setColumnWidth(1, 60);
   iclSheet.deleteColumn(2);

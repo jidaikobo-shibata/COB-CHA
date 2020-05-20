@@ -100,12 +100,12 @@ function setIssueValue(isEdit) {
     if (relTechsAndCriteria[criteria[i][1]] == null) continue;
     ret['techs'].push([criteria[i][1], relTechsAndCriteria[criteria[i][1]]]);
   }
-    
+
   ret['techDirAbbr'] = techDirAbbr;
   ret['criteria21'] = criteria21;
   ret['criteria'] = getLangSet('criteria');
   ret['techNames'] = getLangSet('tech');
-  ret['test-id'] = getUsingCriteria(ret['type']); // TT20 Only
+  ret['usingCriteria'] = getUsingCriteria(ret['type'], ret['level']);
   
   ret['places'] = [];
   var all = getAllSheets();
