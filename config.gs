@@ -55,6 +55,7 @@ function setAdditionalCriteria(lang, testType, level) {
   var ss = getSpreadSheet();
   if (isConfigSheetExists()) {
     var configsheet = ss.getSheetByName(configSheetName);
+    setBasicValue(configsheet, lang, testType, level);
   } else {
     var configsheet = doGenerateConfigSheets(lang, testType, level);
   }
@@ -82,12 +83,7 @@ function setAdditionalCriteriaValue() {
   ret['level'] = getProp('level');
   
   ret['checked'] = getAdditionalCriteria();
-
-  ret['criteria'] = getLangSet('criteria');
-  ret['criteria21'] = criteria21;
-  ret['urlbase'] = urlbase;
-  ret['docurl'] = ret['lang']+'-'+ret['type'];
-  ret['docurlEn'] = 'en'+'-'+ret['type'];
+  ret['criteria'] = getAllCriteria(ret['lang'], ret['type']);
 
   return ret;
 }

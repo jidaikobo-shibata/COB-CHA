@@ -6,127 +6,6 @@
  * @Licence MIT
  */
 
-/**
- * WCAG 2.1
- */
-var criteria21 = [
-  '1.3.4', '1.3.5', '1.3.6', '1.4.10', '1.4.11', '1.4.12', '1.4.13',
-  '2.1.4', '2.2.6', '2.3.3', '2.5.1', '2.5.2', '2.5.3', '2.5.4', '2.5.5', '2.5.6',
-  '4.1.3'
-];
-
-/**
- * WCAG 2.0/2.1 Single-A criteria
- */
-var cCheckVal = [
-  '1.1.1', '1.2.1', '1.2.2', '1.2.3', '1.3.1', '1.3.2', '1.3.3', '1.4.1',
-  '1.4.2', '2.1.1', '2.1.2', '2.1.4', '2.2.1', '2.2.2', '2.3.1', '2.4.1',
-  '2.4.2', '2.4.3', '2.4.4', '2.5.1', '2.5.2', '2.5.3', '2.5.4', '3.1.1',
-  '3.2.1', '3.2.2', '3.3.1', '3.3.2', '4.1.1', '4.1.2'
-];
-
-/**
- * trusted tester's check value
- */
-var ttCheckVal = {
-  '1.1.1': ['7.A', '7.B', '7.C', '7.D', '7.E'],
-  '1.2.1': ['16.A', '16.B'],
-  '1.2.2': ['17.A'],
-  '1.2.3': ['16.A', '16.B'], // same as 1.2.1 temporary
-  '1.2.4': ['17.C'],
-  '1.2.5': ['17.B'],
-  '1.3.1': ['5.C', '10.B', '10.C', '10.D', '14.A', '14.B', '14.C', '15.A'],
-  '1.3.2': ['15.B'],
-  '1.3.3': ['13.B'],
-  '1.4.1': ['13.A'],
-  '1.4.2': ['2.A'],
-  '1.4.3': ['13.C'],
-  '1.4.4': ['18.A'],
-  '1.4.5': ['7.E'],
-  '2.1.1': ['4.A', '4.B'],
-  '2.1.2': ['4.C'],
-  '2.2.1': ['8.A'],
-  '2.2.2': ['2.B', '2.C'],
-  '2.3.1': ['3.A'],
-  '2.4.1': ['9.A'],
-  '2.4.2': ['12.A', '12.B'],
-  '2.4.3': ['4.F', '4.G', '4.H'],
-  '2.4.4': ['6.A'],
-  '2.4.5': ['19.A'],
-  '2.4.6': ['5.B', '10.A'],
-  '2.4.7': ['4.D'],
-  '3.1.1': ['11.A'],
-  '3.1.2': ['11.B'],
-  '3.2.1': ['4.E'],
-  '3.2.2': ['5.D'],
-  '3.2.3': ['9.B'],
-  '3.2.4': ['9.C'],
-  '3.3.1': ['5.F'],
-  '3.3.2': ['5.A'],
-  '3.3.3': ['5.G'],
-  '3.3.4': ['5.H'],
-  '4.1.1': ['20.A'],
-  '4.1.2': ['2.D', '5.E', '6.B', '12.C', '12.D']
-};
-
-/**
- * Non-Interference
- */
-var nonInterference = [
-  '1.4.2', '2.1.2', '2.2.2', '2.3.1'
-];
-
-/**
- * URL
- */
-var urlbase = {
-  'understanding': {
-    'en-wcag20': 'https://www.w3.org/TR/UNDERSTANDING-WCAG20/',
-    'en-wcag21': 'https://www.w3.org/WAI/WCAG21/Understanding/', // and directory
-    'ja-wcag20': 'https://waic.jp/docs/UNDERSTANDING-WCAG20/',
-    'ja-wcag21': 'https://waic.jp/docs/UNDERSTANDING-WCAG20/'
-  },
-  'tech': {
-    'en-wcag20': 'https://www.w3.org/TR/WCAG20-TECHS/',
-    'en-wcag21': 'https://www.w3.org/WAI/WCAG21/Techniques/',
-    'ja-wcag20': 'https://waic.jp/docs/WCAG-TECHS/',
-    'ja-wcag21': 'https://waic.jp/docs/WCAG-TECHS/'
-  }
-};
-
-var techDirAbbr = {
-  'G': 'general',
-  'H': 'html',
-  'C': 'css',
-  'A': 'aria',
-  'T': 'text',
-  'P': 'pdf',
-  'F': 'failures',
-  'FL': 'flash',
-  'SM': 'smil',
-  'SL': 'silverlight',
-  'SV': 'server-side-script',
-  'SC': 'client-side-script'
-};
-
-/**
- * global variables
- */
-var resultSheetName    = '*Result*';
-var issueSheetName     = '*Issue*';
-var configSheetName    = '*Config*';
-var templateSheetName  = '*Template*';
-var iclSheetName       = '*ICL*'; // Japanese Only
-var resourceFolderName = 'resource';
-var exportFolderName   = 'export';
-var imagesFolderName   = 'images';
-var issueFileName      = 'issue-report';
-var trueColor          = '#f5fff3';
-var falseColor         = '#f7f3ff';
-var labelColor         = '#eeeeee';
-var doubleAColor       = '#eeeefe';
-var labelColorDark     = '#87823e';
-var labelColorDarkText = '#ffffff';
 
 /**
  * onInstall
@@ -437,6 +316,7 @@ function getProp(prop) {
 
 /**
  * Get Language Set
+ * this function is language hard coding
  * @param String setName
  * @return Array
  */
@@ -476,37 +356,115 @@ function getUiLang(uiname, defaultStr) {
   }
   return ui[uiname];
 }
+  
+/**
+ * Get All Criteria Set
+ * @param String lang
+ * @param String testType
+ * @return Array
+ */
+function getAllCriteria(lang, testType) {
+  var set = testType.indexOf('wcag') >= 0 ? 'criteria' : 'ttCriteria' ;
+  var allCriteria = getLangSet(set);
+
+  // Trusted Tester does not apply additional criteria
+  if (set == 'ttCriteria') return allCriteria;
+  if (getAllCriteria.vals) return getAllCriteria.vals;
+  
+  // add URL
+  var urlPointer = lang+'-'+testType;
+  for (var i = 0; i < allCriteria.length; i++) {
+    var langPointer = testType == 'wcag21' ? allCriteria[i][4] : allCriteria[i][3];
+    allCriteria[i].push(urlbase['understanding'][urlPointer]+langPointer);
+  }
+  getAllCriteria.vals = allCriteria;
+  
+  return allCriteria;
+}
 
 /**
  * Get Using Criteria Set
+ * @param String lang
  * @param String testType
  * @param String level
  * @return Array
  */
-function getUsingCriteria(testType, level) {
-  var set = testType.indexOf('wcag') >= 0 ? 'criteria' : 'ttCriteria' ;
-  var usingCriteria = getLangSet(set);
-  if (set == 'ttCriteria') return usingCriteria;
+function getUsingCriteria(lang, testType, level) {
+  var usingCriteria = getAllCriteria(lang, testType);
   
+  // Trusted Tester does not apply additional criteria
+  if (testType.indexOf('tt') >= 0) return usingCriteria;
+  if (getUsingCriteria.vals) return getUsingCriteria.vals;
+  
+  // additional criteria
   var additionalCriteriaArr = getAdditionalCriteria().split(/,/);
   var additionalCriteria = [];
   for (var i = 0; i < additionalCriteriaArr.length; i++) {
     additionalCriteria.push(additionalCriteriaArr[i].trim());
   }
   
-  for (var j = 0; j < usingCriteria.length; j++) {
+  // eliminate unuse criteria
+  for (var i = 0; i < usingCriteria.length; i++) {
     if (
-      (testType == 'wcag20' && criteria21.indexOf(usingCriteria[j][1]) >= 0) ||
-      usingCriteria[j][0].length > level.length
+      (testType == 'wcag20' && criteria21.indexOf(usingCriteria[i][1]) >= 0) ||
+      usingCriteria[i][0].length > level.length
     ) {
-      if (additionalCriteria.indexOf(usingCriteria[j][1]) >= 0) continue;
-      delete usingCriteria[j];
+      if (additionalCriteria.indexOf(usingCriteria[i][1]) >= 0) continue;
+      delete usingCriteria[i];
     }
   }
-
-  return usingCriteria.filter(function(x){
+  
+  usingCriteria = usingCriteria.filter(function(x){
 	return !(x === null || x === undefined || x === ""); 
   });
+  
+  getUsingCriteria.vals = usingCriteria;
+  
+  return usingCriteria;
+}
+
+/**
+ * Get Using Tech Set
+ * @param String lang
+ * @param String testType
+ * @param String level
+ * @return Array
+ */
+function getUsingTechs(lang, testType, level) {
+  if (getUsingTechs.vals) return getUsingTechs.vals;
+
+  var techNames = getLangSet('tech');
+  var urlPointer = lang+'-'+testType;
+  var usingCriteria = getUsingCriteria(lang, testType, level);
+  var usingTechs = [];
+  
+  for (i = 0; i < usingCriteria.length; i++) {
+    var criteria = usingCriteria[i][1];
+    if (relTechsAndCriteria[criteria] == null) continue;
+    for (j = 0; j < relTechsAndCriteria[criteria].length; j++) {
+      var url = urlbase['tech'][urlPointer];
+      var each = relTechsAndCriteria[criteria][j];
+      
+      // Techniques for WCAG 2.1 has directory
+      if (testType == 'wcag21' && lang == 'en') {
+        var dir = each.charAt(0)+each.charAt(1);
+        if (['M', 'L', 'V', 'C'].indefOf(each.charAt(1)) < 0) {
+          dir = dir.charAt(0);
+        }
+        url += techDirAbbr[dir]+'/'+each;
+      } else {
+        url += each+'.html';
+      }
+
+      usingTechs.push([criteria, relTechsAndCriteria[criteria][j], techNames[each], url]);
+    }
+  }
+  
+  getUsingTechs.vals = usingTechs;
+  
+  Logger.log(usingTechs);
+  
+  return usingTechs;
 }
 
 /**

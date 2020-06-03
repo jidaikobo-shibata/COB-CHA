@@ -45,7 +45,7 @@
             $("#do-insert-tech").html(ui['insert-techniques-sheet']);
             $("#select-check-title").html(ui['select-check']);
             $("#do-set-all-to-t").html(ui['set-all-to-t']);
-            $("#using-template-title").html(ui['using-template']);
+            $("#template-title").html(ui['template']);
             $("#do-template-apply-all").html(ui['apply-tpl-all']);
             $("#do-template-apply-row").html(ui['apply-tpl-row']);
             $("#generate-template").html(ui['generate-template']);
@@ -431,7 +431,7 @@
             showStatus(msg, 'error');
             $('#do-evaluate-icl').prop('disabled', false);
           })
-        .evaluateIcl($('#test-type').val(), $('#evaluate-level').val());
+        .evaluateIcl($('#lang').val(), $('#test-type').val(), $('#evaluate-level').val());
     }
 
     /**

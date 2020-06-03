@@ -56,20 +56,11 @@
             for(var i = 0; i < ret['criteria'].length; i++) {
               if (ret['type'] == 'wcag20' && ret['criteria21'].indexOf(ret['criteria'][i][1]) >= 0) continue;
               if (ret['criteria'][i][0].length <= ret['level'].length) continue;
-              
-              // complex language selection ...
-              var langPointer = ret['type'] == 'wcag21' ? ret['criteria'][i][4] : ret['criteria'][i][3];
-              langPointer = ret['type'] == 'wcag21' && ret['lang'] == 'ja' ? ret['criteria'][i][3] : langPointer;
-              var urlPointer = ret['docurl'];
-              urlPointer = ret['type'] == 'wcag21' && ret['lang'] == 'ja' ? ret['docurlEn'] : urlPointer;
-              var url = ret['urlbase']['understanding'][urlPointer]+langPointer;
-              if (ret['lang'] == 'ja' && ret['type'] == 'wcag21' && ret['criteria21'].indexOf(ret['criteria'][i][1]) >= 0) {
-                url = ret['urlbase']['understanding']['en-wcag21']+ret['criteria'][i][4];
-              }
 
               var level = ret['criteria'][i][0];
               var criterion = ret['criteria'][i][1];
               var exp = ret['criteria'][i][2];
+              var url = ret['criteria'][i][5];
               var idname = criterion.replace(/\./g, '_')+'-criterion';
               $('#criteria').append($('<tr></tr>')
                          .append($('<td></td>').html('<input type="checkbox" class="criteria-chk" id="'+idname+'" value="'+criterion+'">'))

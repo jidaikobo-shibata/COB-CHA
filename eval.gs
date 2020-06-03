@@ -54,7 +54,7 @@ function evaluate(lang, testType, level) {
   activeSheet.getRange(2, 1).setValue('URL');
   activeSheet.getRange(2, 2).setValue(getUiLang('result', 'Result'));
   activeSheet.setColumnWidth(2, 35);
-  var criteria = getUsingCriteria(testType, level);
+  var criteria = getUsingCriteria(lang, testType, level);
   for (var i = 0; i < criteria.length; i++) {
     activeSheet.getRange(2, col).setValue(criteria[i][1]);
     activeSheet.setColumnWidth(col, 30);
@@ -213,11 +213,12 @@ function generateExpression(testType, currentCriterion, row) {
 
 /**
  * evaluate Icl
+ * @param String lang
  * @param String testType
  * @param String level
  * @return Void
  */
-function evaluateIcl(testType, level) {
+function evaluateIcl(lang, testType, level) {
   // generate Sheet
   var ss = getSpreadSheet();
   var iclSheet = ss.getSheetByName(iclSheetName);
@@ -227,7 +228,7 @@ function evaluateIcl(testType, level) {
   ss.insertSheet(iclSheetName, 0);
   var iclSheet = ss.getSheetByName(iclSheetName);
   iclSheet.activate();
-  generateIcl(iclSheet, 2, getUsingCriteria(testType, level), level);
+  generateIcl(iclSheet, 2, getUsingCriteria(lang, testType, level), level);
   
   iclSheet.setColumnWidth(1, 60);
   iclSheet.deleteColumn(2);

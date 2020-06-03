@@ -91,31 +91,15 @@ function setIssueValue(isEdit) {
   } else {
     ret['vals']['places'] = getUrlFromSheet(getActiveSheet());
   }
-  
-  // to keep array order
-  var criteria = getLangSet('criteria');
-  var tmp = relTechsAndCriteria;
-  ret['techs'] = [];
-  for (i = 0; i < criteria.length; i++) {
-    if (relTechsAndCriteria[criteria[i][1]] == null) continue;
-    ret['techs'].push([criteria[i][1], relTechsAndCriteria[criteria[i][1]]]);
-  }
 
-  ret['techDirAbbr'] = techDirAbbr;
-  ret['criteria21'] = criteria21;
-  ret['criteria'] = getLangSet('criteria');
-  ret['techNames'] = getLangSet('tech');
-  ret['usingCriteria'] = getUsingCriteria(ret['type'], ret['level']);
+  ret['usingCriteria'] = getUsingCriteria(ret['lang'], ret['type'], ret['level']);
+  ret['usingTechs'] = getUsingTechs(ret['lang'], ret['type'], ret['level']);
   
   ret['places'] = [];
   var all = getAllSheets();
   for (i = 0; i < all.length; i++) {
     ret['places'].push(getUrlFromSheet(all[i]));
   }
- 
-  ret['urlbase'] = urlbase;
-  ret['docurl'] = ret['lang']+'-'+ret['type'];
-  ret['docurlEn'] = 'en'+'-'+ret['type'];
  
   return ret;
 }

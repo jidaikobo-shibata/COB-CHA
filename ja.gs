@@ -676,6 +676,7 @@ function getUiJa ()
     'failed-upload': 'アップロードに失敗しました。',
 
     'config': '設定',
+    'person': '試験者',
     'name': '名称',
     'issue-visibility': '問題点を表示',
     'explanation': '解説',
@@ -723,7 +724,7 @@ function getUiJa ()
     'select-check': '「チェック」を選択',
     'set-all-to-t': 'すべてTにする',
     'enable-set-all-to-t': '「すべてTにする」を有効化',
-    'using-template': 'テンプレートの使用',
+    'template': 'テンプレート',
     'no-template-found': 'テンプレートが見つかりませんでした',
     'is-not-template': 'このシートはテンプレートではありません',
     'is-not-appropriate-row': '値の行のみが対象です',
