@@ -25,36 +25,29 @@
             }
             
             // other languages
-            // ui['lang'] is exist. if button width must be changed. use this variable.
             lang.ui = ui;
-            $("#show-config").html(ui['config']);
             $("#show-examination").html(ui['examination']);
             $("#show-report").html(ui['report']);
-            $("#value-title").html(ui['value']);
-            $("#set-additional-criteria").html(ui['set-additional-criteria']);
+            $("#title-value").html(ui['value']);
+            $("#set-additional-criterion").html(ui['set-additional-criterion']);
             $("#test-type-title").html(ui['test-type']);
-            $("#urls-title").html(ui['sheet-control']);
+            $("#title-urls").html(ui['sheet-control']);
             $("#generate-sheets").html(ui['generate']);
-            $("#control-sheets").html(ui['get-sheets']);
-            $("#delete-sheets-title").html(ui['delete']);
-            $("#screenshot-title").html(ui['screenshot']);
+            $("#collect-sheets").html(ui['collect-sheets']);
+            $("#title-delete-sheets").html(ui['delete']);
             $("#add-screenshot").html(ui['add-screenshot']);
-            $("#config-title").html(ui['config']);
             $("#genarate-config").html(ui['generate-config-sheet']);
-            $("#insert-techniques-title").html(ui['insert-techniques-sheet']);
             $("#do-insert-tech").html(ui['insert-techniques-sheet']);
-            $("#select-check-title").html(ui['select-check']);
-            $("#do-set-all-to-t").html(ui['set-all-to-t']);
+            $("#do-set-all-t").html(ui['set-all-t']);
             $("#template-title").html(ui['template']);
             $("#do-template-apply-all").html(ui['apply-tpl-all']);
             $("#do-template-apply-row").html(ui['apply-tpl-row']);
             $("#generate-template").html(ui['generate-template']);
-            $("#template-caution").html(ui['template-caution']);
             $("#issue-control-title").html(ui['issue-control-title']);
             $("#add-edit-issue").html(ui['add-edit-issue']);
             $("#show-issue").html(ui['show-issue']);
             $("#export-html-title").html(ui['export-html-title']);
-            $("#export-html").html(ui['export-html']);
+            $("#export-result").html(ui['export-result']);
             $("#export-issue").html(ui['export-issues']);
             $("#evaluate-title").html(ui['evaluate']);
             $("#do-evaluate").html(ui['do-evaluate']);
@@ -63,53 +56,38 @@
         .getLangSet('ui');
 
       // on load
-      $('#template-caution').hide();
       $('#message-area').hide();
-      $('#pannel-examination').hide();
       $('#pannel-report').hide();
 
       // on change
-      $('#test-type').change(changeTestType);
-      $('#delete-sheets').change(changeControlStatus);
+      $('#test-type').change(swtichLevelWhenTtOrNot);
+      $('#evaluate-level').change(switchAdditionalCriterion);
+      $('#delete-sheets').change(switchGenerateDelete);
 
       // on click
-      $('#generate-sheets').bind('click', {sheets:"*urls*", targetId:'#generate-sheets'}, onGenerateSheetClick);
-      $('#generate-template').bind('click', {sheets:"*Template*", targetId:'#generate-template'}, onGenerateSheetClick);
-      $('#set-additional-criteria').click(onSetAdditionalCriteriaClick);
-      $('#control-sheets').click(onControlSheetClick);
-      $('#do-evaluate').click(onEvaluateClick);
-      $('#do-evaluate-icl').click(onEvaluateIclClick);
-      $('#do-set-all-to-t').click(onDoSetAllToTClick);
-      $('#do-template-apply-all').click(onDoTemplateApplyAllClick);
-      $('#do-template-apply-row').click(onDoTemplateApplyRowClick);
-      $('#do-insert-tech').click(onShowTechDialogClick);
-      $('#add-edit-issue').click(onAddIssueClick);
-      $('#show-issue').click(onShowIssueClick);
-      $('#export-issue').click(onExportIssueClick);
-      $('#export-html').click(onExportHtmlClick);
-      $('#export-icl-html').click(onExportIclHtmlClick);
-      $('#add-screenshot').click(onAddScreenshotClick);
-      $('#genarate-config').click(onGenarateConfigClick);
+      $('#generate-sheets').bind('click', {sheets:"*urls*", targetId:'#generate-sheets'}, onClickGenerateSheet);
+      $('#generate-template').bind('click', {sheets:"*Template*", targetId:'#generate-template'}, onClickGenerateSheet);
+      $('#set-additional-criterion').click(onClickSetAdditionalCriterion);
+      $('#genarate-config').click(onClickGenarateConfig);
+      $('#collect-sheets').click(onClickCollectDeleteSheet);
+      $('#do-template-apply-all').click(onClickDoTemplateApplyAll);
+      $('#do-template-apply-row').click(onClickDoTemplateApplyRow);
+      $('#do-insert-tech').click(onClickDoInsertTech);
+      $('#do-set-all-t').click(onClickDoapplyAllToT);
+      $('#add-screenshot').click(onClickAddScreenshot);
+      $('#add-edit-issue').click(onClickAddEditIssue);
+      $('#show-issue').click(onClickShowIssue);
+      $('#do-evaluate').click(onClickDoEvaluate);
+      $('#do-evaluate-icl').click(onClickDoEvaluateIcl);
+      $('#export-result').click(onClickExportResult);
+      $('#export-issue').click(onClickExportIssue);
 
       // menu
-      $('#show-config').on(
-        'click',
-        function(){
-          $('#show-config').addClass('blue');
-          $('#show-examination').removeClass('blue');
-          $('#show-report').removeClass('blue');
-          $('#pannel-config').show();
-          $('#pannel-examination').hide();
-          $('#pannel-report').hide();
-        }
-      );
       $('#show-examination').on(
         'click',
         function(){
-          $('#show-config').removeClass('blue');
-          $('#show-examination').addClass('blue');
-          $('#show-report').removeClass('blue');
-          $('#pannel-config').hide();
+          $('#show-examination').addClass('primary');
+          $('#show-report').removeClass('primary');
           $('#pannel-examination').show();
           $('#pannel-report').hide();
         }
@@ -117,10 +95,8 @@
       $('#show-report').on(
         'click',
         function(){
-          $('#show-config').removeClass('blue');
-          $('#show-examination').removeClass('blue');
-          $('#show-report').addClass('blue');
-          $('#pannel-config').hide();
+          $('#show-examination').removeClass('primary');
+          $('#show-report').addClass('primary');
           $('#pannel-examination').hide();
           $('#pannel-report').show();
         }
@@ -177,9 +153,10 @@
     }
 
     /**
-     * change test type
+     * switch level value and status
+     * Trusted Tester is fixed with AA
      */
-    function changeTestType() {
+    function swtichLevelWhenTtOrNot() {
       if ($('#test-type').val().indexOf('tt') != -1) {
         $('#evaluate-level').val('AA');
         $('#evaluate-level').prop('disabled', true);
@@ -189,18 +166,29 @@
     }
 
     /**
+     * switch Additional Criterion status
+     */
+    function switchAdditionalCriterion() {
+      if ($('#evaluate-level').val().indexOf('AAA') >= 0) {
+        $('#set-additional-criterion').prop('disabled', true);
+      } else {
+        $('#set-additional-criterion').prop('disabled', false);
+      }
+    }
+
+    /**
      * Set Additional Criteria
      */
-    function onSetAdditionalCriteriaClick() {
+    function onClickSetAdditionalCriterion() {
       $('#message-area').hide();
-      google.script.run.setAdditionalCriteria($('#lang').val(), $('#test-type').val(), $('#evaluate-level').val());
+      google.script.run.openDialogAdditionalCriterion($('#lang').val(), $('#test-type').val(), $('#evaluate-level').val());
     }
 
     /**
      * Generate Sheets
      * @param Object sheetsObj
      */
-    function onGenerateSheetClick(sheetsObj) {
+    function onClickGenerateSheet(sheetsObj) {
       $('#message-area').hide();
       var sheets = sheetsObj.data.sheets == "*urls*" ? $('#urls').val() : sheetsObj.data.sheets;
       var targetId = sheetsObj.data.targetId;
@@ -223,7 +211,7 @@
     /**
      * Generate Config Sheets
      */
-    function onGenarateConfigClick() {
+    function onClickGenarateConfig() {
       $('#message-area').hide();
 
       google.script.run
@@ -235,13 +223,13 @@
           function(msg) {
             showStatus(msg, 'error');
           })
-        .generateConfigSheets($('#lang').val(), $('#test-type').val(), $('#evaluate-level').val());
+        .generateConfigSheet($('#lang').val(), $('#test-type').val(), $('#evaluate-level').val());
     }
 
     /**
      * Get All Sheets / Delete Selected Sheets
      */
-    function onControlSheetClick() {
+    function onClickCollectDeleteSheet() {
       $('#message-area').hide();
 
       if ($('#delete-sheets').prop('checked')) {
@@ -272,7 +260,7 @@
     /**
      * Edit Value
      */
-    function onDoSetAllToTClick() {
+    function onClickDoapplyAllToT() {
       $('#message-area').hide();
       var msg = Object.keys(lang.ui).length == 0 ? 'This Page\'s All "Check will be overwritten."' : lang.ui['this-pages-all-check-will-be-overwritten'];
       if (confirm(msg) === false) return;
@@ -286,13 +274,13 @@
           function(msg) {
             showStatus(msg, 'error');
           })
-        .setAllToT($('#test-type').val(), $('#evaluate-level').val());
+        .applyAllToT($('#test-type').val(), $('#evaluate-level').val());
     }
 
     /**
      * show Tech dialog
      */
-    function onShowTechDialogClick() {
+    function onClickDoInsertTech() {
       $('#message-area').hide();
       google.script.run
         .withSuccessHandler(
@@ -300,7 +288,7 @@
             var msg1 = Object.keys(lang.ui).length == 0 ? 'No appropriate criterion found.' : lang.ui['no-criterion-found'];
             var msg2 = Object.keys(lang.ui).length == 0 ? 'Techniques for '+criterion : lang.ui['tech-for'].replace("%s", criterion);
             var title = criterion == '' ? msg1 : msg2 ;
-            google.script.run.showDialog('tech', 500, 400, title);
+            google.script.run.showDialog('ui-tech', 500, 400, title);
           })
         .getFirstColumn();
     }
@@ -308,33 +296,33 @@
     /**
      * show Screenshot dialog
      */
-    function onAddScreenshotClick() {
+    function onClickAddScreenshot() {
       $('#message-area').hide();
       var title = Object.keys(lang.ui).length == 0 ? 'Screenshot' : lang.ui['screenshot'];
-      google.script.run.showDialog('screenshot', 300, 200, title);
+      google.script.run.showDialog('ui-screenshot', 300, 200, title);
     }
 
     /**
      * Add Issue
      */
-    function onAddIssueClick() {
+    function onClickAddEditIssue() {
       $('#message-area').hide();
-      google.script.run.addIssue($('#lang').val(), $('#test-type').val(), $('#evaluate-level').val());
+      google.script.run.openDialogIssue($('#lang').val(), $('#test-type').val(), $('#evaluate-level').val());
     }
 
     /**
      * Show Issue
      */
-    function onShowIssueClick() {
+    function onClickShowIssue() {
       $('#message-area').hide();
       var title = Object.keys(lang.ui).length == 0 ? 'Issue List"' : lang.ui['issue-list'];
-      google.script.run.showDialog('issuelist', 500, 400, title);
+      google.script.run.showDialog('ui-issuelist', 500, 400, title);
     }
 
     /**
      * Make same as template
      */
-    function onDoTemplateApplyAllClick() {
+    function onClickDoTemplateApplyAll() {
       $('#message-area').hide();
       var msg = Object.keys(lang.ui).length == 0 ? 'CAUTION: All result will be overwritten.' : lang.ui['caution-using-template'];
       if (confirm(msg) === false) return;
@@ -356,7 +344,7 @@
     /**
      * Make same as template row
      */
-    function onDoTemplateApplyRowClick() {
+    function onClickDoTemplateApplyRow() {
       $('#message-area').hide();
       var msg = Object.keys(lang.ui).length == 0 ? 'CAUTION: All result will be overwritten.' : lang.ui['caution-using-template'];
       if (confirm(msg) === false) return;
@@ -378,16 +366,16 @@
     /**
      * change control status
      */
-    function changeControlStatus() {
+    function switchGenerateDelete() {
       var deleteUi    = Object.keys(lang.ui).length == 0 ? 'DELETE"' : lang.ui['delete'];
-      var getSheetsUi = Object.keys(lang.ui).length == 0 ? 'Get Sheets"' : lang.ui['get-sheets'];
+      var getSheetsUi = Object.keys(lang.ui).length == 0 ? 'Get Sheets"' : lang.ui['collect-sheets'];
       if ($('#delete-sheets').prop('checked')) {
         $('#urls').css({'color':'#ffffff', 'background-color':'#aaaaaa'});
-        $('#control-sheets').html(deleteUi);
+        $('#collect-sheets').html(deleteUi);
         $('#generate-sheets').prop('disabled', true);
       } else {
         $('#urls').css({'color':'#000000', 'background-color':'#ffffff'});
-        $('#control-sheets').html(getSheetsUi);
+        $('#collect-sheets').html(getSheetsUi);
         $('#generate-sheets').prop('disabled', false);
       }
     }
@@ -395,7 +383,7 @@
     /**
      * Evaluate
      */
-    function onEvaluateClick() {
+    function onClickDoEvaluate() {
       $('#message-area').hide();
       $('#do-evaluate').prop('disabled', true);
 
@@ -416,7 +404,7 @@
     /**
      * Evaluate ICL
      */
-    function onEvaluateIclClick() {
+    function onClickDoEvaluateIcl() {
       $('#message-area').hide();
       $('#do-evaluate-icl').prop('disabled', true);
 
@@ -435,9 +423,9 @@
     }
 
     /**
-     * Export HTML
+     * Export Rsult
      */
-    function onExportHtmlClick() {
+    function onClickExportResult() {
       $('#message-area').hide();
       $('#export-html').prop('disabled', true);
 
@@ -452,34 +440,13 @@
             showStatus(msg);
             $('#export-html').prop('disabled', false);
           })
-        .exportHtml($('#test-type').val(), $('#evaluate-level').val());
-    }
-
-    /**
-     * Export ICL HTML
-     */
-    function onExportIclHtmlClick() {
-      $('#message-area').hide();
-      $('#export-icl-html').prop('disabled', true);
-
-      google.script.run
-        .withSuccessHandler(
-          function(msg, element) {
-            showStatus(msg);
-            $('#export-icl-html').prop('disabled', false);
-          })
-        .withFailureHandler(
-          function(msg, element) {
-            showStatus(msg);
-            $('#export-icl-html').prop('disabled', false);
-          })
-        .exportIclHtml();
+        .exportResult($('#test-type').val(), $('#evaluate-level').val());
     }
 
     /**
      * Export Issue
      */
-    function onExportIssueClick() {
+    function onClickExportIssue() {
       $('#message-area').hide();
 
       google.script.run
@@ -505,20 +472,21 @@
       }
     }
   </script>
+
+  <?!= HtmlService.createHtmlOutputFromFile('ui-css').getContent(); ?>
 </head>
 
 <body>
   <div class="sidebar branding-below">
-    <button id="show-config" class="blue">Config</button>
-    <button id="show-examination">Exam.</button>
+    <button id="show-examination" class="primary">Exam.</button>
     <button id="show-report">Report</button>
     <hr>
-
-    <div id="pannel-config">
-    <fieldset class="block">
-      <legend id="test-type-title">Test type</legend>
-      <select id="lang" title="Language" style="width:3.5em;min-width:3.5em;">
-        <option value="en">en</option>
+    
+    <div id="pannel-examination">
+      <details open>
+      <summary id="test-type-title">Test type</summary>
+      <p><select id="lang" title="Language" style="width:3.5em;min-width:3.5em;">
+      <option value="en">en</option>
         <option value="ja">ja</option>
       </select>
       <select id="test-type" title="Test Type">
@@ -531,57 +499,55 @@
         <option value="A">A</option>
         <option value="AA">AA</option>
         <option value="AAA">AAA</option>
-      </select>
-      <p><button id="set-additional-criteria">Set additional criteria</button></p>
+      </select></p>
+      <p><button id="set-additional-criterion">Set additional criteria</button></p>
       <p><button id="genarate-config">Generate config sheet</button></p>
-    </fieldset>
+      </details>
 
-    <fieldset class="block">
-      <legend><label for="urls" id="urls-title">Sheet control</label></legend>
-      <textarea style="width:100%;" id="urls"></textarea>
+      <details>
+      <summary id="title-urls">Sheet control</summary>
+      <p><textarea style="width:100%;" aria-labelledby="title-urls"></textarea></p>
       <button id="generate-sheets">Generate</button>
-      <button id="control-sheets">Get sheets</button>
-      <input type="checkbox" id="delete-sheets"><label id="delete-sheets-title" for="delete-sheets">Delete</label>
-    </fieldset>
+      <button id="collect-sheets">Get sheets</button>
+      <input type="checkbox" id="delete-sheets"><label id="title-delete-sheets" for="delete-sheets">Delete</label>
+      </details>
     
-    <fieldset class="block">
-      <legend id="template-title">Template</legend>
+      <details>
+      <summary id="template-title">Template</summary>
       <p><button id="generate-template">Generate template sheet</button></p>
       <p><button id="do-template-apply-all">Apply all</button></p>
       <p><button id="do-template-apply-row">Apply current row</button></p>
-    </fieldset>
-    </div>
+      </details>
 
-    <div id="pannel-examination">
-    <fieldset class="block">
-      <legend id="value-title">Value</legend>
+      <details>
+      <summary id="title-value">Value</summary>
       <p><button id="add-screenshot">Add screenshot</button></p>
-      <p><button id="do-set-all-to-t">Set all to 'T'</button></p>
+      <p><button id="do-set-all-t">Set all to 'T'</button></p>
       <p><button id="do-insert-tech">Insert Techs to sheet</button></p>
-    </fieldset>
+      </details>
+
+      <details>
+      <summary id="issue-control-title">Issue Control</summary>
+      <p><button id="add-edit-issue">Add/Edit Issue</button></p>
+      <p><button id="show-issue">Show Issue</button></p>
+      </details>
     </div>
 
     <div id="pannel-report">
-    <fieldset class="block">
-      <legend id="evaluate-title">Evaluate</legend>
+      <details open>
+      <summary id="evaluate-title">Evaluate</summary>
       <p><button id="do-evaluate">Evaluate</button></p>
       <p><button id="do-evaluate-icl">Evaluate ICL</button></p>
-    </fieldset>
+      </details>
 
-    <fieldset class="block">
-      <legend id="issue-control-title">Issue Control</legend>
-      <p><button id="add-edit-issue">Add/Edit Issue</button></p>
-      <p><button id="show-issue">Show Issue</button></p>
+      <details open>
+      <summary id="export-html-title">Export as HTML</summary>
+      <p><button id="export-result">Export Result</button></p>
       <p><button id="export-issue">Export Issues</button></p>
-    </fieldset>
-    <fieldset class="block">
-      <legend id="export-html-title">Export Report</legend>
-      <button id="export-html">Export HTML</button>
-    </fieldset>
+      </details>
     </div>
 
     <div id="message-area" style="margin-top:15px;background-color: #eeeeee;padding:5px;">
-      <div id="sidebar-info"></div>
       <div id="sidebar-status"></div>
     </div>
   </div>

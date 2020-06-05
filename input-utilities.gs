@@ -1,5 +1,5 @@
 /**
- * Value control for COB-CHA
+ * Input Utilities control for COB-CHA
  */
 
 /**
@@ -20,8 +20,8 @@ function getContextualTechs(criterion, checked) {
   var rets = [];
   var type = getProp('type');
   if (type.indexOf('tt') >= 0) {
-    for (var key in ttCheckVal) {
-      if (ttCheckVal[key].indexOf(criterion) < 0) continue;
+    for (var key in relTtAndCriteria) {
+      if (relTtAndCriteria[key].indexOf(criterion) < 0) continue;
       var techs = relTechsAndCriteria[key] ? relTechsAndCriteria[key] : [] ;
       for (var i = 0; i < techs.length; i++) {
         if (techLangsSrc[techs[i]] == null) continue;
@@ -56,17 +56,17 @@ function setContextualTechs(techs) {
 }
 
 /**
- * Edit Value to "T"
+ * Apply Value to "T"
  * @param String testType
  * @param String level
  * @return String
  */
-function setAllToT(testType, level) {
+function applyAllToT(testType, level) {
   var ttCriteria = getLangSet('ttCriteria');
   var activeSheet = getActiveSheet();
   if (activeSheet.getName() == resultSheetName) return getUiLang('current-sheet-is-not-for-webpage', 'Current sheet is not for webpage');
 
-  var additionalCriteria = getAdditionalCriteria().split(/,/);
+  var additionalCriteria = getAdditionalCriterion().split(/,/);
   var rows = 61; // WCAG 2.0 AAA
   rows = testType == 'wcag20' && level == 'A'   ? 25 + additionalCriteria.length : rows;
   rows = testType == 'wcag20' && level == 'AA'  ? 38 + additionalCriteria.length : rows;

@@ -29,6 +29,7 @@
      */
     $(function() {
       google.script.run
+      // Language of Page
         .withSuccessHandler(
           function(ret) {
             $("html").attr('lang', ret);
@@ -48,7 +49,7 @@
             // other language
             lang.ui = ui;
             $("#upload-image").val(ui['add-screenshot']);
-            $("#screenshot-title").html(ui['screenshot']);
+            $("#title-screenshot").html(ui['screenshot']);
           })
         .getLangSet('ui');
         
@@ -58,7 +59,7 @@
     /**
      * Upload Image
      */
-    function onUploadImageClick(obj) {
+    function onClickUploadImage(obj) {
       $('#message-area').hide();
       $('#upload-image').prop('disabled', true);
       
@@ -66,30 +67,29 @@
         .withSuccessHandler(function (msg){
           $('#upload-image').prop('disabled', false);
           $('#message-area').show();
-          $('#sidebar-status').removeClass().html(msg);
+          $('#status').removeClass().html(msg);
         })
         .withFailureHandler(function (msg){
           var msg = Object.keys(lang.ui).length == 0 ? 'Failed file Uploading' : lang.ui['failed-upload'];
           $('#upload-image').prop('disabled', false);
           $('#message-area').show();
-          $('#sidebar-status').addClass('error').html(msg);
+          $('#status').addClass('error').html(msg);
         })
-        .screenshotUpload(obj);
+        .uploadScreenshot(obj);
     }
   </script>
-
+  <?!= HtmlService.createHtmlOutputFromFile('ui-css').getContent(); ?>
 </head>
 <body>
   <fieldset class="block">
-    <legend><label for="screenshot" id="screenshot-title">Screenshot</label></legend>
-    <form id="upload-form" onsubmit="onUploadImageClick(this)">
+    <legend><label for="screenshot" id="title-screenshot">Screenshot</label></legend>
+    <form id="upload-form" onsubmit="onClickUploadImage(this)">
       <input type="file" id="screenshot" name="imageFile">
       <p><input type="submit" id="upload-image" value="upload"></p>
     </form>
   </fieldset>
   <div id="message-area" style="margin-top:15px;background-color: #eeeeee;padding:5px;">
-    <div id="sidebar-info"></div>
-    <div id="sidebar-status"></div>
+    <div id="status"></div>
   </div>
 </body>
 </html>

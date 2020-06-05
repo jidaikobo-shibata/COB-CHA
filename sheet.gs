@@ -196,11 +196,9 @@ function generateIcl(originalSheet, row, usingCriteria, level) {
     
     row++;
     //    for (let testId of Object.keys(iclSituation[cCriterion])) { // Chrome V8 
-    Logger.log(Object.keys(iclSituation[cCriterion]));
     var eachIclSituation = Object.keys(iclSituation[cCriterion]);
     for (var key in eachIclSituation) {
       var testId = eachIclSituation[key]
-      Logger.log(testId);
       if (iclSituation[cCriterion][testId] != '') {
         originalSheet.getRange(row, 1).setValue(iclSituation[cCriterion][testId]);
         originalSheet.getRange(row+":"+row).setBackground(labelColor);
@@ -276,13 +274,13 @@ function deleteSheets(urlstr) {
  * @param Object formObj
  * @return String
  */
-function screenshotUpload(formObj) {
+function uploadScreenshot(formObj) {
   var activeSheet = getActiveSheet();
   if (activeSheet.getName().charAt(0) == '*') return getUiLang('current-sheet-is-not-for-webpage', "Current Sheet is not for webpage.");
   
-  var file = fileUpload(formObj);
+  var file = fileUpload(imagesFolderName, formObj, "imageFile");
   activeSheet.getRange(2, 6).setValue(file[0]);
   activeSheet.getRange(2, 7).setValue('=IMAGE("https://drive.google.com/uc?export=download&id='+file[1]+'",1)');
   
-  return getUiLang('screenshot-uploaded', "Screenshot Uploaded.");
+  return getUiLang('image-uploaded', "Image Uploaded.");
 }

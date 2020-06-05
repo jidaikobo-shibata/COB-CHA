@@ -24,11 +24,11 @@ function isEditIssue() {
 }
 
 /**
- * set issue value
+ * set dialog Value Issue
  * @param Bool isEdit
  * @return Array
  */
-function setIssueValue(isEdit) {
+function dialogValueIssue(isEdit) {
   var ret = {};
   ret['vals'] = {
     'issueId': 0,
@@ -91,7 +91,7 @@ function setIssueValue(isEdit) {
   } else {
     ret['vals']['places'] = getUrlFromSheet(getActiveSheet());
   }
-
+ 
   ret['usingCriteria'] = getUsingCriteria(ret['lang'], ret['type'], ret['level']);
   ret['usingTechs'] = getUsingTechs(ret['lang'], ret['type'], ret['level']);
   
@@ -105,13 +105,13 @@ function setIssueValue(isEdit) {
 }
 
 /**
- * add Issue
+ * open dialog Issue
  * @param String lang
  * @param String testType
  * @param String level
  * @return Void
  */
-function addIssue(lang, testType, level) {
+function openDialogIssue(lang, testType, level) {
   // generate Issue sheet
   var ss = getSpreadSheet();
   var issueSheet = ss.getSheetByName(issueSheetName);
@@ -141,7 +141,7 @@ function addIssue(lang, testType, level) {
   };
 
   var title = isEditIssue() ? getUiLang('edit-issue', 'Edit issue') : getUiLang('add-new-issue', 'Add new issue');
-  showDialog('issue', 500, 400, title);
+  showDialog('ui-issue', 500, 400, title);
 }
 
 /**
@@ -224,7 +224,7 @@ function showEachIssue(row) {
   var ss = getSpreadSheet();
   var issueSheet = ss.getSheetByName(issueSheetName);
   issueSheet.getRange(row, 1).activate();
-  showDialog('issue', 500, 400);
+  showDialog('ui-issue', 500, 400);
 }
 
 /**
@@ -382,7 +382,7 @@ function generateIssueReportHtml(str, vals, lang) {
       var tmp = [];
       var n = 0;
       var targetTestIds = vals[i]['testId'].split(',');
-      for (var j = 0; j < ttCheckVal.length; j++) {
+      for (var j = 0; j < relTtAndCriteria.length; j++) {
         for (var k = 0; k < targetTestIds.length; k++) {
           var cTestId = targetTestIds[k].trim();
           if (targetTestIds[j][1] != cTestId) continue;
@@ -438,4 +438,13 @@ function generateIssueReportHtml(str, vals, lang) {
     str += '</table>';
   }
   return str;
+}
+
+/**
+ * upload Issue image
+ * @param Object formObj
+ * @return Void
+ */
+function uploadIssueImage(formObj) {
+  return fileUpload(imagesFolderName, formObj, "imageFile");
 }

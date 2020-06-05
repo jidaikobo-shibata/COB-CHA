@@ -6,7 +6,6 @@
  * @Licence MIT
  */
 
-
 /**
  * onInstall
  * @param Object e
@@ -51,7 +50,7 @@ function askEnabled() {
  */
 function addShowControlPannel() {
   var menu = SpreadsheetApp.getUi().createAddonMenu();
-  menu.addItem(getUiLang('show-control-panel', 'Show Control Panel'), 'showSidebar');
+  menu.addItem(getUiLang('show-control-panel', 'Show Control Panel'), 'showControlPannel');
   menu.addItem(getUiLang('help', 'COB-CHA Help'), 'showHelp');
   menu.addToUi();
 };
@@ -173,16 +172,18 @@ function saveHtml(targetFolder, name, html, overwrite) {
 };
 
 /**
- * image file upload
+ * file upload
+ * @param String targetFolder
  * @param Object formObj
+ * @param String nameAttr
  * @return Array [fileName, fileId]
  */
-function fileUpload(formObj) {
-  if (formObj.imageFile.length == 0) throw new Error('Empty File Uploaded');
-  var formBlob = formObj.imageFile;
+function fileUpload(targetFolder, formObj, nameAttr) {
+  if (formObj[nameAttr].length == 0) throw new Error('Empty File Uploaded');
+  var formBlob = formObj[nameAttr];
   var driveFile = DriveApp.createFile(formBlob);
-  var targetFolder = getTargetFolder(imagesFolderName);
-  deleteFileIfExists(imagesFolderName, driveFile.getName());
+  var targetFolder = getTargetFolder(targetFolder);
+  deleteFileIfExists(targetFolder, driveFile.getName());
   targetFolder.addFile(driveFile);
   driveFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
   DriveApp.getRootFolder().removeFile(driveFile);
@@ -213,8 +214,8 @@ function removeImageFormula(id) {
  * show control pannel
  * @return Void
  */
-function showSidebar() {
-  var ui = HtmlService.createTemplateFromFile('sidebar')
+function showControlPannel() {
+  var ui = HtmlService.createTemplateFromFile('ui-control-pannel')
                       .evaluate()
                       .setTitle('COB-CHA'+getUiLang('control-panel-title', ' Control Panel'));
   SpreadsheetApp.getUi().showSidebar(ui);
@@ -225,7 +226,7 @@ function showSidebar() {
  * @return Void
  */
 function showHelp() {
-  showDialog('help', 500, 400, getUiLang('help', 'Help'));
+  showDialog('ui-help', 500, 400, getUiLang('help', 'Help'));
 }
 
 /**
@@ -360,44 +361,44 @@ function getUiLang(uiname, defaultStr) {
 /**
  * Get All Criteria Set
  * @param String lang
- * @param String testType
+ * @param String type
  * @return Array
  */
-function getAllCriteria(lang, testType) {
-  var set = testType.indexOf('wcag') >= 0 ? 'criteria' : 'ttCriteria' ;
+function getAllCriteria(lang, type) {
+  var set = type.indexOf('wcag') >= 0 ? 'criteria' : 'ttCriteria' ;
   var allCriteria = getLangSet(set);
-
+  
   // Trusted Tester does not apply additional criteria
   if (set == 'ttCriteria') return allCriteria;
   if (getAllCriteria.vals) return getAllCriteria.vals;
   
   // add URL
-  var urlPointer = lang+'-'+testType;
+  var urlPointer = lang+'-'+type;
   for (var i = 0; i < allCriteria.length; i++) {
-    var langPointer = testType == 'wcag21' ? allCriteria[i][4] : allCriteria[i][3];
+    var langPointer = type == 'wcag21' ? allCriteria[i][4] : allCriteria[i][3];
     allCriteria[i].push(urlbase['understanding'][urlPointer]+langPointer);
   }
   getAllCriteria.vals = allCriteria;
-  
+    
   return allCriteria;
 }
 
 /**
  * Get Using Criteria Set
  * @param String lang
- * @param String testType
+ * @param String type
  * @param String level
  * @return Array
  */
-function getUsingCriteria(lang, testType, level) {
-  var usingCriteria = getAllCriteria(lang, testType);
+function getUsingCriteria(lang, type, level) {
+  var usingCriteria = getAllCriteria(lang, type);
   
   // Trusted Tester does not apply additional criteria
-  if (testType.indexOf('tt') >= 0) return usingCriteria;
+  if (type.indexOf('tt') >= 0) return usingCriteria;
   if (getUsingCriteria.vals) return getUsingCriteria.vals;
-  
+ 
   // additional criteria
-  var additionalCriteriaArr = getAdditionalCriteria().split(/,/);
+  var additionalCriteriaArr = getAdditionalCriterion().split(/,/);
   var additionalCriteria = [];
   for (var i = 0; i < additionalCriteriaArr.length; i++) {
     additionalCriteria.push(additionalCriteriaArr[i].trim());
@@ -406,7 +407,7 @@ function getUsingCriteria(lang, testType, level) {
   // eliminate unuse criteria
   for (var i = 0; i < usingCriteria.length; i++) {
     if (
-      (testType == 'wcag20' && criteria21.indexOf(usingCriteria[i][1]) >= 0) ||
+      (type == 'wcag20' && criteria21.indexOf(usingCriteria[i][1]) >= 0) ||
       usingCriteria[i][0].length > level.length
     ) {
       if (additionalCriteria.indexOf(usingCriteria[i][1]) >= 0) continue;
@@ -426,16 +427,16 @@ function getUsingCriteria(lang, testType, level) {
 /**
  * Get Using Tech Set
  * @param String lang
- * @param String testType
+ * @param String type
  * @param String level
  * @return Array
  */
-function getUsingTechs(lang, testType, level) {
+function getUsingTechs(lang, type, level) {
   if (getUsingTechs.vals) return getUsingTechs.vals;
 
   var techNames = getLangSet('tech');
-  var urlPointer = lang+'-'+testType;
-  var usingCriteria = getUsingCriteria(lang, testType, level);
+  var urlPointer = lang+'-'+type;
+  var usingCriteria = getUsingCriteria(lang, type, level);
   var usingTechs = [];
   
   for (i = 0; i < usingCriteria.length; i++) {
@@ -446,7 +447,7 @@ function getUsingTechs(lang, testType, level) {
       var each = relTechsAndCriteria[criteria][j];
       
       // Techniques for WCAG 2.1 has directory
-      if (testType == 'wcag21' && lang == 'en') {
+      if (type == 'wcag21' && lang == 'en') {
         var dir = each.charAt(0)+each.charAt(1);
         if (['M', 'L', 'V', 'C'].indefOf(each.charAt(1)) < 0) {
           dir = dir.charAt(0);
@@ -461,9 +462,7 @@ function getUsingTechs(lang, testType, level) {
   }
   
   getUsingTechs.vals = usingTechs;
-  
-  Logger.log(usingTechs);
-  
+    
   return usingTechs;
 }
 

@@ -1,5 +1,5 @@
 /**
- * Evaluate for COB-CHA
+ * Tabulation for COB-CHA
  */
 
 /**
@@ -58,7 +58,7 @@ function evaluate(lang, testType, level) {
   for (var i = 0; i < criteria.length; i++) {
     activeSheet.getRange(2, col).setValue(criteria[i][1]);
     activeSheet.setColumnWidth(col, 30);
-    if (cCheckVal.indexOf(criteria[i][1]) == -1) {
+    if (singleACriteria.indexOf(criteria[i][1]) == -1) {
       activeSheet.getRange(2, col).setBackground(doubleAColor);
     }
     usingCriterions[criteria[i][1]] = col;
@@ -119,10 +119,10 @@ function evaluate(lang, testType, level) {
 
     // single-A
     var singleAExpressions = [];
-    for (var j = 0; j < cCheckVal.length; j++) {
-      if ((testType == 'wcag20' || testType == 'tt20') && criteria21.indexOf(cCheckVal[j]) >= 0) continue;
-      singleAExpressions[j] = 'OR(HLOOKUP("'+cCheckVal[j]+'", 2:'+row+', '+targetRow+', false) = "T"';
-      singleAExpressions[j] = singleAExpressions[j]+', HLOOKUP("'+cCheckVal[j]+'", 2:'+row+', '+targetRow+', false) = "DNA")';
+    for (var j = 0; j < singleACriteria.length; j++) {
+      if ((testType == 'wcag20' || testType == 'tt20') && criteria21.indexOf(singleACriteria[j]) >= 0) continue;
+      singleAExpressions[j] = 'OR(HLOOKUP("'+singleACriteria[j]+'", 2:'+row+', '+targetRow+', false) = "T"';
+      singleAExpressions[j] = singleAExpressions[j]+', HLOOKUP("'+singleACriteria[j]+'", 2:'+row+', '+targetRow+', false) = "DNA")';
     }
     var singleAExpression = 'IF(AND('+singleAExpressions.join(', ')+'), "A", "A-")';
     singleAExpression = '=IF('+niExpression+', "NI", '+singleAExpression+')';
@@ -191,10 +191,10 @@ function generateExpression(testType, currentCriterion, row) {
   } else {
     var conditions = [];
     var strs = ["DNA", "F", "T"];
-    if (typeof ttCheckVal[currentCriterion] === 'undefined') return('');
+    if (typeof relTtAndCriteria[currentCriterion] === 'undefined') return('');
     for (var j = 0; j < strs.length; j++) {
-      for(var k = 0; k < ttCheckVal[currentCriterion].length; k++) {
-        conditions[k] = 'VLOOKUP("'+ttCheckVal[currentCriterion][k]+'", INDIRECT('+row+'&"!A:B") , 2, false) = "'+strs[j]+'"';
+      for(var k = 0; k < relTtAndCriteria[currentCriterion].length; k++) {
+        conditions[k] = 'VLOOKUP("'+relTtAndCriteria[currentCriterion][k]+'", INDIRECT('+row+'&"!A:B") , 2, false) = "'+strs[j]+'"';
       }
       if (strs[j] == 'DNA') {
         ret = 'IF(AND('+conditions.join(', ')+'), "'+strs[j]+'", "-")';

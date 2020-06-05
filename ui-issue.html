@@ -14,6 +14,19 @@
     /**
      * events
      */
+    function preventFormSubmit() {
+      var forms = document.querySelectorAll('form');
+      for (var i = 0; i < forms.length; i++) {
+        forms[i].addEventListener('submit', function(event) {
+          event.preventDefault();
+        });
+      }
+    }
+    window.addEventListener('load', preventFormSubmit);
+    
+    /**
+     * events
+     */
     $(function() {
       google.script.run
         .withSuccessHandler(
@@ -48,15 +61,18 @@
           })
         .getLangSet('ui');
         
+      // Judge Edit or Add before set default value
       google.script.run
         .withSuccessHandler(
           function(isEdit) {
             setDefaultValue(isEdit);
           })
         .isEditIssue();
-
+        
+      // on click
       $('#apply-issue').click(onApplyIssueClick);
-//      $('#upload-image').click(onUploadImageClick);
+
+      // on change
       $(document).on('change','.criteria-chk',function(){
         changeCriteria();
       });
@@ -70,6 +86,7 @@
       google.script.run
         .withSuccessHandler(
           function(ret) {
+            // dialog title and button
             if (ret['vals']['issueId'] == '') {
               var msg = Object.keys(lang.ui).length == 0 ? 'Add New Issue' : lang.ui['add-new-issue'];
               $('#apply-issue').html(msg);
@@ -169,7 +186,7 @@
               }
             }
           })
-        .setIssueValue(isEdit);
+        .dialogValueIssue(isEdit);
     }
 
     /**
@@ -227,22 +244,22 @@
     /**
      * Upload Image
      */
-    function onUploadImageClick(obj) {
+    function onClickUploadImage(obj) {
       $('#upload-image').prop('disabled', true);
       google.script.run
         .withSuccessHandler(function (ret){
           $('#upload-image-msg').html('File Uploaded');
           $('#uploaded-file').val(ret[0]);
           $('#uploaded-file-url').val(ret[1]);
+        })
+        .withFailureHandler(function (ret){
+          var msg = Object.keys(lang.ui).length == 0 ? 'Failed file Uploading' : lang.ui['failed-upload'];
+          $('#upload-image-msg').html(msg);
           $('#upload-image').prop('disabled', false);
         })
-        .withFailureHandler(function (){
-          $('#upload-image-msg').html('Failed file Uploading');
-          $('#upload-image').prop('disabled', false);
-        })
-        .fileUpload(obj);
+        .uploadIssueImage(obj);
     }
-    
+
     /**
      * Change Criteria
      */
@@ -261,12 +278,13 @@
         }
       }
     }
-</script>
+  </script>
+  <?!= HtmlService.createHtmlOutputFromFile('ui-css').getContent(); ?>
 </head>
 <body style="padding-bottom: 4em;">
-  <div style="position: fixed; width: 100%; bottom: 0; background: #fff; z-index: 9; padding-top: 1em;">
+  <div style="position: fixed; width: 100%; bottom: 0; background: #fff; z-index: 9; padding: 10px 0 10px;">
     <button onclick="google.script.host.close()" id="close-btn">Close</button>
-    <button id="apply-issue" class="blue"></button>
+    <button id="apply-issue" class="primary"></button>
   </div>
 
   <table style="width:95%;">
@@ -307,10 +325,10 @@
     <td style="position:relative;height:150px;"><div style="position:absolute;top:0;height:160px;overflow:auto;overflow-x:hidden;padding:5px"><table id="places" style="width: 100%"></table></div></td>
   </tr>
   <tr>
-    <th><label for="issue-image" id="issue-image-title">Image</label></th>
+    <th id="issue-image-title">Image</th>
     <td>
-      <form id="upload-form" onsubmit="onUploadImageClick(this)">
-        <input type="file" id="issue-image" name="imageFile"> <input type="submit" id="upload-image" value="upload">
+      <form id="upload-form" onsubmit="onClickUploadImage(this)">
+        <input type="file" name="imageFile"> <input type="submit" id="upload-image" value="upload">
         <input type="text" id="uploaded-file" value="">
         <input type="hidden" id="uploaded-file-url" value="">
       </form>

@@ -3,12 +3,12 @@
  */
 
 /**
- * export Html
+ * export Result
  * @param String testType
  * @param String level
  * @return String
  */
-function exportHtml(testType, level) {
+function exportResult(testType, level) {
   var ss = getSpreadSheet();
   var resultSheet = ss.getSheetByName(resultSheetName);
   if (resultSheet == null) return 'result page not found. Evalute fisrt';
