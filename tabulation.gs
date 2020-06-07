@@ -54,7 +54,9 @@ function evaluate(lang, testType, level) {
   activeSheet.getRange(2, 1).setValue('URL');
   activeSheet.getRange(2, 2).setValue(getUiLang('result', 'Result'));
   activeSheet.setColumnWidth(2, 35);
-  var criteria = getUsingCriteria(lang, testType, level);
+  
+  var type4criteria = testType == 'tt20' ? 'wcag20' : testType ;
+  var criteria = getUsingCriteria(lang, type4criteria, level);
   for (var i = 0; i < criteria.length; i++) {
     activeSheet.getRange(2, col).setValue(criteria[i][1]);
     activeSheet.setColumnWidth(col, 30);

@@ -39,7 +39,7 @@ function getPulldownMenu() {
 function generateSheets(urlstr, lang, testType, level, targetId) {
   var urls = urlstr.trim().replace(/^\s+|\s+$|\n\n/g, '').split(/\n/);
   if (urls.length == 1 && urls[0] == '') return {'msg': getUiLang('no-target-page-exists', "No target Page Exists"), 'targetId': targetId};
-    
+  
   var ss = getSpreadSheet();
   var alreadyExists = [];
   var added = 0;

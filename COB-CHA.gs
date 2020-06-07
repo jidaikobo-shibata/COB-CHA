@@ -392,7 +392,7 @@ function getAllCriteria(lang, type) {
  */
 function getUsingCriteria(lang, type, level) {
   var usingCriteria = getAllCriteria(lang, type);
-  
+
   // Trusted Tester does not apply additional criteria
   if (type.indexOf('tt') >= 0) return usingCriteria;
   if (getUsingCriteria.vals) return getUsingCriteria.vals;

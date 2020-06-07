@@ -28,28 +28,28 @@
             lang.ui = ui;
             $("#show-examination").html(ui['examination']);
             $("#show-report").html(ui['report']);
-            $("#title-value").html(ui['value']);
-            $("#set-additional-criterion").html(ui['set-additional-criterion']);
             $("#test-type-title").html(ui['test-type']);
             $("#title-urls").html(ui['sheet-control']);
+            $("#title-value").html(ui['value']);
+            $("#title-delete-sheets").html(ui['delete']);
+            $("#title-template").html(ui['template']);
+            $("#title-evaluate").html(ui['evaluate']);
+            $("#set-additional-criterion").html(ui['set-additional-criterion']);
             $("#generate-sheets").html(ui['generate']);
             $("#collect-sheets").html(ui['collect-sheets']);
-            $("#title-delete-sheets").html(ui['delete']);
             $("#add-screenshot").html(ui['add-screenshot']);
             $("#genarate-config").html(ui['generate-config-sheet']);
-            $("#do-insert-tech").html(ui['insert-techniques-sheet']);
             $("#do-set-all-t").html(ui['set-all-t']);
-            $("#template-title").html(ui['template']);
+            $("#do-insert-tech").html(ui['insert-techniques-sheet']);
             $("#do-template-apply-all").html(ui['apply-tpl-all']);
             $("#do-template-apply-row").html(ui['apply-tpl-row']);
             $("#generate-template").html(ui['generate-template']);
-            $("#issue-control-title").html(ui['issue-control-title']);
+            $("#title-issue-control").html(ui['title-issue-control']);
             $("#add-edit-issue").html(ui['add-edit-issue']);
             $("#show-issue").html(ui['show-issue']);
             $("#export-html-title").html(ui['export-html-title']);
             $("#export-result").html(ui['export-result']);
             $("#export-issue").html(ui['export-issues']);
-            $("#evaluate-title").html(ui['evaluate']);
             $("#do-evaluate").html(ui['do-evaluate']);
             $("#do-evaluate-icl").html(ui['do-evaluate-icl']);
           })
@@ -193,7 +193,7 @@
       var sheets = sheetsObj.data.sheets == "*urls*" ? $('#urls').val() : sheetsObj.data.sheets;
       var targetId = sheetsObj.data.targetId;
       $(targetId).prop('disabled', true);
-
+      
       google.script.run
         .withSuccessHandler(
           function(rets) {
@@ -501,22 +501,15 @@
         <option value="AAA">AAA</option>
       </select></p>
       <p><button id="set-additional-criterion">Set additional criteria</button></p>
-      <p><button id="genarate-config">Generate config sheet</button></p>
       </details>
 
       <details>
       <summary id="title-urls">Sheet control</summary>
-      <p><textarea style="width:100%;" aria-labelledby="title-urls"></textarea></p>
+      <p><textarea style="width:100%;" aria-labelledby="title-urls" id="urls"></textarea></p>
       <button id="generate-sheets">Generate</button>
       <button id="collect-sheets">Get sheets</button>
       <input type="checkbox" id="delete-sheets"><label id="title-delete-sheets" for="delete-sheets">Delete</label>
-      </details>
-    
-      <details>
-      <summary id="template-title">Template</summary>
-      <p><button id="generate-template">Generate template sheet</button></p>
-      <p><button id="do-template-apply-all">Apply all</button></p>
-      <p><button id="do-template-apply-row">Apply current row</button></p>
+      <p><button id="genarate-config">Generate config sheet</button></p>
       </details>
 
       <details>
@@ -527,15 +520,22 @@
       </details>
 
       <details>
-      <summary id="issue-control-title">Issue Control</summary>
+      <summary id="title-issue-control">Issue Control</summary>
       <p><button id="add-edit-issue">Add/Edit Issue</button></p>
       <p><button id="show-issue">Show Issue</button></p>
+      </details>
+    
+      <details>
+      <summary id="title-template">Template</summary>
+      <p><button id="generate-template">Generate template sheet</button></p>
+      <p><button id="do-template-apply-all">Apply all</button></p>
+      <p><button id="do-template-apply-row">Apply current row</button></p>
       </details>
     </div>
 
     <div id="pannel-report">
       <details open>
-      <summary id="evaluate-title">Evaluate</summary>
+      <summary id="title-evaluate">Evaluate</summary>
       <p><button id="do-evaluate">Evaluate</button></p>
       <p><button id="do-evaluate-icl">Evaluate ICL</button></p>
       </details>

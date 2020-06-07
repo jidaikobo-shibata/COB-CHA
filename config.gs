@@ -51,6 +51,7 @@ function prepareConfigSheet(lang, testType, level) {
 function getAdditionalCriterion() {
   var ss = getSpreadSheet();
   var configsheet = ss.getSheetByName(configSheetName);
+  if ( ! configsheet) return '';
   return configsheet.getRange(4, 2).getValue();
 }
 
