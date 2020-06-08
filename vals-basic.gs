@@ -176,6 +176,7 @@ var relTechsAndCriteria = {
 /**
  * global variables
  */
+var fallbacksheetName  = 'Sheet1';
 var resultSheetName    = '*Result*';
 var issueSheetName     = '*Issue*';
 var configSheetName    = '*Config*';

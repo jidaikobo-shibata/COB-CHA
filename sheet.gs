@@ -3,6 +3,47 @@
  */
 
 /**
+ * Get Spreadsheet
+ * @return Object
+ */
+function getSpreadSheet() {
+  if (getSpreadSheet.ss) return getSpreadSheet.ss;
+  getSpreadSheet.ss = SpreadsheetApp.getActive();
+  return getSpreadSheet.ss;
+};
+
+/**
+ * Get Active Spreadsheet
+ * @return Object
+ */
+function getActiveSheet() {
+  if (getActiveSheet.ss) return getActiveSheet.ss;
+  var ss = getSpreadSheet();
+  getActiveSheet.ss = ss.getActiveSheet();
+  return getActiveSheet.ss;
+};
+
+/**
+ * Get All sheets
+ * @return Object
+ */
+function getAllSheets() {
+  if (getAllSheets.ss) return getAllSheets.ss;
+  var ss = getSpreadSheet();
+  var all = ss.getSheets();
+  
+  ret = [];
+  for (i = 0; i < all.length; i++) {
+    if (String(all[i].getName()).charAt(0) == '*') continue;
+    ret.push(all[i]);
+  }
+
+  getAllSheets.ss = ret;
+  return getAllSheets.ss;
+};
+
+
+/**
  * set basic value
  * @param Object sheet
  * @param String lang
@@ -248,6 +289,47 @@ function getSheets() {
 }
 
 /**
+ * add sheet
+ * @param String sheetname
+ * @param String template
+ * @return Bool
+ */
+function addSheet(sheetname, template) {
+  var ss = getSpreadSheet();
+  // Microsoft Excel compatible
+  // Excel's sheetname cannot use : and /
+  sheetname = String(sheetname).replace(/https*:\/\//ig, '');
+  sheetname = String(sheetname).replace(/\//ig, ' ');
+ 
+  // Excel's sheetname must be under 31 chars
+  if (sheetname.length > 28) {
+    var tmpbase = sheetname.substr(0, 28);
+    var tmp = tmpbase;
+    var i = 2;
+    while(ss.getSheetByName(tmp)) {
+      var tmp = tmpbase+'-'+i;
+      i++;
+    }
+    sheetname = tmp;
+  }
+  
+  var targetSheet = ss.getSheetByName(sheetname);
+  var sheetIndex  = sheetname.charAt(0) == '*' ? 0 : ss.getSheets().length+1;
+
+  // sheet which name started with * must be refreashed
+  if (sheetIndex == 0 && targetSheet != null) {
+    ss.deleteSheet(targetSheet);
+  }
+  if (ss.getSheetByName(sheetname)) return false;
+  if (template) {
+    ss.insertSheet(sheetname, sheetIndex, {template: template});
+  } else {
+    ss.insertSheet(sheetname, sheetIndex);
+  }
+  return true;
+}
+
+/**
  * Delete Sheets
  * @param String urlstr
  * @return String
@@ -270,17 +352,28 @@ function deleteSheets(urlstr) {
 }
 
 /**
- * add screenshot
- * @param Object formObj
+ * reset sheets
  * @return String
  */
-function uploadScreenshot(formObj) {
-  var activeSheet = getActiveSheet();
-  if (activeSheet.getName().charAt(0) == '*') return getUiLang('current-sheet-is-not-for-webpage', "Current Sheet is not for webpage.");
+function resetSheets(urlstr) {
+  if ( ! isDebug()) throw new Error('allowed to developer only');
   
-  var file = fileUpload(imagesFolderName, formObj, "imageFile");
-  activeSheet.getRange(2, 6).setValue(file[0]);
-  activeSheet.getRange(2, 7).setValue('=IMAGE("https://drive.google.com/uc?export=download&id='+file[1]+'",1)');
+  var ss = getSpreadSheet();
+  var all = ss.getSheets();
   
-  return getUiLang('image-uploaded', "Image Uploaded.");
+  var fallbacksheet = ss.getSheetByName(fallbacksheetName);
+  if (fallbacksheet) {
+    ss.deleteSheet(fallbacksheet);
+  }
+  ss.insertSheet(fallbacksheetName, 0);
+  
+  var count = 0;
+  for (var i = 0; i < all.length; i++) {
+    if (all[i].getName() == fallbacksheetName) continue;
+    if (all[i] == null) continue;
+    ss.deleteSheet(all[i]);
+    count++;
+  }
+
+  return getUiLang('sheet-deleted', "%s sheet(s) deleted.").replace("%s", count);
 }

@@ -55,7 +55,6 @@
       google.script.run
         .withSuccessHandler(
           function(ret) {
-          
             // generate table
             for(var i = 0; i < ret['criteria'].length; i++) {
               if (ret['type'] == 'wcag20' && ret['criteria21'].indexOf(ret['criteria'][i][1]) >= 0) continue;

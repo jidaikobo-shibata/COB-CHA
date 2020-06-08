@@ -82,10 +82,11 @@ function dialogValueAdditionalCriterionValue() {
   ret['lang'] = getProp('lang');
   ret['type'] = getProp('type');
   ret['level'] = getProp('level');
-  
+
   ret['checked'] = getAdditionalCriterion();
   ret['criteria'] = getAllCriteria(ret['lang'], ret['type']);
-
+  ret['criteria21'] = criteria21;
+  
   return ret;
 }
 

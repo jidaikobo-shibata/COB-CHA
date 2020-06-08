@@ -56,161 +56,6 @@ function addShowControlPannel() {
 };
 
 /**
- * Get Spreadsheet
- * @return Object
- */
-function getSpreadSheet() {
-  if (getSpreadSheet.ss) return getSpreadSheet.ss;
-  getSpreadSheet.ss = SpreadsheetApp.getActive();
-  return getSpreadSheet.ss;
-};
-
-/**
- * Get Active Spreadsheet
- * @return Object
- */
-function getActiveSheet() {
-  if (getActiveSheet.ss) return getActiveSheet.ss;
-  var ss = getSpreadSheet();
-  getActiveSheet.ss = ss.getActiveSheet();
-  return getActiveSheet.ss;
-};
-
-/**
- * Get All sheets
- * @return Object
- */
-function getAllSheets() {
-  if (getAllSheets.ss) return getAllSheets.ss;
-  var ss = getSpreadSheet();
-  var all = ss.getSheets();
-  
-  ret = [];
-  for (i = 0; i < all.length; i++) {
-    if (String(all[i].getName()).charAt(0) == '*') continue;
-    ret.push(all[i]);
-  }
-
-  getAllSheets.ss = ret;
-  return getAllSheets.ss;
-};
-
-/**
- * Get Spreadsheet's folder
- * @return Object
- */
-function getCurrentFolder() {
-  if (getCurrentFolder.folder) return getCurrentFolder.folder;
-  var ss = getSpreadSheet();
-  var ssId = ss.getId();
-  var parentFolder = DriveApp.getFileById(ssId).getParents();
-  getCurrentFolder.folder = parentFolder.next();
-  return getCurrentFolder.folder; 
-};
-
-/**
- * Get target folder object
- * @param String target [resourceFolderName, exportFolderName, imagesFolderName]
- * @return Object
- */
-function getTargetFolder(target) {
-  if (getTargetFolder.folder && getTargetFolder.folder[target]) return getTargetFolder.folder[target];
-  var currentFolder = getCurrentFolder();
-  var children = currentFolder.getFolders();
-  getTargetFolder.folder = {};
-  
-  // is already exists?
-  var folders = [resourceFolderName, exportFolderName, imagesFolderName]
-  while (children.hasNext()){
-    var folder = children.next();
-    for (var i = 0; i < folders.length; i++) {
-      if (folder.getName().indexOf(folders[i]) != -1) {
-        getTargetFolder.folder[folders[i]] = folder;
-      }
-    }
-    if (getTargetFolder.folder[target]) return getTargetFolder.folder[target];
-  }
-  
-  // create folder
-  for (var i = 0; i < folders.length; i++) {
-    getTargetFolder.folder[folders[i]] = currentFolder.createFolder(folders[i]);
-  }
-  return getTargetFolder.folder[target];
-};
-
-/**
- * delete file if exists
- * @param String target
- * @param String name
- * @return Void
- */
-function deleteFileIfExists(targetFolder, name) {
-  var targetFolder = getTargetFolder(targetFolder);
-  var children = targetFolder.getFiles();
-  while (children.hasNext()) {
-    var current = children.next();
-    if (current.getName() == name) {
-      targetFolder.removeFile(current);
-    }
-  };
-};
-
-/**
- * save HTML
- * @param String target
- * @param String name
- * @param String html
- * @param Bool overwrite
- * @return Void
- */
-function saveHtml(targetFolder, name, html, overwrite) {
-  if (overwrite) {
-    deleteFileIfExists(targetFolder, name);
-  }
-  var targetFolder = getTargetFolder(targetFolder);
-  targetFolder.createFile(name, html, 'text/html');
-};
-
-/**
- * file upload
- * @param String targetFolder
- * @param Object formObj
- * @param String nameAttr
- * @return Array [fileName, fileId]
- */
-function fileUpload(targetFolder, formObj, nameAttr) {
-  if (formObj[nameAttr].length == 0) throw new Error('Empty File Uploaded');
-  var formBlob = formObj[nameAttr];
-  var driveFile = DriveApp.createFile(formBlob);
-  var targetFolder = getTargetFolder(targetFolder);
-  deleteFileIfExists(targetFolder, driveFile.getName());
-  targetFolder.addFile(driveFile);
-  driveFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-  DriveApp.getRootFolder().removeFile(driveFile);
-  return [driveFile.getName() ,driveFile.getId()];
-}
-
-/**
- * add image formula
- * @param String id
- * @return String
- */
-function addImageFormula(id) {
-  return '=IMAGE("https://drive.google.com/uc?export=download&id='+id+'",1)';
-};
-
-/**
- * remove image formula
- * @param String id
- * @return String
- */
-function removeImageFormula(id) {
-  id = id.replace('=IMAGE("https://drive.google.com/uc?export=download&id=' ,'');
-  id = id.replace('",1)', '');
-  return id;
-};
-
-/**
  * show control pannel
  * @return Void
  */
@@ -357,7 +202,15 @@ function getUiLang(uiname, defaultStr) {
   }
   return ui[uiname];
 }
-  
+
+/**
+ * is debug mode
+ * @return Bool
+ */
+function isDebug() {
+  return Session.getActiveUser().getUserLoginId() == 'jidaikobo@gmail.com';
+}
+
 /**
  * Get All Criteria Set
  * @param String lang
@@ -367,7 +220,7 @@ function getUiLang(uiname, defaultStr) {
 function getAllCriteria(lang, type) {
   var set = type.indexOf('wcag') >= 0 ? 'criteria' : 'ttCriteria' ;
   var allCriteria = getLangSet(set);
-  
+
   // Trusted Tester does not apply additional criteria
   if (set == 'ttCriteria') return allCriteria;
   if (getAllCriteria.vals) return getAllCriteria.vals;
@@ -467,45 +320,24 @@ function getUsingTechs(lang, type, level) {
 }
 
 /**
- * add sheet
- * @param String sheetname
- * @param String template
- * @return Bool
+ * add image formula
+ * @param String id
+ * @return String
  */
-function addSheet(sheetname, template) {
-  var ss = getSpreadSheet();
-  // Microsoft Excel compatible
-  // Excel's sheetname cannot use : and /
-  sheetname = String(sheetname).replace(/https*:\/\//ig, '');
-  sheetname = String(sheetname).replace(/\//ig, ' ');
- 
-  // Excel's sheetname must be under 31 chars
-  if (sheetname.length > 28) {
-    var tmpbase = sheetname.substr(0, 28);
-    var tmp = tmpbase;
-    var i = 2;
-    while(ss.getSheetByName(tmp)) {
-      var tmp = tmpbase+'-'+i;
-      i++;
-    }
-    sheetname = tmp;
-  }
-  
-  var targetSheet = ss.getSheetByName(sheetname);
-  var sheetIndex  = sheetname.charAt(0) == '*' ? 0 : ss.getSheets().length+1;
+function addImageFormula(id) {
+  return '=IMAGE("https://drive.google.com/uc?export=download&id='+id+'",1)';
+};
 
-  // sheet which name started with * must be refreashed
-  if (sheetIndex == 0 && targetSheet != null) {
-    ss.deleteSheet(targetSheet);
-  }
-  if (ss.getSheetByName(sheetname)) return false;
-  if (template) {
-    ss.insertSheet(sheetname, sheetIndex, {template: template});
-  } else {
-    ss.insertSheet(sheetname, sheetIndex);
-  }
-  return true;
-}
+/**
+ * remove image formula
+ * @param String id
+ * @return String
+ */
+function removeImageFormula(id) {
+  id = id.replace('=IMAGE("https://drive.google.com/uc?export=download&id=' ,'');
+  id = id.replace('",1)', '');
+  return id;
+};
 
 /**
  * Get HTML and its title

@@ -1,5 +1,5 @@
 /**
- * Input Utilities control for COB-CHA
+ * Input Utility control for COB-CHA
  */
 
 /**
@@ -66,7 +66,7 @@ function applyAllToT(testType, level) {
   var activeSheet = getActiveSheet();
   if (activeSheet.getName() == resultSheetName) return getUiLang('current-sheet-is-not-for-webpage', 'Current sheet is not for webpage');
 
-  var additionalCriteria = getAdditionalCriterion().split(/,/);
+  var additionalCriteria = getAdditionalCriterion() ? getAdditionalCriterion().split(/,/) : [];
   var rows = 61; // WCAG 2.0 AAA
   rows = testType == 'wcag20' && level == 'A'   ? 25 + additionalCriteria.length : rows;
   rows = testType == 'wcag20' && level == 'AA'  ? 38 + additionalCriteria.length : rows;
@@ -74,7 +74,7 @@ function applyAllToT(testType, level) {
   rows = testType == 'wcag21' && level == 'AA'  ? 50 + additionalCriteria.length : rows;
   rows = testType == 'wcag21' && level == 'AAA' ? 78 : rows;
   rows = testType == 'tt20' ? ttCriteria.length : rows;
-
+  
   for (var i = 1; i <= rows; i++) {
     activeSheet.getRange(i+4, 2).setValue('T');
   }

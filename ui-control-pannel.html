@@ -81,6 +81,7 @@
       $('#do-evaluate-icl').click(onClickDoEvaluateIcl);
       $('#export-result').click(onClickExportResult);
       $('#export-issue').click(onClickExportIssue);
+      $('#reset-sheets').click(onClickResetSheets);
 
       // menu
       $('#show-examination').on(
@@ -112,6 +113,16 @@
           })
         .getProp('lang');
 
+      // debug mode
+      google.script.run
+        .withSuccessHandler(
+          function(ret) {
+            if (ret) {
+              $('#dev').show();
+            }
+          })
+        .isDebug();
+        
       // default value
       setDefaultValue();
     });
@@ -471,6 +482,25 @@
         $('#sidebar-status').addClass(classId);
       }
     }
+    
+    /**
+     * reset sheets
+     */
+    function onClickResetSheets() {
+      $('#message-area').hide();
+      if (confirm('Reset All Sheets') === false) return;
+
+      google.script.run
+        .withSuccessHandler(
+          function(msg) {
+            showStatus(msg);
+          })
+        .withFailureHandler(
+          function(msg) {
+            showStatus(msg, 'error');
+          })
+        .resetSheets();
+    }
   </script>
 
   <?!= HtmlService.createHtmlOutputFromFile('ui-css').getContent(); ?>
@@ -544,6 +574,13 @@
       <summary id="export-html-title">Export as HTML</summary>
       <p><button id="export-result">Export Result</button></p>
       <p><button id="export-issue">Export Issues</button></p>
+      </details>
+    </div>
+
+    <div id="dev">
+      <details open>
+      <summary>Developer Only</summary>
+      <p><button id="reset-sheets">Rest All</button></p>
       </details>
     </div>
 

@@ -112,6 +112,13 @@ function dialogValueIssue(isEdit) {
  * @return Void
  */
 function openDialogIssue(lang, testType, level) {
+  // to tell current page
+  var activeSheet = getActiveSheet();
+  var html = '';
+  if (activeSheet.getName().charAt(0) != '*') {
+    html = '<input type="hidden" id="target-url" value="'+activeSheet.getName()+'">';
+  }
+  
   // generate Issue sheet
   var ss = getSpreadSheet();
   var issueSheet = ss.getSheetByName(issueSheetName);
@@ -141,7 +148,7 @@ function openDialogIssue(lang, testType, level) {
   };
 
   var title = isEditIssue() ? getUiLang('edit-issue', 'Edit issue') : getUiLang('add-new-issue', 'Add new issue');
-  showDialog('ui-issue', 500, 400, title);
+  showDialog('ui-issue', 500, 400, title, html);
 }
 
 /**
