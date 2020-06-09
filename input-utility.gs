@@ -78,6 +78,21 @@ function applyAllToT(testType, level) {
   for (var i = 1; i <= rows; i++) {
     activeSheet.getRange(i+4, 2).setValue('T');
   }
+  
+  // Impelement Check List
+  // Browser.msgBox();
+  i = i + 4 + 3;
+  var icl1stCol = activeSheet.getRange(i, 1).getValue();
+  var iclLevel  = activeSheet.getRange(i, 3).getValue();
+  while (icl1stCol != '') {
+    if (iclLevel.charAt(0) == 'A') {
+      activeSheet.getRange(i, 2).setValue('T');
+    }
+    i++;
+    icl1stCol = activeSheet.getRange(i, 1).getValue();
+    iclLevel  = activeSheet.getRange(i, 3).getValue();
+  }
+    
   return getUiLang('edit-done', 'Value Edited');
 }
 

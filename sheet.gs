@@ -205,6 +205,9 @@ function generateSheets(urlstr, lang, testType, level, targetId) {
   // generate result sheet
   generateResultSheet();
   
+  // clean up for developer
+  deleteFallbacksheet();
+  
   // return to original sheet
   originalSheet.activate();
   
@@ -267,11 +270,17 @@ function generateIcl(originalSheet, row, usingCriteria, level) {
  */
 function generateResultSheet() {
   var ss = getSpreadSheet();
+  var all = ss.getSheets();
+
   var resultSheet = ss.getSheetByName(resultSheetName);
-  if (resultSheet) {
+  if (resultSheet && all.length != 1) {
     ss.deleteSheet(resultSheet);
   }
-  ss.insertSheet(resultSheetName, 0);
+  
+  var resultSheet = ss.getSheetByName(resultSheetName);
+  if ( ! resultSheet) {
+    ss.insertSheet(resultSheetName, 0);
+  }
 }
 
 /**
@@ -361,10 +370,7 @@ function resetSheets(urlstr) {
   var ss = getSpreadSheet();
   var all = ss.getSheets();
   
-  var fallbacksheet = ss.getSheetByName(fallbacksheetName);
-  if (fallbacksheet) {
-    ss.deleteSheet(fallbacksheet);
-  }
+  deleteFallbacksheet();
   ss.insertSheet(fallbacksheetName, 0);
   
   var count = 0;
@@ -376,4 +382,16 @@ function resetSheets(urlstr) {
   }
 
   return getUiLang('sheet-deleted', "%s sheet(s) deleted.").replace("%s", count);
+}
+
+/**
+ * delete fallbacksheet
+ * @return Void
+ */
+function deleteFallbacksheet() {
+  var ss = getSpreadSheet();
+  var fallbacksheet = ss.getSheetByName(fallbacksheetName);
+  if (fallbacksheet) {
+    ss.deleteSheet(fallbacksheet);
+  }
 }

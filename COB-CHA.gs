@@ -345,6 +345,11 @@ function removeImageFormula(id) {
  * @return Object
  */
 function getHtmlAndTitle(url) {
+  var ret = {'title': '', 'html': ''};
+  if (url.indexOf('http') < 0) {
+    return ret;
+  }
+  
   var options = {
     "muteHttpExceptions" : true,
     "validateHttpsCertificates" : false,
@@ -357,7 +362,7 @@ function getHtmlAndTitle(url) {
     title = String(title).replace(/<\/*title>/ig, '');
     return {'title': title, 'html': res};
   } catch(e) {
-    return {'title': '', 'html': ''};
+    return ret;
   }
 }
 

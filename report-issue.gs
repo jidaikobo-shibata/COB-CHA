@@ -95,10 +95,10 @@ function dialogValueIssue(isEdit) {
   ret['usingCriteria'] = getUsingCriteria(ret['lang'], ret['type'], ret['level']);
   ret['usingTechs'] = getUsingTechs(ret['lang'], ret['type'], ret['level']);
   
-  ret['places'] = [];
+  ret['allPlaces'] = [];
   var all = getAllSheets();
   for (i = 0; i < all.length; i++) {
-    ret['places'].push(getUrlFromSheet(all[i]));
+    ret['allPlaces'].push(getUrlFromSheet(all[i]));
   }
  
   return ret;
@@ -114,7 +114,7 @@ function dialogValueIssue(isEdit) {
 function openDialogIssue(lang, testType, level) {
   // to tell current page
   var activeSheet = getActiveSheet();
-  var html = '';
+  var html = '<input type="hidden" id="target-url" value="">';
   if (activeSheet.getName().charAt(0) != '*') {
     html = '<input type="hidden" id="target-url" value="'+activeSheet.getName()+'">';
   }

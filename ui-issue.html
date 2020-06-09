@@ -68,7 +68,11 @@
             setDefaultValue(isEdit);
           })
         .isEditIssue();
-        
+      
+      // on load
+      $('#message-area').hide();
+      $('.fa-spinner').hide();
+
       // on click
       $('#apply-issue').click(onApplyIssueClick);
 
@@ -142,8 +146,8 @@
               }
             }
 
-            for(var i = 0; i < ret['places'].length; i++) {
-              var place = ret['places'][i];
+            for(var i = 0; i < ret['allPlaces'].length; i++) {
+              var place = ret['allPlaces'][i];
               var idname = btoa(place).replace(/=/g, '');
               $('#places').append($('<tr></tr>')
                          .append($('<td></td>').html('<input type="checkbox" id="'+idname+'" class="places" value="'+place+'">'))
@@ -183,7 +187,7 @@
             var checkboxes = ['testId', 'checked', 'techs', 'places'];
             for (var i = 0; i < checkboxes.length; i++) {
               if (typeof ret['vals'][checkboxes[i]] === "undefined") continue;
-              var checked = ret['vals'][checkboxes[i]].split(/,/);
+              var checked = ret['vals'][checkboxes[i]].toString().split(/,/);
               for (var j = 0; j < checked.length; j++) {
                 var thisvalue = checked[j].trim();
                 if ($("input[value='"+thisvalue+"']").val().length < 0) continue;
@@ -198,8 +202,6 @@
      * Apply Issue
      */
     function onApplyIssueClick() {
-      $('#message-area').hide();
-      
       var testIds = [];
       $('#test-id').find(':checked').each(function(){
         testIds.push($(this).val());
@@ -251,16 +253,25 @@
      */
     function onClickUploadImage(obj) {
       $('#upload-image').prop('disabled', true);
+      $('#progress-upload').show();
+      $('#progress-upload').html('<span class="skip">in progress</span>');
+      
       google.script.run
         .withSuccessHandler(function (ret){
-          $('#upload-image-msg').html('File Uploaded');
+          $('#message-area').show();
+          $('#message-area').html('File Uploaded');
           $('#uploaded-file').val(ret[0]);
           $('#uploaded-file-url').val(ret[1]);
+          $('#progress-upload').hide();
+          $('#progress-upload').html('');
         })
         .withFailureHandler(function (ret){
           var msg = Object.keys(lang.ui).length == 0 ? 'Failed file Uploading' : lang.ui['failed-upload'];
-          $('#upload-image-msg').html(msg);
+          $('#message-area').show();
+          $('#message-area').addClass('error').html(msg);
           $('#upload-image').prop('disabled', false);
+          $('#progress-upload').hide();
+          $('#progress-upload').html('');
         })
         .uploadIssueImage(obj);
     }
@@ -287,11 +298,6 @@
   <?!= HtmlService.createHtmlOutputFromFile('ui-css').getContent(); ?>
 </head>
 <body style="padding-bottom: 4em;">
-  <div style="position: fixed; width: 100%; bottom: 0; background: #fff; z-index: 9; padding: 10px 0 10px;">
-    <button onclick="google.script.host.close()" id="close-btn">Close</button>
-    <button id="apply-issue" class="primary"></button>
-  </div>
-
   <table style="width:95%;">
   <tr>
     <th><label for="issue-name" id="issue-name-title">Name</label></th>
@@ -334,10 +340,11 @@
     <td>
       <form id="upload-form" onsubmit="onClickUploadImage(this)">
         <input type="file" name="imageFile"> <input type="submit" id="upload-image" value="upload">
+        <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-upload"></span>
         <input type="text" id="uploaded-file" value="">
         <input type="hidden" id="uploaded-file-url" value="">
       </form>
-      <div id="upload-image-msg"></div>
+      <div role="region" aria-live="polite" id="message-area" style="margin-top:15px;background-color: #eeeeee;padding:5px;"></div>
     </td>
   </tr>
   <tr>
@@ -345,5 +352,9 @@
     <td><textarea id="memo" style="width:100%;height:100px;"></textarea></td>
   </tr>
   </table>
+  <div style="position: fixed; width: 100%; bottom: 0; background: #fff; z-index: 9; padding: 10px 0 10px;">
+    <button onclick="google.script.host.close()" id="close-btn">Close</button>
+    <button id="apply-issue" class="primary"></button>
+  </div>
 </body>
 </html>

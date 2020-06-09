@@ -3,6 +3,7 @@
 <head>
   <base target="_top">
   <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
+  <link href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" rel="stylesheet">
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
   <script>
     /**
@@ -56,8 +57,8 @@
         .getLangSet('ui');
 
       // on load
-      $('#message-area').hide();
       $('#pannel-report').hide();
+      $('.fa-spinner').hide();
 
       // on change
       $('#test-type').change(swtichLevelWhenTtOrNot);
@@ -191,7 +192,6 @@
      * Set Additional Criteria
      */
     function onClickSetAdditionalCriterion() {
-      $('#message-area').hide();
       google.script.run.openDialogAdditionalCriterion($('#lang').val(), $('#test-type').val(), $('#evaluate-level').val());
     }
 
@@ -200,21 +200,23 @@
      * @param Object sheetsObj
      */
     function onClickGenerateSheet(sheetsObj) {
-      $('#message-area').hide();
       var sheets = sheetsObj.data.sheets == "*urls*" ? $('#urls').val() : sheetsObj.data.sheets;
       var targetId = sheetsObj.data.targetId;
       $(targetId).prop('disabled', true);
-      
+      $('#progress-sheet').show();
+
       google.script.run
         .withSuccessHandler(
           function(rets) {
             showStatus(rets['msg']);
             $(rets['targetId']).prop('disabled', false);
+            $('#progress-sheet').hide();
           })
         .withFailureHandler(
           function(rets) {
             showStatus(rets['msg'], 'error');
             $(rets['targetId']).prop('disabled', false);
+            $('#progress-sheet').hide();
           })
         .generateSheets(sheets, $('#lang').val(), $('#test-type').val(), $('#evaluate-level').val(), targetId);
     }
@@ -223,8 +225,6 @@
      * Generate Config Sheets
      */
     function onClickGenarateConfig() {
-      $('#message-area').hide();
-
       google.script.run
         .withSuccessHandler(
           function(msg) {
@@ -238,20 +238,46 @@
     }
 
     /**
+     * progress indicator
+     * @param String $buttonId
+     * @param String $indicatorId
+     * @param Bool $on
+     * @return Void
+     */
+    function progressIndicator($buttonId, $indicatorId, $on) {
+      if ($on) {
+        $('#'+$buttonId).prop('disabled', true);
+        if ($indicatorId) {
+          $('#'+$indicatorId).show();
+          $('#'+$indicatorId).html('<span class="skip">in progress</span>');
+        }
+      } else {
+        $('#'+$buttonId).prop('disabled', false);
+        if ($indicatorId) {
+          $('#'+$indicatorId).hide();
+          $('#'+$indicatorId).html('');
+        }
+      }
+    }
+
+    /**
      * Get All Sheets / Delete Selected Sheets
      */
     function onClickCollectDeleteSheet() {
-      $('#message-area').hide();
-
+      progressIndicator('collect-sheets', 'progress-sheet', true);
+      
       if ($('#delete-sheets').prop('checked')) {
+      
         google.script.run
           .withSuccessHandler(
             function(msg) {
               showStatus(msg);
+              progressIndicator('collect-sheets', 'progress-sheet', false);
             })
           .withFailureHandler(
             function(msg) {
               showStatus(msg, 'error');
+              progressIndicator('collect-sheets', 'progress-sheet', false);
             })
           .deleteSheets($('#urls').val());
       } else {
@@ -259,10 +285,12 @@
           .withSuccessHandler(
             function(ret) {
               $("#urls").val(ret);
+              progressIndicator('collect-sheets', 'progress-sheet', false);
             })
           .withFailureHandler(
             function(msg) {
               showStatus(msg, 'error');
+              progressIndicator('collect-sheets', 'progress-sheet', false);
             })
           .getSheets();
       }
@@ -272,7 +300,8 @@
      * Edit Value
      */
     function onClickDoapplyAllToT() {
-      $('#message-area').hide();
+      progressIndicator('do-set-all-t', 'progress-set-all-t', true);
+
       var msg = Object.keys(lang.ui).length == 0 ? 'This Page\'s All "Check will be overwritten."' : lang.ui['this-pages-all-check-will-be-overwritten'];
       if (confirm(msg) === false) return;
 
@@ -280,10 +309,12 @@
         .withSuccessHandler(
           function(msg) {
             showStatus(msg);
+            progressIndicator('do-set-all-t', 'progress-set-all-t', false);
           })
         .withFailureHandler(
           function(msg) {
             showStatus(msg, 'error');
+            progressIndicator('do-set-all-t', 'progress-set-all-t', false);
           })
         .applyAllToT($('#test-type').val(), $('#evaluate-level').val());
     }
@@ -292,7 +323,6 @@
      * show Tech dialog
      */
     function onClickDoInsertTech() {
-      $('#message-area').hide();
       google.script.run
         .withSuccessHandler(
           function(criterion) {
@@ -308,7 +338,6 @@
      * show Screenshot dialog
      */
     function onClickAddScreenshot() {
-      $('#message-area').hide();
       var title = Object.keys(lang.ui).length == 0 ? 'Screenshot' : lang.ui['screenshot'];
       google.script.run.showDialog('ui-screenshot', 300, 200, title);
     }
@@ -317,7 +346,6 @@
      * Add Issue
      */
     function onClickAddEditIssue() {
-      $('#message-area').hide();
       google.script.run.openDialogIssue($('#lang').val(), $('#test-type').val(), $('#evaluate-level').val());
     }
 
@@ -325,7 +353,6 @@
      * Show Issue
      */
     function onClickShowIssue() {
-      $('#message-area').hide();
       var title = Object.keys(lang.ui).length == 0 ? 'Issue List"' : lang.ui['issue-list'];
       google.script.run.showDialog('ui-issuelist', 500, 400, title);
     }
@@ -334,20 +361,20 @@
      * Make same as template
      */
     function onClickDoTemplateApplyAll() {
-      $('#message-area').hide();
+      $('#do-template-apply-all').prop('disabled', true);
       var msg = Object.keys(lang.ui).length == 0 ? 'CAUTION: All result will be overwritten.' : lang.ui['caution-using-template'];
       if (confirm(msg) === false) return;
-      var msg = Object.keys(lang.ui).length == 0 ? 'Now overwriting' : lang.ui['now-overwriting'];
-      showStatus(msg);
 
       google.script.run
         .withSuccessHandler(
           function(msg) {
             showStatus(msg);
+            $('#do-template-apply-all').prop('disabled', false);
           })
         .withFailureHandler(
           function(msg) {
             showStatus(msg, 'error');
+            $('#do-template-apply-all').prop('disabled', false);
           })
         .templateApplyAll();
     }
@@ -356,20 +383,20 @@
      * Make same as template row
      */
     function onClickDoTemplateApplyRow() {
-      $('#message-area').hide();
+      $('#do-template-apply-row').prop('disabled', true);
       var msg = Object.keys(lang.ui).length == 0 ? 'CAUTION: All result will be overwritten.' : lang.ui['caution-using-template'];
       if (confirm(msg) === false) return;
-      var msg = Object.keys(lang.ui).length == 0 ? 'Now overwriting' : lang.ui['now-overwriting'];
-      showStatus(msg);
 
       google.script.run
         .withSuccessHandler(
           function(msg) {
             showStatus(msg);
+            $('#do-template-apply-row').prop('disabled', false);
           })
         .withFailureHandler(
           function(msg) {
             showStatus(msg, 'error');
+            $('#do-template-apply-row').prop('disabled', false);
           })
         .templateApplyRow();
     }
@@ -395,19 +422,18 @@
      * Evaluate
      */
     function onClickDoEvaluate() {
-      $('#message-area').hide();
-      $('#do-evaluate').prop('disabled', true);
+      progressIndicator('do-evaluate', 'progress-evaluate', true);
 
       google.script.run
         .withSuccessHandler(
           function(msg, element) {
             showStatus(msg);
-            $('#do-evaluate').prop('disabled', false);
+            progressIndicator('do-evaluate', 'progress-evaluate', false);
           })
         .withFailureHandler(
           function(msg, element) {
             showStatus(msg, 'error');
-            $('#do-evaluate').prop('disabled', false);
+            progressIndicator('do-evaluate', 'progress-evaluate', false);
           })
         .evaluate($('#lang').val(), $('#test-type').val(), $('#evaluate-level').val());
     }
@@ -416,7 +442,6 @@
      * Evaluate ICL
      */
     function onClickDoEvaluateIcl() {
-      $('#message-area').hide();
       $('#do-evaluate-icl').prop('disabled', true);
 
       google.script.run
@@ -437,7 +462,6 @@
      * Export Rsult
      */
     function onClickExportResult() {
-      $('#message-area').hide();
       $('#export-html').prop('disabled', true);
 
       google.script.run
@@ -458,8 +482,6 @@
      * Export Issue
      */
     function onClickExportIssue() {
-      $('#message-area').hide();
-
       google.script.run
         .withSuccessHandler(
           function(msg, element) {
@@ -476,18 +498,13 @@
      * Show Status
      */
     function showStatus(msg, classId) {
-      $('#message-area').show();
-      $('#sidebar-status').removeClass().html(msg);
-      if (classId) {
-        $('#sidebar-status').addClass(classId);
-      }
+      alert(msg);
     }
     
     /**
      * reset sheets
      */
     function onClickResetSheets() {
-      $('#message-area').hide();
       if (confirm('Reset All Sheets') === false) return;
 
       google.script.run
@@ -539,13 +556,17 @@
       <button id="generate-sheets">Generate</button>
       <button id="collect-sheets">Get sheets</button>
       <input type="checkbox" id="delete-sheets"><label id="title-delete-sheets" for="delete-sheets">Delete</label>
+      <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-sheet"></span>
       <p><button id="genarate-config">Generate config sheet</button></p>
       </details>
 
       <details>
       <summary id="title-value">Value</summary>
       <p><button id="add-screenshot">Add screenshot</button></p>
-      <p><button id="do-set-all-t">Set all to 'T'</button></p>
+      <p>
+        <button id="do-set-all-t">Set all to 'T'</button>
+        <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-set-all-t"></span>
+      </p>
       <p><button id="do-insert-tech">Insert Techs to sheet</button></p>
       </details>
 
@@ -566,7 +587,10 @@
     <div id="pannel-report">
       <details open>
       <summary id="title-evaluate">Evaluate</summary>
-      <p><button id="do-evaluate">Evaluate</button></p>
+      <p>
+        <button id="do-evaluate">Evaluate</button>
+        <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-evaluate"></span>
+      </p>
       <p><button id="do-evaluate-icl">Evaluate ICL</button></p>
       </details>
 
@@ -582,10 +606,6 @@
       <summary>Developer Only</summary>
       <p><button id="reset-sheets">Rest All</button></p>
       </details>
-    </div>
-
-    <div id="message-area" style="margin-top:15px;background-color: #eeeeee;padding:5px;">
-      <div id="sidebar-status"></div>
     </div>
   </div>
 </body>

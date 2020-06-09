@@ -729,7 +729,6 @@ function getUiJa ()
     'is-not-appropriate-row': '値の行のみが対象です',
     'generate-template': 'テンプレートシートの生成',
     'template-caution': '注意！: 全てのシートの値が上書きされます',
-    'now-overwriting': '上書きしています',
     'title-issue-control': '問題点管理',
     'add-edit-issue': '問題点を新規作成/編集',
     'show-issue': 'このページの問題点一覧',

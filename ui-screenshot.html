@@ -54,6 +54,7 @@
         .getLangSet('ui');
         
       $('#message-area').hide();
+      $('.fa-spinner').hide();
     });
   
     /**
@@ -62,18 +63,24 @@
     function onClickUploadImage(obj) {
       $('#message-area').hide();
       $('#upload-image').prop('disabled', true);
+      $('#progress-upload').show();
+      $('#progress-upload').html('<span class="skip">in progress</span>');
       
       google.script.run
         .withSuccessHandler(function (msg){
-          $('#upload-image').prop('disabled', false);
           $('#message-area').show();
           $('#status').removeClass().html(msg);
+          $('#upload-image').prop('disabled', false);
+          $('#progress-upload').hide();
+          $('#progress-upload').html('');
         })
         .withFailureHandler(function (msg){
           var msg = Object.keys(lang.ui).length == 0 ? 'Failed file Uploading' : lang.ui['failed-upload'];
           $('#upload-image').prop('disabled', false);
           $('#message-area').show();
           $('#status').addClass('error').html(msg);
+          $('#progress-upload').hide();
+          $('#progress-upload').html('');
         })
         .uploadScreenshot(obj);
     }
@@ -85,10 +92,13 @@
     <legend><label for="screenshot" id="title-screenshot">Screenshot</label></legend>
     <form id="upload-form" onsubmit="onClickUploadImage(this)">
       <input type="file" id="screenshot" name="imageFile">
-      <p><input type="submit" id="upload-image" value="upload"></p>
+      <p>
+        <input type="submit" id="upload-image" value="upload">
+        <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-upload"></span>
+      </p>
     </form>
   </fieldset>
-  <div id="message-area" style="margin-top:15px;background-color: #eeeeee;padding:5px;">
+  <div role="region" aria-live="polite" id="message-area" style="margin-top:15px;background-color: #eeeeee;padding:5px;">
     <div id="status"></div>
   </div>
 </body>

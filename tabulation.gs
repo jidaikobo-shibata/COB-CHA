@@ -34,6 +34,7 @@ function evaluate(lang, testType, level) {
   }
   
   // activate and reset sheet
+  generateResultSheet();
   var activeSheet = ss.getSheetByName(resultSheetName);
   activeSheet.activate();
   activeSheet.clear();
