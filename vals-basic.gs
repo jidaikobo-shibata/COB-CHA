@@ -182,6 +182,7 @@ var issueSheetName     = '*Issue*';
 var configSheetName    = '*Config*';
 var templateSheetName  = '*Template*';
 var iclSheetName       = '*ICL*'; // Japanese Only
+var iclTplSheetName    = '*ICL-TPL*'; // Japanese Only
 var resourceFolderName = 'resource';
 var exportFolderName   = 'export';
 var imagesFolderName   = 'images';

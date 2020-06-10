@@ -64,7 +64,8 @@
       $('#message-area').hide();
       $('#upload-image').prop('disabled', true);
       $('#progress-upload').show();
-      $('#progress-upload').html('<span class="skip">in progress</span>');
+      var msg = Object.keys(lang.ui).length == 0 ? 'in progress' : lang.ui['in-progress'];
+      $('#progress-upload').html('<span class="skip">'+msg+'</span>');
       
       google.script.run
         .withSuccessHandler(function (msg){

@@ -41,6 +41,10 @@
             $("#examination").html(ui['examination']);
             $("#testtype").html(ui['test-type']);
             $("#testtype-exp").html(ui['testtype-exp']);
+            $("#generate-icl-tpl-sheet").html(ui['generate-icl-tpl-sheet']);
+            $("#generate-icl-tpl-sheet-exp").html(ui['generate-icl-tpl-sheet-exp']);
+            $("#apply-icl-tpl").html(ui['apply-icl-tpl']);
+            $("#apply-icl-tpl-exp").html(ui['apply-icl-tpl-exp']);
             $("#sheet-control").html(ui['sheet-control']);
             $("#sheet-control-exp").html(ui['sheet-control-exp']);
             $("#generate-config").html(ui['generate-config-sheet']);
@@ -90,6 +94,17 @@ Start with *, such as "*memo," for a sheet of notes for test records.</p>
 <tr>
 	<th id="testtype" style="width:10em;">Test type</th>
 	<td id="testtype-exp">Choose test type from WCAG 2.0, 2.1 or Trusted Tester. And also choose target level.</td>
+</tr>
+<tr>
+	<th id="generate-icl-tpl-sheet" style="width:10em;">Generate icl template sheet</th>
+	<td id="generate-icl-tpl-sheet-exp">Create a template for the implementation checklist.
+    You can customize this template. For "Status", enter "Status definition string" in the first column only.
+    For the check items, keep at least the format of "1st column: ID, 2nd column: dropdown, 3rd column: level".</td>
+</tr>
+<tr>
+	<th id="apply-icl-tpl" style="width:10em;">Apply icl template</th>
+	<td id="apply-icl-tpl-exp">Apply the implementation checklist template to all pages including the template.
+    All existing implementation checklists will be deleted. This action cannot be canceled.</td>
 </tr>
 <tr>
 	<th id="sheet-control">Sheet control</th>

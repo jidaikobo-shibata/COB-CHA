@@ -30,12 +30,15 @@
             $("#show-examination").html(ui['examination']);
             $("#show-report").html(ui['report']);
             $("#test-type-title").html(ui['test-type']);
+            $("#title-icl").html(ui['icl']);
             $("#title-urls").html(ui['sheet-control']);
             $("#title-value").html(ui['value']);
             $("#title-delete-sheets").html(ui['delete']);
             $("#title-template").html(ui['template']);
             $("#title-evaluate").html(ui['evaluate']);
             $("#set-additional-criterion").html(ui['set-additional-criterion']);
+            $("#generate-icl-tpl-sheet").html(ui['generate-icl-tpl-sheet']);
+            $("#apply-icl-tpl").html(ui['apply-icl-tpl']);
             $("#generate-sheets").html(ui['generate']);
             $("#collect-sheets").html(ui['collect-sheets']);
             $("#add-screenshot").html(ui['add-screenshot']);
@@ -68,6 +71,8 @@
       // on click
       $('#generate-sheets').bind('click', {sheets:"*urls*", targetId:'#generate-sheets'}, onClickGenerateSheet);
       $('#generate-template').bind('click', {sheets:"*Template*", targetId:'#generate-template'}, onClickGenerateSheet);
+      $('#generate-icl-tpl-sheet').click(onClickGenarateIclTpl);
+      $('#apply-icl-tpl').click(onClickApplyIclTpl);
       $('#set-additional-criterion').click(onClickSetAdditionalCriterion);
       $('#genarate-config').click(onClickGenarateConfig);
       $('#collect-sheets').click(onClickCollectDeleteSheet);
@@ -108,8 +113,9 @@
       google.script.run
         .withSuccessHandler(
           function(ret) {
-            if (ret != 'ja') {
-              $('#do-evaluate-icl').hide();
+            if (ret == 'ja') {
+              $('#do-evaluate-icl').show();
+              $('#control-icl').show();
             }
           })
         .getProp('lang');
@@ -196,6 +202,71 @@
     }
 
     /**
+     * progress indicator
+     * @param String $buttonId
+     * @param String $indicatorId
+     * @param Bool $on
+     * @return Void
+     */
+    function progressIndicator($buttonId, $indicatorId, $on) {
+      if ($on) {
+        $('#'+$buttonId).prop('disabled', true);
+        if ($indicatorId) {
+          var msg = Object.keys(lang.ui).length == 0 ? 'in progress' : lang.ui['in-progress'];
+          $('#'+$indicatorId).show();
+          $('#'+$indicatorId).html('<span class="skip">'+msg+'</span>');
+        }
+      } else {
+        $('#'+$buttonId).prop('disabled', false);
+        if ($indicatorId) {
+          $('#'+$indicatorId).hide();
+          $('#'+$indicatorId).html('');
+        }
+      }
+    }
+
+    /**
+     * Generate Icl Template Sheets
+     */
+    function onClickGenarateIclTpl() {
+      progressIndicator('generate-icl-tpl-sheet', 'progress-generate-icl-tpl-sheet', true);
+      google.script.run
+        .withSuccessHandler(
+          function(msg) {
+            showStatus(msg);
+            progressIndicator('generate-icl-tpl-sheet', 'progress-generate-icl-tpl-sheet', false);
+          })
+        .withFailureHandler(
+          function(msg) {
+            showStatus(msg);
+            progressIndicator('generate-icl-tpl-sheet', 'progress-generate-icl-tpl-sheet', false);
+          })
+        .generateIclTplSheet($('#evaluate-level').val());
+    }
+
+    /**
+     * Apply Icl Template
+     */
+    function onClickApplyIclTpl() {
+      var msg = Object.keys(lang.ui).length == 0 ? 'This action cannot revert.' : lang.ui['apply-icl-tpl-exp'];
+      if (confirm(msg) === false) return;
+      progressIndicator('apply-icl-tpl', 'progress-apply-icl-tpl', true);
+      
+      google.script.run
+        .withSuccessHandler(
+          function(msg) {
+            showStatus(msg);
+            progressIndicator('apply-icl-tpl', 'progress-apply-icl-tpl', false);
+          })
+        .withFailureHandler(
+          function(msg) {
+            showStatus(msg);
+            progressIndicator('apply-icl-tpl', 'progress-apply-icl-tpl', false);
+          })
+        .applyIclSheet();
+    }
+
+    /**
      * Generate Sheets
      * @param Object sheetsObj
      */
@@ -232,32 +303,9 @@
           })
         .withFailureHandler(
           function(msg) {
-            showStatus(msg, 'error');
+            showStatus(msg);
           })
         .generateConfigSheet($('#lang').val(), $('#test-type').val(), $('#evaluate-level').val());
-    }
-
-    /**
-     * progress indicator
-     * @param String $buttonId
-     * @param String $indicatorId
-     * @param Bool $on
-     * @return Void
-     */
-    function progressIndicator($buttonId, $indicatorId, $on) {
-      if ($on) {
-        $('#'+$buttonId).prop('disabled', true);
-        if ($indicatorId) {
-          $('#'+$indicatorId).show();
-          $('#'+$indicatorId).html('<span class="skip">in progress</span>');
-        }
-      } else {
-        $('#'+$buttonId).prop('disabled', false);
-        if ($indicatorId) {
-          $('#'+$indicatorId).hide();
-          $('#'+$indicatorId).html('');
-        }
-      }
     }
 
     /**
@@ -276,7 +324,7 @@
             })
           .withFailureHandler(
             function(msg) {
-              showStatus(msg, 'error');
+              showStatus(msg);
               progressIndicator('collect-sheets', 'progress-sheet', false);
             })
           .deleteSheets($('#urls').val());
@@ -289,7 +337,7 @@
             })
           .withFailureHandler(
             function(msg) {
-              showStatus(msg, 'error');
+              showStatus(msg);
               progressIndicator('collect-sheets', 'progress-sheet', false);
             })
           .getSheets();
@@ -313,7 +361,7 @@
           })
         .withFailureHandler(
           function(msg) {
-            showStatus(msg, 'error');
+            showStatus(msg);
             progressIndicator('do-set-all-t', 'progress-set-all-t', false);
           })
         .applyAllToT($('#test-type').val(), $('#evaluate-level').val());
@@ -373,7 +421,7 @@
           })
         .withFailureHandler(
           function(msg) {
-            showStatus(msg, 'error');
+            showStatus(msg);
             $('#do-template-apply-all').prop('disabled', false);
           })
         .templateApplyAll();
@@ -395,7 +443,7 @@
           })
         .withFailureHandler(
           function(msg) {
-            showStatus(msg, 'error');
+            showStatus(msg);
             $('#do-template-apply-row').prop('disabled', false);
           })
         .templateApplyRow();
@@ -432,7 +480,7 @@
           })
         .withFailureHandler(
           function(msg, element) {
-            showStatus(msg, 'error');
+            showStatus(msg);
             progressIndicator('do-evaluate', 'progress-evaluate', false);
           })
         .evaluate($('#lang').val(), $('#test-type').val(), $('#evaluate-level').val());
@@ -452,7 +500,7 @@
           })
         .withFailureHandler(
           function(msg, element) {
-            showStatus(msg, 'error');
+            showStatus(msg);
             $('#do-evaluate-icl').prop('disabled', false);
           })
         .evaluateIcl($('#lang').val(), $('#test-type').val(), $('#evaluate-level').val());
@@ -497,7 +545,7 @@
     /**
      * Show Status
      */
-    function showStatus(msg, classId) {
+    function showStatus(msg) {
       alert(msg);
     }
     
@@ -514,7 +562,7 @@
           })
         .withFailureHandler(
           function(msg) {
-            showStatus(msg, 'error');
+            showStatus(msg);
           })
         .resetSheets();
     }
@@ -548,6 +596,18 @@
         <option value="AAA">AAA</option>
       </select></p>
       <p><button id="set-additional-criterion">Set additional criteria</button></p>
+      </details>
+
+      <details id="control-icl">
+      <summary id="title-icl">ICL</summary>
+      <p>
+        <button id="generate-icl-tpl-sheet">Generate ICL Sheet</button>
+        <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-generate-icl-tpl-sheet"></span>
+      </p>
+      <p>
+        <button id="apply-icl-tpl">Apply ICL Sheet</button>
+        <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-apply-icl-tpl"></span>
+      </p>
       </details>
 
       <details>

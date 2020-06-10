@@ -159,14 +159,6 @@ function generateSheets(urlstr, lang, testType, level, targetId) {
       row++;
     }
 
-    // ICL: Japanese Only
-    if (getProp('lang') == 'ja' && testType == 'wcag20') {
-      row++;
-      var ret = generateIcl(originalSheet, row, usingCriteria, level);
-      row = ret['row'];
-      originalSheet = ret['originalSheet'];
-    }
-
     // conditioned cell
     var conditionedRange = originalSheet.getRange("B:B");
     var ruleForF = SpreadsheetApp.newConditionalFormatRule()
@@ -218,50 +210,6 @@ function generateSheets(urlstr, lang, testType, level, targetId) {
   }
 
   return {'msg': msg.join('<br>'), 'targetId': targetId};
-}
-
-/**
- * Generate ICL
- * @param Object originalSheet
- * @param Integer row
- * @param Array usingCriteria
- * @param String level
- * @return Array [originalSheet, row]
- */
-function generateIcl(originalSheet, row, usingCriteria, level) {
-  var iclSituation = getLangSet('iclSituation');
-  var iclTest      = getLangSet('iclTest');
-  
-  for (var j = 0; j < usingCriteria.length; j++) {
-    var clevel = usingCriteria[j][0];
-    var cCriterion = usingCriteria[j][1];
-    originalSheet.getRange(row, 1).setValue(cCriterion+': '+usingCriteria[j][2]);
-    originalSheet.getRange(row+":"+row).setBackground(labelColorDark).setFontColor(labelColorDarkText).setFontWeight('bold');
-    
-    row++;
-    //    for (let testId of Object.keys(iclSituation[cCriterion])) { // Chrome V8 
-    var eachIclSituation = Object.keys(iclSituation[cCriterion]);
-    for (var key in eachIclSituation) {
-      var testId = eachIclSituation[key]
-      if (iclSituation[cCriterion][testId] != '') {
-        originalSheet.getRange(row, 1).setValue(iclSituation[cCriterion][testId]);
-        originalSheet.getRange(row+":"+row).setBackground(labelColor);
-        row++;
-      }
-      var eachNum = 1;
-      for (var l = 0; l < iclTest[testId].length; l++) {
-        originalSheet.getRange(row, 1).setValue(testId+'-'+eachNum);
-        originalSheet.getRange(row, 2).setDataValidation(getPulldownMenu()).setHorizontalAlignment('center');
-        originalSheet.getRange(row, 3).setValue(clevel).setHorizontalAlignment('center');
-        originalSheet.getRange(row, 4).setValue(iclTest[testId][l]['implement'].join("\n"));
-        originalSheet.getRange(row, 5).setValue(iclTest[testId][l]['test']);
-        originalSheet.getRange(row+":"+row).setVerticalAlignment('top');
-        row++;
-        eachNum++;
-      }
-    }
-  }
-  return {'row': row, 'originalSheet':originalSheet};
 }
 
 /**
