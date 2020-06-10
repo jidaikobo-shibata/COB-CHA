@@ -231,7 +231,7 @@ function evaluateIcl(lang, testType, level) {
   ss.insertSheet(iclSheetName, 0);
   var iclSheet = ss.getSheetByName(iclSheetName);
   iclSheet.activate();
-  generateIcl(iclSheet, 2, getUsingCriteria(lang, testType, level), level);
+  generateIcl(iclSheet, level);
   
   iclSheet.setColumnWidth(1, 60);
   iclSheet.deleteColumn(2);

@@ -1,23 +1,31 @@
 /**
- * ICL Sheet control for COB-CHA
+ * ICL Sheet control for COB-CHA - Japanese Only
  */
 
 /**
- * Generate ICL Sheets = Japanese Only
+ * Generate ICL Sheets
  * @param String level
  * @return Void
  */
 function generateIclTplSheet(level) {
-  // sheet
   var ss = getSpreadSheet();
-
   var iclTplSheet = ss.getSheetByName(iclTplSheetName);
   if (iclTplSheet) {
      throw new Error(getUiLang('error-icl-exists', "ICL sheet is already exists. delete it manually."));
   }
   iclTplSheet = ss.insertSheet(iclTplSheetName, 0);
   iclTplSheet.activate();
-  
+  generateIcl(iclTplSheet, level);
+  return getUiLang('sheet-generated', "%s sheet(s) generated.").replace("%s", 1);
+}
+
+/**
+ * Generate ICL - Japanese Only
+ * @param Object iclTplSheet
+ * @param String level
+ * @return Void
+ */
+function generateIcl(iclTplSheet, level) {
   // value
   var usingCriteria = getUsingCriteria('ja', 'wcag20', level);
   var iclSituation  = getLangSet('iclSituation');
@@ -53,7 +61,6 @@ function generateIclTplSheet(level) {
       }
     }
   }
-  return getUiLang('sheet-generated', "%s sheet(s) generated.").replace("%s", 1);
 }
 
 /**
