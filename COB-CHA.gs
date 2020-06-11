@@ -110,6 +110,18 @@ function getFirstColumn() {
 }
 
 /**
+ * Get Current Position
+ * @return Array
+ */
+function getCurrentPos() {
+  var activeSheet = getActiveSheet();
+  var row = activeSheet.getActiveCell().getRow();
+  var col = activeSheet.getActiveCell().getColumn();
+  var val = activeSheet.getActiveCell().getValue();
+  return [row, col, val];
+}
+
+/**
  * Get URL from sheet
  * @param Object sheet
  * @return String

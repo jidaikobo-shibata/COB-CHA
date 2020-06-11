@@ -33,6 +33,7 @@
             $("#title-icl").html(ui['icl']);
             $("#title-urls").html(ui['sheet-control']);
             $("#title-value").html(ui['value']);
+            $("#title-lump-edit").html(ui['lump-edit']);
             $("#title-delete-sheets").html(ui['delete']);
             $("#title-template").html(ui['template']);
             $("#title-evaluate").html(ui['evaluate']);
@@ -45,6 +46,11 @@
             $("#genarate-config").html(ui['generate-config-sheet']);
             $("#do-set-all-t").html(ui['set-all-t']);
             $("#do-insert-tech").html(ui['insert-techniques-sheet']);
+            $("#label-lump-val").html(ui['value']);
+            $("#label-lump-pos-row").html(ui['pos-row']);
+            $("#label-lump-pos-col").html(ui['pos-col']);
+            $("#get-current-pos").html(ui['get-current-pos']);
+            $("#do-lump-edit").html(ui['lump-edit']);
             $("#do-template-apply-all").html(ui['apply-tpl-all']);
             $("#do-template-apply-row").html(ui['apply-tpl-row']);
             $("#generate-template").html(ui['generate-template']);
@@ -80,6 +86,8 @@
       $('#do-template-apply-row').click(onClickDoTemplateApplyRow);
       $('#do-insert-tech').click(onClickDoInsertTech);
       $('#do-set-all-t').click(onClickDoapplyAllToT);
+      $('#get-current-pos').click(onClickGetCurrentPos);
+      $('#do-lump-edit').click(onClickDoLumpEdit);
       $('#add-screenshot').click(onClickAddScreenshot);
       $('#add-edit-issue').click(onClickAddEditIssue);
       $('#show-issue').click(onClickShowIssue);
@@ -162,6 +170,8 @@
             } else {
               $("#evaluate-level").val('AA');
               $("#evaluate-level").prop('disabled', true);
+              $('#do-evaluate-icl').hide();
+              $('#control-icl').hide();
             }
 
             // generate select candidate of bulk criteria
@@ -176,9 +186,13 @@
      */
     function swtichLevelWhenTtOrNot() {
       if ($('#test-type').val().indexOf('tt') != -1) {
+        $('#control-icl').hide();
+        $('#do-evaluate-icl').hide();
         $('#evaluate-level').val('AA');
         $('#evaluate-level').prop('disabled', true);
       } else {
+        $('#control-icl').show();
+        $('#do-evaluate-icl').show();
         $('#evaluate-level').prop('disabled', false);
       }
     }
@@ -380,6 +394,36 @@
             google.script.run.showDialog('ui-tech', 500, 400, title);
           })
         .getFirstColumn();
+    }
+
+    /**
+     * Get Current position
+     */
+    function onClickGetCurrentPos() {
+      google.script.run
+        .withSuccessHandler(
+          function(pos) {
+            $('#lump-pos-row').val(pos[0]);
+            $('#lump-pos-col').val(pos[1]);
+            $('#lump-val').val(pos[2]);
+          })
+        .getCurrentPos();
+    }
+
+    /**
+     * Do Lump Edit
+     */
+    function onClickDoLumpEdit() {
+      var msg = Object.keys(lang.ui).length == 0 ? 'CAUTION: All result will be overwritten.' : lang.ui['template-caution'];
+      if (confirm(msg) === false) return;
+      progressIndicator('do-lump-edit', 'progress-do-lump-edit', true);
+      google.script.run
+        .withSuccessHandler(
+          function(msg) {
+            showStatus(msg);
+            progressIndicator('do-lump-edit', 'progress-do-lump-edit', false);
+          })
+        .doLumpEdit($('#lump-pos-row').val(), $('#lump-pos-col').val(), $('#lump-val').val());
     }
 
     /**
@@ -628,6 +672,17 @@
         <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-set-all-t"></span>
       </p>
       <p><button id="do-insert-tech">Insert Techs to sheet</button></p>
+      <fieldset>
+        <legend id="title-lump-edit">Lump Edit</legend>
+        <p>
+          <label for="lump-pos-row" id="label-lump-pos-row">X</label>: <input type="text" size="3" id="lump-pos-row">
+          <label for="lump-pos-col" id="label-lump-pos-col">Y</label>: <input type="text" size="3" id="lump-pos-col">
+          <label for="lump-val" id="label-lump-val">Val</label>: <input type="text" size="7" id="lump-val">
+        </p>
+        <button id="get-current-pos">Get Current Position</button>
+        <button id="do-lump-edit">Apply</button>
+        <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-do-lump-edit"></span>
+      </fieldset>
       </details>
 
       <details>
@@ -662,7 +717,7 @@
     </div>
 
     <div id="dev">
-      <details open>
+      <details>
       <summary>Developer Only</summary>
       <p><button id="reset-sheets">Rest All</button></p>
       </details>

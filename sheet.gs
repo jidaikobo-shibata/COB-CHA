@@ -106,7 +106,7 @@ function generateSheets(urlstr, lang, testType, level, targetId) {
     originalSheet.getRange(2, 1).setValue('URL').setBackground(labelColor);
     originalSheet.getRange(2, 2).setValue(urls[0]);
     originalSheet.getRange(3, 1).setValue('title').setBackground(labelColor);
-    originalSheet.getRange(3, 5).setValue(getUiLang('person', 'Person')).setBackground(labelColor);
+    originalSheet.getRange(3, 5).setValue(getUiLang('tester', 'Tester')).setBackground(labelColor);
     if (res) {
       originalSheet.getRange(3, 2).setValue(res['title']);
       saveHtml(resourceFolderName, urls[0], res['html']);

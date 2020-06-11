@@ -134,10 +134,28 @@ function templateApplyRow() {
   var n = 0;
   var allSheets = getAllSheets();
   for (i = 0; i < allSheets.length; i++) {
-    if (String(allSheets[i].getName()).charAt(0) == '*') continue;
     tpl.getRange(activeRow, 2, activeRow, tpl.getLastColumn()).copyTo(allSheets[i].getRange(activeRow, 2));
     n++;
   }
 
+  return getUiLang('sheet-edited', '%s sheet(s) edited.').replace("%s", n);
+}
+
+/**
+ * Lump Edit
+ * @param Integer row
+ * @param Integer col
+ * @param String val
+ * @return String
+ */
+function doLumpEdit(row, col, val) {
+  Logger.log(val);
+  
+  var n = 0;
+  var allSheets = getAllSheets();
+  for (i = 0; i < allSheets.length; i++) {
+    allSheets[i].getRange(row, col).setValue(val);
+    n++;
+  }
   return getUiLang('sheet-edited', '%s sheet(s) edited.').replace("%s", n);
 }

@@ -41,7 +41,9 @@ function prepareConfigSheet(lang, testType, level) {
   configsheet.getRange(2, 1).setValue('Name').setBackground(labelColor);
   configsheet.getRange(3, 1).setValue('Report Date').setBackground(labelColor);
   configsheet.getRange(4, 1).setValue(getUiLang('additional-criterion', "Additional Criterion")).setBackground(labelColor);
+  configsheet.getRange(5, 1).setValue(getUiLang('director', "Director")).setBackground(labelColor);
   return configsheet;
+ 
 }
 
 /**

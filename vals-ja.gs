@@ -681,7 +681,6 @@ function getUiJa ()
     'failed-upload': 'アップロードに失敗しました。',
 
     'config': '設定',
-    'person': '試験者',
     'name': '名称',
     'issue-visibility': '問題点を表示',
     'explanation': '解説',
@@ -748,6 +747,12 @@ function getUiJa ()
     'file-exported': '%s のファイルを生成しました。',
     'do-evaluate': '試験結果を集計する',
     'do-evaluate-icl': '実装チェックリストを集計する',
+    'tester': 'テスト担当者',
+    'director': 'テスト責任者',
+    'lump-edit': '一括編集',
+    'get-current-pos': '現在位置を取得',
+    'pos-row': '行',
+    'pos-col': '列',
 
     'sheet-exp': 'シートの名前が*から始まるのは、「テンプレートの適用」などの操作の対象外のシートです。試験の記録のメモ用のシートなどは、「*memo」というように、*から始めるようにしてください。',
     'keyboard-operation': 'キーボード操作',
