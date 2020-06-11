@@ -222,8 +222,14 @@ function generateExpression(testType, currentCriterion, row) {
  * @return Void
  */
 function evaluateIcl(lang, testType, level) {
-  // generate Sheet
+  // template not exists
   var ss = getSpreadSheet();
+  var iclTplSheet = ss.getSheetByName(iclTplSheetName);
+  if (iclTplSheet == null) {
+     throw new Error(getUiLang('error-icl-tpl-not-exists', "ICL sheet is not exists."));
+  }
+
+  // generate Sheet
   var iclSheet = ss.getSheetByName(iclSheetName);
   if (iclSheet) {
     ss.deleteSheet(iclSheet);

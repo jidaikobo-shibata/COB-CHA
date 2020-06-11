@@ -4,14 +4,15 @@
 
 /**
  * export Result
+ * @param String lang
  * @param String testType
  * @param String level
  * @return String
  */
-function exportResult(testType, level) {
+function exportResult(lang, testType, level) {
   var ss = getSpreadSheet();
   var resultSheet = ss.getSheetByName(resultSheetName);
-  if (resultSheet == null) return 'result page not found. Evalute fisrt';
+  if (resultSheet == null) throw new Error(getUiLang('no-target-page-exists', "No Target Page Exists."));
   var dataObj = resultSheet.getDataRange().getValues();
     
   // evaluate total
@@ -31,9 +32,9 @@ function exportResult(testType, level) {
     for (var j = 2; j < dataObj[i].length; j++) {
       var targetVal = dataObj[i][j] == '' ? 'NT' : dataObj[i][j];
 
-      // update
-      if (vals[currentVals[n]] > vals[targetVal]) {
-        currentVals[n] = vals[targetVal];
+      // update apply lower result
+      if (vals[currentVals[n]] > vals[targetVal] && targetVal != 'DNA') {
+        currentVals[n] = targetVal;
       }
       n++;
     }
@@ -41,7 +42,7 @@ function exportResult(testType, level) {
   var totalLevel = levelsR[currentLevel];
   
   // criterion
-  var criteriaVals = getLangSet('criteria');
+  var criteriaVals = getUsingCriteria(lang, testType, level);
 
   var str = '';
   str += '<table>';
@@ -53,8 +54,6 @@ function exportResult(testType, level) {
   str += '<table>';
   var n = 0;
   for (var i = 0; i < criteriaVals.length; i++) {
-    if (criteriaVals[i][0].length > level.length) continue;
-    if ((testType == 'wcag20' || testType == 'tt20') && criteria21.indexOf(criteriaVals[i][1]) >= 0) continue;
     str += '<tr>';
     str += '<th>'+criteriaVals[i][1]+': '+criteriaVals[i][2]+'</th>';
     str += '<td>'+currentVals[n]+'</td>';
@@ -81,10 +80,8 @@ function exportResult(testType, level) {
     str += '</table>';
   
     str += '<table>';
-    var nn = 0;
+    var nn = 2;
     for (var j = 0; j < criteriaVals.length; j++) {
-      if (criteriaVals[j][0].length > level.length) continue;
-      if ((testType == 'wcag20' || testType == 'tt20') && criteria21.indexOf(criteriaVals[j][1]) >= 0) continue;
       str += '<tr>';
       str += '<th>'+criteriaVals[j][1]+': '+criteriaVals[j][2]+'</th>';
       str += '<td>'+dataObj[i][nn]+'</td>';

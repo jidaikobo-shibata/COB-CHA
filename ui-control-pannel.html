@@ -514,18 +514,18 @@
      * Evaluate
      */
     function onClickDoEvaluate() {
-      progressIndicator('do-evaluate', 'progress-evaluate', true);
+      progressIndicator('do-evaluate', 'progress-do-evaluate', true);
 
       google.script.run
         .withSuccessHandler(
           function(msg, element) {
             showStatus(msg);
-            progressIndicator('do-evaluate', 'progress-evaluate', false);
+            progressIndicator('do-evaluate', 'progress-do-evaluate', false);
           })
         .withFailureHandler(
           function(msg, element) {
             showStatus(msg);
-            progressIndicator('do-evaluate', 'progress-evaluate', false);
+            progressIndicator('do-evaluate', 'progress-do-evaluate', false);
           })
         .evaluate($('#lang').val(), $('#test-type').val(), $('#evaluate-level').val());
     }
@@ -534,18 +534,18 @@
      * Evaluate ICL
      */
     function onClickDoEvaluateIcl() {
-      $('#do-evaluate-icl').prop('disabled', true);
+      progressIndicator('do-evaluate-icl', 'progress-do-evaluate-icl', true);
 
       google.script.run
         .withSuccessHandler(
           function(msg, element) {
             showStatus(msg);
-            $('#do-evaluate-icl').prop('disabled', false);
+            progressIndicator('do-evaluate-icl', 'progress-do-evaluate-icl', false);
           })
         .withFailureHandler(
           function(msg, element) {
             showStatus(msg);
-            $('#do-evaluate-icl').prop('disabled', false);
+            progressIndicator('do-evaluate-icl', 'progress-do-evaluate-icl', false);
           })
         .evaluateIcl($('#lang').val(), $('#test-type').val(), $('#evaluate-level').val());
     }
@@ -554,34 +554,38 @@
      * Export Rsult
      */
     function onClickExportResult() {
-      $('#export-html').prop('disabled', true);
+      progressIndicator('export-result', 'progress-export-result', true);
 
       google.script.run
         .withSuccessHandler(
           function(msg, element) {
             showStatus(msg);
-            $('#export-html').prop('disabled', false);
+            progressIndicator('export-result', 'progress-export-result', false);
           })
         .withFailureHandler(
           function(msg, element) {
             showStatus(msg);
-            $('#export-html').prop('disabled', false);
+            progressIndicator('export-result', 'progress-export-result', false);
           })
-        .exportResult($('#test-type').val(), $('#evaluate-level').val());
+        .exportResult($('#lang').val(), $('#test-type').val(), $('#evaluate-level').val());
     }
 
     /**
      * Export Issue
      */
     function onClickExportIssue() {
+      progressIndicator('export-issue', 'progress-export-issue', true);
+      
       google.script.run
         .withSuccessHandler(
           function(msg, element) {
             showStatus(msg);
+            progressIndicator('export-issue', 'progress-export-issue', false);
           })
         .withFailureHandler(
           function(msg, element) {
             showStatus(msg);
+            progressIndicator('export-issue', 'progress-export-issue', false);
           })
         .exportIssue();
     }
@@ -704,15 +708,24 @@
       <summary id="title-evaluate">Evaluate</summary>
       <p>
         <button id="do-evaluate">Evaluate</button>
-        <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-evaluate"></span>
+        <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-do-evaluate"></span>
       </p>
-      <p><button id="do-evaluate-icl">Evaluate ICL</button></p>
+      <p>
+        <button id="do-evaluate-icl">Evaluate ICL</button>
+        <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-do-evaluate-icl"></span>
+      </p>
       </details>
 
       <details open>
       <summary id="export-html-title">Export as HTML</summary>
-      <p><button id="export-result">Export Result</button></p>
-      <p><button id="export-issue">Export Issues</button></p>
+      <p>
+        <button id="export-result">Export Result</button>
+        <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-export-result"></span>
+      </p>
+      <p>
+        <button id="export-issue">Export Issues</button>
+        <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-export-issue"></span>
+      </p>
       </details>
     </div>
 

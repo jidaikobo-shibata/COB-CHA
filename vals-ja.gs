@@ -668,6 +668,7 @@ function getUiJa ()
     'generate-icl-tpl-sheet': 'ICLのテンプレートを作成',
     'apply-icl-tpl': 'ICLのテンプレートを反映',
     'error-icl-exists': '実装チェックリストのテンプレート（*ICL-TPL*）が存在しています。新規作成する場合は、手動で既存のシートを削除してください。',
+    'error-icl-tpl-not-exists': '実装チェックリストのテンプレート（*ICL-TPL*）が存在しません。集計対象が存在していません。',
     'current-sheet-is-not-for-webpage': 'このシートはウェブページ用ではありません。',
     'image-uploaded': '画像を登録しました。',
     'close-btn': '閉じる',

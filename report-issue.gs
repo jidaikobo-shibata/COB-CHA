@@ -241,6 +241,8 @@ function showEachIssue(row) {
 function exportIssue() {
   var ss = getSpreadSheet();
   var issueSheet = ss.getSheetByName(issueSheetName);
+  if (issueSheet == null) throw new Error(getUiLang('no-target-page-exists', "No Target Page Exists."));
+  
   var dataObj = issueSheet.getDataRange().getValues();
   var date = new Date();
   var filename = 'issue-report-'+Utilities.formatDate( date, 'Asia/Tokyo', 'yyyy-MM-dd-hh-mm')+'.html';
@@ -260,7 +262,7 @@ function exportIssue() {
 
     // if target URL is not exists continue
     var places = dataObj[i][place_col];
-    targetPlaces = places.split(',');
+    targetPlaces = places.toString().split(',');
     if (targetPlaces.length == 0) continue;
 
     if (testType == 'tt20') {
