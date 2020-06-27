@@ -117,7 +117,7 @@ function getCurrentPos() {
   var activeSheet = getActiveSheet();
   var row = activeSheet.getActiveCell().getRow();
   var col = activeSheet.getActiveCell().getColumn();
-  var val = activeSheet.getActiveCell().getValue();
+  var val = activeSheet.getActiveCell().getValue().toString();
   return [row, col, val];
 }
 

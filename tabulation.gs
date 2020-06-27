@@ -234,11 +234,9 @@ function evaluateIcl(lang, testType, level) {
   if (iclSheet) {
     ss.deleteSheet(iclSheet);
   }
-  ss.insertSheet(iclSheetName, 0);
-  var iclSheet = ss.getSheetByName(iclSheetName);
-  iclSheet.activate();
-  generateIcl(iclSheet, level);
-  
+  iclTplSheet.activate();
+  var iclSheet = ss.duplicateActiveSheet().setName(iclSheetName);
+    
   iclSheet.setColumnWidth(1, 60);
   iclSheet.deleteColumn(2);
   iclSheet.setColumnWidth(2, 50);

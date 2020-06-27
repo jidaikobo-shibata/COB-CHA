@@ -403,6 +403,7 @@
       google.script.run
         .withSuccessHandler(
           function(pos) {
+          alert(pos);
             $('#lump-pos-row').val(pos[0]);
             $('#lump-pos-col').val(pos[1]);
             $('#lump-val').val(pos[2]);

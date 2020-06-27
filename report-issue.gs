@@ -231,7 +231,7 @@ function showEachIssue(row) {
   var ss = getSpreadSheet();
   var issueSheet = ss.getSheetByName(issueSheetName);
   issueSheet.getRange(row, 1).activate();
-  showDialog('ui-issue', 500, 400);
+  showDialog('ui-issue', 500, 400, getUiLang('edit-issue', 'Edit issue'));
 }
 
 /**
