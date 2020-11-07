@@ -38,6 +38,8 @@
             $("#title-template").html(ui['template']);
             $("#title-evaluate").html(ui['evaluate']);
             $("#set-additional-criterion").html(ui['set-additional-criterion']);
+            $("#generate-each-record-sheets").html(ui['generate-each-record-sheets']);
+            $("#generate-url-list-sheet").html(ui['generate-url-list-sheet']);
             $("#generate-icl-tpl-sheet").html(ui['generate-icl-tpl-sheet']);
             $("#apply-icl-tpl").html(ui['apply-icl-tpl']);
             $("#generate-sheets").html(ui['generate']);
@@ -66,7 +68,6 @@
         .getLangSet('ui');
 
       // on load
-      $('#pannel-report').hide();
       $('.fa-spinner').hide();
 
       // on change
@@ -75,13 +76,12 @@
       $('#delete-sheets').change(switchGenerateDelete);
 
       // on click
-      $('#generate-sheets').bind('click', {sheets:"*urls*", targetId:'#generate-sheets'}, onClickGenerateSheet);
-      $('#generate-template').bind('click', {sheets:"*Template*", targetId:'#generate-template'}, onClickGenerateSheet);
+      $('#generate-each-record-sheets').bind('click', {sheets:"*urls*", targetId:'generate-each-record-sheets'}, onClickGenerateSheet);
+      $('#generate-template').bind('click', {sheets:"*Template*", targetId:'generate-template'}, onClickGenerateSheet);
+      $('#generate-url-list-sheet').click(onClickGenarateUrlList);
       $('#generate-icl-tpl-sheet').click(onClickGenarateIclTpl);
       $('#apply-icl-tpl').click(onClickApplyIclTpl);
       $('#set-additional-criterion').click(onClickSetAdditionalCriterion);
-      $('#genarate-config').click(onClickGenarateConfig);
-      $('#collect-sheets').click(onClickCollectDeleteSheet);
       $('#do-template-apply-all').click(onClickDoTemplateApplyAll);
       $('#do-template-apply-row').click(onClickDoTemplateApplyRow);
       $('#do-insert-tech').click(onClickDoInsertTech);
@@ -96,26 +96,6 @@
       $('#export-result').click(onClickExportResult);
       $('#export-issue').click(onClickExportIssue);
       $('#reset-sheets').click(onClickResetSheets);
-
-      // menu
-      $('#show-examination').on(
-        'click',
-        function(){
-          $('#show-examination').addClass('primary');
-          $('#show-report').removeClass('primary');
-          $('#pannel-examination').show();
-          $('#pannel-report').hide();
-        }
-      );
-      $('#show-report').on(
-        'click',
-        function(){
-          $('#show-examination').removeClass('primary');
-          $('#show-report').addClass('primary');
-          $('#pannel-examination').hide();
-          $('#pannel-report').show();
-        }
-      );
 
       // ICL (Japanese Only)
       google.script.run
@@ -285,31 +265,28 @@
      * @param Object sheetsObj
      */
     function onClickGenerateSheet(sheetsObj) {
-      var sheets = sheetsObj.data.sheets == "*urls*" ? $('#urls').val() : sheetsObj.data.sheets;
+      var sheets = sheetsObj.data.sheets;
       var targetId = sheetsObj.data.targetId;
-      $(targetId).prop('disabled', true);
-      $('#progress-sheet').show();
+      progressIndicator(targetId, 'progress-'+targetId, true);
 
       google.script.run
         .withSuccessHandler(
           function(rets) {
             showStatus(rets['msg']);
-            $(rets['targetId']).prop('disabled', false);
-            $('#progress-sheet').hide();
+            progressIndicator(targetId, 'progress-'+targetId, false);
           })
         .withFailureHandler(
-          function(rets) {
-            showStatus(rets['msg'], 'error');
-            $(rets['targetId']).prop('disabled', false);
-            $('#progress-sheet').hide();
+          function(msg) {
+            showStatus(msg);
+            progressIndicator(targetId, 'progress-'+targetId, false);
           })
         .generateSheets(sheets, $('#lang').val(), $('#test-type').val(), $('#evaluate-level').val(), targetId);
     }
 
     /**
-     * Generate Config Sheets
+     * Generate Url List Sheets
      */
-    function onClickGenarateConfig() {
+    function onClickGenarateUrlList() {
       google.script.run
         .withSuccessHandler(
           function(msg) {
@@ -319,43 +296,7 @@
           function(msg) {
             showStatus(msg);
           })
-        .generateConfigSheet($('#lang').val(), $('#test-type').val(), $('#evaluate-level').val());
-    }
-
-    /**
-     * Get All Sheets / Delete Selected Sheets
-     */
-    function onClickCollectDeleteSheet() {
-      progressIndicator('collect-sheets', 'progress-sheet', true);
-      
-      if ($('#delete-sheets').prop('checked')) {
-      
-        google.script.run
-          .withSuccessHandler(
-            function(msg) {
-              showStatus(msg);
-              progressIndicator('collect-sheets', 'progress-sheet', false);
-            })
-          .withFailureHandler(
-            function(msg) {
-              showStatus(msg);
-              progressIndicator('collect-sheets', 'progress-sheet', false);
-            })
-          .deleteSheets($('#urls').val());
-      } else {
-        google.script.run
-          .withSuccessHandler(
-            function(ret) {
-              $("#urls").val(ret);
-              progressIndicator('collect-sheets', 'progress-sheet', false);
-            })
-          .withFailureHandler(
-            function(msg) {
-              showStatus(msg);
-              progressIndicator('collect-sheets', 'progress-sheet', false);
-            })
-          .getSheets();
-      }
+        .generateUrlListSheet($('#lang').val(), $('#test-type').val(), $('#evaluate-level').val());
     }
 
     /**
@@ -621,121 +562,115 @@
 </head>
 
 <body>
-  <div class="sidebar branding-below">
-    <button id="show-examination" class="primary">Exam.</button>
-    <button id="show-report">Report</button>
-    <hr>
-    
-    <div id="pannel-examination">
-      <details open>
-      <summary id="test-type-title">Test type</summary>
-      <p><select id="lang" title="Language" style="width:3.5em;min-width:3.5em;">
-      <option value="en">en</option>
+  <details open>
+    <summary id="test-type-title">Test type</summary>
+    <p>
+      <select id="lang" title="Language" style="width:3.5em;min-width:3.5em;">
+        <option value="en">en</option>
         <option value="ja">ja</option>
       </select>
       <select id="test-type" title="Test Type">
         <option value="wcag20">WCAG 2.0</option>
         <option value="wcag21">WCAG 2.1</option>
         <option value="tt20">Trusted Tester</option>
-  <!--      <option value="tt21">Trusted Tester (WCAG 2.1)</option>-->
+        <!--  <option value="tt21">Trusted Tester (WCAG 2.1)</option>-->
       </select>
       <select id="evaluate-level" title="Level" style="width:5em;min-width:5em;">
         <option value="A">A</option>
         <option value="AA">AA</option>
         <option value="AAA">AAA</option>
-      </select></p>
-      <p><button id="set-additional-criterion">Set additional criteria</button></p>
-      </details>
-
-      <details id="control-icl">
-      <summary id="title-icl">ICL</summary>
+      </select>
+    </p>
+    <p><button id="set-additional-criterion">Set additional criteria</button></p>
+  </details>
+  
+  <details id="control-icl">
+    <summary id="title-icl">ICL</summary>
+    <p>
+      <button id="generate-icl-tpl-sheet">Generate ICL Sheet</button>
+      <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-generate-icl-tpl-sheet"></span>
+    </p>
+    <p>
+      <button id="apply-icl-tpl">Apply ICL Sheet</button>
+      <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-apply-icl-tpl"></span>
+    </p>
+  </details>
+  
+  <details>
+    <summary id="title-urls">Sheet control</summary>
+    <p>
+      <button id="generate-url-list-sheet">Generate url list sheet</button>
+      <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-generate-url-list-sheet"></span>
+    </p>
+    <p>
+      <button id="generate-each-record-sheets">Generate each record sheets</button>
+      <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-generate-each-record-sheets"></span>
+    </p>
+  </details>
+  
+  <details>
+    <summary id="title-value">Value</summary>
+    <p><button id="add-screenshot">Add screenshot</button></p>
+    <p>
+      <button id="do-set-all-t">Set all to 'T'</button>
+      <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-set-all-t"></span>
+    </p>
+    <p><button id="do-insert-tech">Insert Techs to sheet</button></p>
+    <fieldset>
+      <legend id="title-lump-edit">Lump Edit</legend>
       <p>
-        <button id="generate-icl-tpl-sheet">Generate ICL Sheet</button>
-        <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-generate-icl-tpl-sheet"></span>
+        <label for="lump-pos-row" id="label-lump-pos-row">X</label>: <input type="text" size="3" id="lump-pos-row">
+        <label for="lump-pos-col" id="label-lump-pos-col">Y</label>: <input type="text" size="3" id="lump-pos-col">
+        <label for="lump-val" id="label-lump-val">Val</label>: <input type="text" size="7" id="lump-val">
       </p>
-      <p>
-        <button id="apply-icl-tpl">Apply ICL Sheet</button>
-        <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-apply-icl-tpl"></span>
-      </p>
-      </details>
-
-      <details>
-      <summary id="title-urls">Sheet control</summary>
-      <p><textarea style="width:100%;" aria-labelledby="title-urls" id="urls"></textarea></p>
-      <button id="generate-sheets">Generate</button>
-      <button id="collect-sheets">Get sheets</button>
-      <input type="checkbox" id="delete-sheets"><label id="title-delete-sheets" for="delete-sheets">Delete</label>
-      <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-sheet"></span>
-      <p><button id="genarate-config">Generate config sheet</button></p>
-      </details>
-
-      <details>
-      <summary id="title-value">Value</summary>
-      <p><button id="add-screenshot">Add screenshot</button></p>
-      <p>
-        <button id="do-set-all-t">Set all to 'T'</button>
-        <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-set-all-t"></span>
-      </p>
-      <p><button id="do-insert-tech">Insert Techs to sheet</button></p>
-      <fieldset>
-        <legend id="title-lump-edit">Lump Edit</legend>
-        <p>
-          <label for="lump-pos-row" id="label-lump-pos-row">X</label>: <input type="text" size="3" id="lump-pos-row">
-          <label for="lump-pos-col" id="label-lump-pos-col">Y</label>: <input type="text" size="3" id="lump-pos-col">
-          <label for="lump-val" id="label-lump-val">Val</label>: <input type="text" size="7" id="lump-val">
-        </p>
-        <button id="get-current-pos">Get Current Position</button>
-        <button id="do-lump-edit">Apply</button>
-        <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-do-lump-edit"></span>
-      </fieldset>
-      </details>
-
-      <details>
-      <summary id="title-issue-control">Issue Control</summary>
-      <p><button id="add-edit-issue">Add/Edit Issue</button></p>
-      <p><button id="show-issue">Show Issue</button></p>
-      </details>
-    
-      <details>
-      <summary id="title-template">Template</summary>
-      <p><button id="generate-template">Generate template sheet</button></p>
-      <p><button id="do-template-apply-all">Apply all</button></p>
-      <p><button id="do-template-apply-row">Apply current row</button></p>
-      </details>
-    </div>
-
-    <div id="pannel-report">
-      <details open>
-      <summary id="title-evaluate">Evaluate</summary>
-      <p>
-        <button id="do-evaluate">Evaluate</button>
-        <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-do-evaluate"></span>
-      </p>
-      <p>
-        <button id="do-evaluate-icl">Evaluate ICL</button>
-        <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-do-evaluate-icl"></span>
-      </p>
-      </details>
-
-      <details open>
-      <summary id="export-html-title">Export as HTML</summary>
-      <p>
-        <button id="export-result">Export Result</button>
-        <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-export-result"></span>
-      </p>
-      <p>
-        <button id="export-issue">Export Issues</button>
-        <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-export-issue"></span>
-      </p>
-      </details>
-    </div>
-
-    <div id="dev">
-      <details>
-      <summary>Developer Only</summary>
-      <p><button id="reset-sheets">Rest All</button></p>
-      </details>
-    </div>
+      <button id="get-current-pos">Get Current Position</button>
+      <button id="do-lump-edit">Apply</button>
+      <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-do-lump-edit"></span>
+    </fieldset>
+  </details>
+  
+  <details>
+    <summary id="title-issue-control">Issue Control</summary>
+    <p><button id="add-edit-issue">Add/Edit Issue</button></p>
+    <p><button id="show-issue">Show Issue</button></p>
+  </details>
+  
+  <details>
+    <summary id="title-template">Template</summary>
+    <p><button id="generate-template">Generate template sheet</button></p>
+    <p><button id="do-template-apply-all">Apply all</button></p>
+    <p><button id="do-template-apply-row">Apply current row</button></p>
+  </details>
+  
+  <details>
+    <summary id="title-evaluate">Evaluate</summary>
+    <p>
+      <button id="do-evaluate">Evaluate</button>
+      <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-do-evaluate"></span>
+    </p>
+    <p>
+      <button id="do-evaluate-icl">Evaluate ICL</button>
+      <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-do-evaluate-icl"></span>
+    </p>
+  </details>
+  
+  <details>
+    <summary id="export-html-title">Export as HTML</summary>
+    <p>
+      <button id="export-result">Export Result</button>
+      <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-export-result"></span>
+    </p>
+    <p>
+      <button id="export-issue">Export Issues</button>
+      <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-export-issue"></span>
+    </p>
+  </details>
+  
+  <div id="dev">
+    <details>
+    <summary>Developer Only</summary>
+    <p><button id="reset-sheets">Reset All</button></p>
+    </details>
   </div>
 </body>
 
