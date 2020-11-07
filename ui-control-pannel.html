@@ -31,10 +31,9 @@
             $("#show-report").html(ui['report']);
             $("#test-type-title").html(ui['test-type']);
             $("#title-icl").html(ui['icl']);
-            $("#title-urls").html(ui['sheet-control']);
+            $("#target-urls-setting").html(ui['target-urls-setting']);
             $("#title-value").html(ui['value']);
             $("#title-lump-edit").html(ui['lump-edit']);
-            $("#title-delete-sheets").html(ui['delete']);
             $("#title-template").html(ui['template']);
             $("#title-evaluate").html(ui['evaluate']);
             $("#set-additional-criterion").html(ui['set-additional-criterion']);
@@ -42,10 +41,7 @@
             $("#generate-url-list-sheet").html(ui['generate-url-list-sheet']);
             $("#generate-icl-tpl-sheet").html(ui['generate-icl-tpl-sheet']);
             $("#apply-icl-tpl").html(ui['apply-icl-tpl']);
-            $("#generate-sheets").html(ui['generate']);
-            $("#collect-sheets").html(ui['collect-sheets']);
             $("#add-screenshot").html(ui['add-screenshot']);
-            $("#genarate-config").html(ui['generate-config-sheet']);
             $("#do-set-all-t").html(ui['set-all-t']);
             $("#do-insert-tech").html(ui['insert-techniques-sheet']);
             $("#label-lump-val").html(ui['value']);
@@ -73,7 +69,6 @@
       // on change
       $('#test-type').change(swtichLevelWhenTtOrNot);
       $('#evaluate-level').change(switchAdditionalCriterion);
-      $('#delete-sheets').change(switchGenerateDelete);
 
       // on click
       $('#generate-each-record-sheets').bind('click', {sheets:"*urls*", targetId:'generate-each-record-sheets'}, onClickGenerateSheet);
@@ -117,7 +112,7 @@
             }
           })
         .isDebug();
-        
+                
       // default value
       setDefaultValue();
     });
@@ -273,12 +268,12 @@
         .withSuccessHandler(
           function(rets) {
             showStatus(rets['msg']);
-            progressIndicator(targetId, 'progress-'+targetId, false);
+            progressIndicator(rets['targetId'], 'progress-'+rets['targetId'], false);
           })
         .withFailureHandler(
-          function(msg) {
-            showStatus(msg);
-            progressIndicator(targetId, 'progress-'+targetId, false);
+          function(rets) {
+            showStatus(rets['msg']);
+            progressIndicator(rets['targetId'], 'progress-'+rets['targetId'], false);
           })
         .generateSheets(sheets, $('#lang').val(), $('#test-type').val(), $('#evaluate-level').val(), targetId);
     }
@@ -436,23 +431,6 @@
     }
 
     /**
-     * change control status
-     */
-    function switchGenerateDelete() {
-      var deleteUi    = Object.keys(lang.ui).length == 0 ? 'DELETE"' : lang.ui['delete'];
-      var getSheetsUi = Object.keys(lang.ui).length == 0 ? 'Get Sheets"' : lang.ui['collect-sheets'];
-      if ($('#delete-sheets').prop('checked')) {
-        $('#urls').css({'color':'#ffffff', 'background-color':'#aaaaaa'});
-        $('#collect-sheets').html(deleteUi);
-        $('#generate-sheets').prop('disabled', true);
-      } else {
-        $('#urls').css({'color':'#000000', 'background-color':'#ffffff'});
-        $('#collect-sheets').html(getSheetsUi);
-        $('#generate-sheets').prop('disabled', false);
-      }
-    }
-
-    /**
      * Evaluate
      */
     function onClickDoEvaluate() {
@@ -584,6 +562,18 @@
     <p><button id="set-additional-criterion">Set additional criteria</button></p>
   </details>
   
+  <details>
+    <summary id="target-urls-setting">Target URLs Setting</summary>
+    <p>
+      <button id="generate-url-list-sheet">Generate url list sheet</button>
+      <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-generate-url-list-sheet"></span>
+    </p>
+    <p>
+      <button id="generate-each-record-sheets">Generate each record sheets</button>
+      <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-generate-each-record-sheets"></span>
+    </p>
+  </details>
+  
   <details id="control-icl">
     <summary id="title-icl">ICL</summary>
     <p>
@@ -597,15 +587,10 @@
   </details>
   
   <details>
-    <summary id="title-urls">Sheet control</summary>
-    <p>
-      <button id="generate-url-list-sheet">Generate url list sheet</button>
-      <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-generate-url-list-sheet"></span>
-    </p>
-    <p>
-      <button id="generate-each-record-sheets">Generate each record sheets</button>
-      <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-generate-each-record-sheets"></span>
-    </p>
+    <summary id="title-template">Template</summary>
+    <p><button id="generate-template">Generate template sheet</button></p>
+    <p><button id="do-template-apply-all">Apply all</button></p>
+    <p><button id="do-template-apply-row">Apply current row</button></p>
   </details>
   
   <details>
@@ -634,14 +619,7 @@
     <p><button id="add-edit-issue">Add/Edit Issue</button></p>
     <p><button id="show-issue">Show Issue</button></p>
   </details>
-  
-  <details>
-    <summary id="title-template">Template</summary>
-    <p><button id="generate-template">Generate template sheet</button></p>
-    <p><button id="do-template-apply-all">Apply all</button></p>
-    <p><button id="do-template-apply-row">Apply current row</button></p>
-  </details>
-  
+    
   <details>
     <summary id="title-evaluate">Evaluate</summary>
     <p>

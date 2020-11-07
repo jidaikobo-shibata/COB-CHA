@@ -79,10 +79,11 @@ function getPulldownMenu() {
  */
 function generateSheets(urlstr, lang, testType, level, targetId) {
   var ss = getSpreadSheet();
-  if (urlstr === '*Template*') {
-    var urls = [['*Template*']];
+  if (urlstr === templateSheetName) {
+    if (ss.getSheetByName(templateSheetName)) return {'msg': getUiLang('template-already-exists', "*Template* is already exists."), 'targetId': targetId};
+    var urls = [[urlstr, urlstr]];
   } else {
-    if ( ! isUrlListSheetExists()) return getUiLang('url-list-sheet-is-not-exists', "URL List sheet is not exist.");
+    if ( ! isUrlListSheetExists()) return {'msg': getUiLang('url-list-sheet-is-not-exists', "URL List sheet is not exist."), 'targetId': targetId};
     var urlListSheet = ss.getSheetByName(urlListSheetName);
     var lastRow = urlListSheet.getLastRow();
     var urls = urlListSheet.getRange(3, 1, lastRow + 3, 2).getValues();
@@ -105,7 +106,7 @@ function generateSheets(urlstr, lang, testType, level, targetId) {
     
     var originalSheet = ss.getActiveSheet();
     
-    var res = isEvaluateTarget ? getHtmlAndTitle(firstUrl) : false;
+    var res = isEvaluateTarget ? getHtmlAndTitle(firstUrl) : {'title':firstUrl, 'html':''};
     
     // meta
     setBasicValue(originalSheet, lang, testType, level);
@@ -119,7 +120,7 @@ function generateSheets(urlstr, lang, testType, level, targetId) {
     originalSheet.getRange(3, 1).setValue('title').setBackground(labelColor);
     originalSheet.getRange(3, 5).setValue(getUiLang('tester', 'Tester')).setBackground(labelColor);
     originalSheet.getRange(3, 2).setValue(res['title']);
-    saveHtml(resourceFolderName, firstSheetName, res['html']);
+    if (isEvaluateTarget) saveHtml(resourceFolderName, firstSheetName, res['html']);
     originalSheet.setFrozenRows(4);
     
     // header
@@ -224,9 +225,6 @@ function generateSheets(urlstr, lang, testType, level, targetId) {
     }
   }
   
-  // generate result sheet
-  generateResultSheet();
-
   // update url list sheet
   if (urlstr !== '*Template*') {
     var lastRow = urlListSheet.getLastRow();
@@ -246,25 +244,6 @@ function generateSheets(urlstr, lang, testType, level, targetId) {
   }
 
   return {'msg': msg.join("\n"), 'targetId': targetId};
-}
-
-/**
- * Generate Result Sheet
- * @return Void
- */
-function generateResultSheet() {
-  var ss = getSpreadSheet();
-  var all = ss.getSheets();
-
-  var resultSheet = ss.getSheetByName(resultSheetName);
-  if (resultSheet && all.length != 1) {
-    ss.deleteSheet(resultSheet);
-  }
-  
-  var resultSheet = ss.getSheetByName(resultSheetName);
-  if ( ! resultSheet) {
-    ss.insertSheet(resultSheetName, 0);
-  }
 }
 
 /**

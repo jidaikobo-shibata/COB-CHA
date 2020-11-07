@@ -75,24 +75,12 @@ function applyAllToT(testType, level) {
   rows = testType == 'wcag21' && level == 'AAA' ? 78 : rows;
   rows = testType == 'tt20' ? ttCriteria.length : rows;
   
+  var vals = [];
   for (var i = 1; i <= rows; i++) {
-    activeSheet.getRange(i+4, 2).setValue('T');
+    vals.push(['T']);
   }
-  
-  // Impelement Check List
-  // Browser.msgBox();
-  i = i + 4 + 3;
-  var icl1stCol = activeSheet.getRange(i, 1).getValue();
-  var iclLevel  = activeSheet.getRange(i, 3).getValue();
-  while (icl1stCol != '') {
-    if (iclLevel.charAt(0) == 'A') {
-      activeSheet.getRange(i, 2).setValue('T');
-    }
-    i++;
-    icl1stCol = activeSheet.getRange(i, 1).getValue();
-    iclLevel  = activeSheet.getRange(i, 3).getValue();
-  }
-    
+  activeSheet.getRange(5, 2, vals.length, 1).setValues(vals);
+      
   return getUiLang('edit-done', 'Value Edited');
 }
 

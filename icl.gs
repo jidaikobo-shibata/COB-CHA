@@ -16,6 +16,7 @@ function generateIclTplSheet(level) {
   iclTplSheet = ss.insertSheet(iclTplSheetName, 0);
   iclTplSheet.activate();
   generateIcl(iclTplSheet, level);
+  deleteFallbacksheet();
   return getUiLang('sheet-generated', "%s sheet(s) generated.").replace("%s", 1);
 }
 

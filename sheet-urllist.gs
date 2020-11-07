@@ -44,11 +44,13 @@ function prepareUrlListSheet(lang, testType, level) {
   urlListSheet.getRange('2:2').setBackground(labelColor);
   urlListSheet.setColumnWidth(1, 35);
   urlListSheet.setColumnWidth(2, 200);
+  urlListSheet.getRange("A1:A").setHorizontalAlignment('center');
   var nos = [];
   for (var i = 1; i <= 40; i++) {
     nos.push([i]);
   }
   urlListSheet.getRange(3, 1, 40, 1).setValues(nos);
+  deleteFallbacksheet();
   return urlListSheet;
 }
 

@@ -3,13 +3,23 @@
  */
 
 /**
- * get Google Spreadsheet Url
- * @param String ssId
- * @param String currentId
- * @return String
+ * Generate Result Sheet
+ * @return Void
  */
-function getGoogleSpreadsheetUrl(ssId, currentId) {
-  return "https://docs.google.com/spreadsheets/d/"+ssId+"/edit#gid="+currentId;
+function generateResultSheet() {
+  var ss = getSpreadSheet();
+  var all = ss.getSheets();
+
+  var resultSheet = ss.getSheetByName(resultSheetName);
+  if (resultSheet && all.length != 1) {
+    ss.deleteSheet(resultSheet);
+  }
+  
+  var resultSheet = ss.getSheetByName(resultSheetName);
+  if ( ! resultSheet) {
+    ss.insertSheet(resultSheetName, 0);
+  }
+  deleteFallbacksheet();
 }
 
 /**
@@ -52,7 +62,7 @@ function evaluate(lang, testType, level) {
 
   var col = 3;
   var usingCriterions = {};
-  activeSheet.getRange(2, 1).setValue('URL');
+  activeSheet.getRange(2, 1).setValue('PAGE');
   activeSheet.getRange(2, 2).setValue(getUiLang('result', 'Result'));
   activeSheet.setColumnWidth(2, 35);
   
@@ -102,8 +112,8 @@ function evaluate(lang, testType, level) {
     if (allSheets[i].getName().charAt(0) == '*') continue;
     var targetUrl = getUrlFromSheet(allSheets[i]);
     var targetSheet = allSheets[i].getName();
-    activeSheet.getRange(row, 1).setValue('=HYPERLINK("'+getGoogleSpreadsheetUrl(ss.getId(), allSheets[i].getSheetId())+'","'+targetSheet+'")');
-    activeSheet.getRange(row, 1).setComment(allSheets[i].getRange(3, 2).getValue());
+    activeSheet.getRange(row, 1).setValue('=HYPERLINK("#gid='+allSheets[i].getSheetId()+'","'+targetSheet+'")');
+    activeSheet.getRange(row, 1).setComment(targetUrl+"\n"+allSheets[i].getRange(3, 2).getValue());
    
     // each check value
     for (var key in usingCriterions){
@@ -271,7 +281,7 @@ function evaluateIcl(lang, testType, level) {
   for (var i = 0; i < allSheets.length; i++) {
     if (allSheets[i].getName().charAt(0) == '*') continue;
     var targetUrl = getUrlFromSheet(allSheets[i]);
-    iclSheet.getRange(1, col).setValue('=HYPERLINK("'+getGoogleSpreadsheetUrl(ss.getId(), allSheets[i].getSheetId())+'","'+numId+'")');
+    iclSheet.getRange(1, col).setValue('=HYPERLINK("#gid='+allSheets[i].getSheetId()+'","'+numId+'")');
     iclSheet.getRange(1, col).setComment(targetUrl);
     iclSheet.setColumnWidth(col, 40)
     allSheets[i].getRange(iclFirstRow, 2, rows, 1).copyTo(iclSheet.getRange(4, col), {contentsOnly:true});

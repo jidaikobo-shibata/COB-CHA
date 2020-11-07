@@ -38,6 +38,11 @@
             $("#keyboard-operation-exp").html(ui['keyboard-operation-exp']);
             $("#sheet").html(ui['sheet']);
             $("#sheet-exp").html(ui['sheet-exp']);
+            $("#operation").html(ui['operation']);
+            $("#additional-criterion").html(ui['set-additional-criterion']);
+            $("#additional-criterion-exp").html(ui['additional-criterion-exp']);
+            $("#target-urls-setting").html(ui['target-urls-setting']);
+            $("#generate-url-list-sheet-exp").html(ui['generate-url-list-sheet-exp']);
             $("#examination").html(ui['examination']);
             $("#testtype").html(ui['test-type']);
             $("#testtype-exp").html(ui['testtype-exp']);
@@ -47,10 +52,6 @@
             $("#apply-icl-tpl-exp").html(ui['apply-icl-tpl-exp']);
             $("#sheet-control").html(ui['sheet-control']);
             $("#sheet-control-exp").html(ui['sheet-control-exp']);
-            $("#generate-config").html(ui['generate-config-sheet']);
-            $("#generate-config-exp").html(ui['generate-config-exp']);
-            $("#additional-criterion").html(ui['set-additional-criterion']);
-            $("#additional-criterion-exp").html(ui['additional-criterion-exp']);
             $("#using-template").html(ui['template']);
             $("#using-template-exp").html(ui['using-template-exp']);
             $("#add-screenshot").html(ui['add-screenshot']);
@@ -63,7 +64,6 @@
             $("#add-edit-issue-exp").html(ui['add-edit-issue-exp']);
             $("#show-issue").html(ui['show-issue']);
             $("#show-issue-exp").html(ui['show-issue-exp']);
-            $("#report").html(ui['report']);
             $("#evaluate").html(ui['do-evaluate']);
             $("#evaluate-exp").html(ui['evaluate-exp']);
             $("#evaluate-icl").html(ui['do-evaluate-icl']);
@@ -89,11 +89,20 @@ By pressing <kbd>ESC</kbd> close control pannel.</p>
 <p id="sheet-exp">Sheets with names beginning with * are the sheets that are not subject to operations such as "Apply Template".
 Start with *, such as "*memo," for a sheet of notes for test records.</p>
 
-<h2 id="examination">Examination</h2>
+<h2 id="operation">Operation</h2>
 <table>
 <tr>
 	<th id="testtype" style="width:10em;">Test type</th>
 	<td id="testtype-exp">Choose test type from WCAG 2.0, 2.1 or Trusted Tester. And also choose target level.</td>
+</tr>
+<tr>
+	<th id="additional-criterion">Set additional criterion</th>
+	<td id="additional-criterion-exp">Add Success criterion for Additional Testing.</td>
+</tr>
+<tr>
+	<th id="target-urls-setting">Target URLs Setting</th>
+	<td id="generate-url-list-sheet-exp">Generate a sheet named "*URLs*".
+    Enter URLs to be tested here and execute "Generate each record sheets" to generate as many record sheets as there are URLs.</td>
 </tr>
 <tr>
 	<th id="generate-icl-tpl-sheet" style="width:10em;">Generate icl template sheet</th>
@@ -105,20 +114,6 @@ Start with *, such as "*memo," for a sheet of notes for test records.</p>
 	<th id="apply-icl-tpl" style="width:10em;">Apply icl template</th>
 	<td id="apply-icl-tpl-exp">Apply the implementation checklist template to all pages including the template.
     All existing implementation checklists will be deleted. This action cannot be canceled.</td>
-</tr>
-<tr>
-	<th id="sheet-control">Sheet control</th>
-	<td id="sheet-control-exp">Input one URL per line and press "Generate", sheets are generated as many as the number of URLs.
-    By pressing "Get Sheets", You will get all URLs' sheets to the textarea.
-    By checking "Delete", you will be able to delete sheets that in the textarea.</td>
-</tr>
-<tr>
-	<th id="generate-config">Generate config sheet</th>
-	<td id="generate-config-exp">Generate config sheet which named "*Config*".</td>
-</tr>
-<tr>
-	<th id="additional-criterion">Set additional criterion</th>
-	<td id="additional-criterion-exp">Add Success criterion for Additional Testing.</td>
 </tr>
 <tr>
 	<th id="using-template">Using template</th>
@@ -147,10 +142,6 @@ Start with *, such as "*memo," for a sheet of notes for test records.</p>
 	<th id="show-issue">Show Issue</th>
 	<td id="show-issue-exp">Show issues that related to active URL sheet.</td>
 </tr>
-</table>
-
-<h2 id="report">Report</h2>
-<table>
 <tr>
 	<th id="evaluate" style="width:10em;">Evaluate</th>
 	<td id="evaluate-exp">Evaluate test results according to URLs' sheet records.
