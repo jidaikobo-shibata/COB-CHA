@@ -79,6 +79,7 @@ function getPulldownMenu() {
  */
 function generateSheets(urlstr, lang, testType, level, targetId) {
   var ss = getSpreadSheet();
+
   if (urlstr === templateSheetName) {
     if (ss.getSheetByName(templateSheetName)) return {'msg': getUiLang('template-already-exists', "*Template* is already exists."), 'targetId': targetId};
     var urls = [[urlstr, urlstr]];
@@ -86,13 +87,13 @@ function generateSheets(urlstr, lang, testType, level, targetId) {
     if ( ! isUrlListSheetExists()) return {'msg': getUiLang('url-list-sheet-is-not-exists', "URL List sheet is not exist."), 'targetId': targetId};
     var urlListSheet = ss.getSheetByName(urlListSheetName);
     var lastRow = urlListSheet.getLastRow();
-    var urls = urlListSheet.getRange(3, 1, lastRow + 3, 2).getValues();
+    var urls = urlListSheet.getRange(3, 1, lastRow - 2, 3).getValues();
   }
   if (urls.length == 1 && urls[0][0] == '') return {'msg': getUiLang('no-target-page-exists', "No target Page Exists"), 'targetId': targetId};
-  
+    
   var alreadyExists = [];
   var added = 0;
-  var modUrlSheet = [];
+  var modUrlSheet = urls;
 
   // generate original sheet
   var firstSheetName = urls[0][0].toString();
@@ -103,12 +104,9 @@ function generateSheets(urlstr, lang, testType, level, targetId) {
     var originalSheet = ss.getSheetByName(firstSheetName);
   } else {
     var isEvaluateTarget = firstSheetName.charAt(0) != '*';
-    
     var originalSheet = ss.getActiveSheet();
-    
     var res = isEvaluateTarget ? getHtmlAndTitle(firstUrl) : {'title':firstUrl, 'html':''};
     
-    // meta
     setBasicValue(originalSheet, lang, testType, level);
     var today = new Date();
     originalSheet.getRange(1, 5).setValue(getUiLang('date', 'Date')).setBackground(labelColor);
@@ -186,25 +184,18 @@ function generateSheets(urlstr, lang, testType, level, targetId) {
     rules.push(ruleForT);
     originalSheet.setConditionalFormatRules(rules);
     added++;
-    
-    modUrlSheet.push([
+
+    modUrlSheet[0] = [
       '=HYPERLINK("#gid='+originalSheet.getSheetId()+'","'+firstSheetName+'")',
       firstUrl,
       res['title']
-    ]);
+    ];
   }
   
   // copy sheets
-  if (urls.length > 1) {
+  if (urlstr !== templateSheetName && urls.length > 1) {
     for(var i = 1; i < urls.length; i++) {
-      if (urls[i][1].trim() == '') {
-        modUrlSheet.push([
-          urls[i][0],
-          '',
-          ''
-        ]);
-        continue;
-      }
+      if (urls[i][1].trim() == '') continue;
       if (addSheet(urls[i][0], originalSheet) == false) {
         alreadyExists.push(urls[i][1]);
         continue;
@@ -215,23 +206,27 @@ function generateSheets(urlstr, lang, testType, level, targetId) {
       activeSheet.getRange(3, 2).setValue(res['title']);
       saveHtml(resourceFolderName, urls[i][0], res['html']);
       added++;
-
-      modUrlSheet.push([
+      
+      modUrlSheet[i] = [
         '=HYPERLINK("#gid='+activeSheet.getSheetId()+'","'+urls[i][0]+'")',
         urls[i][1],
         res['title']
-      ]);
-
+      ];
     }
+    
+    // recover fomula
+    var numWithFomula = urlListSheet.getRange(3, 1, lastRow - 2, 1).getFormulas();
+    Logger.log(numWithFomula);
+    for(var i = 0; i < urls.length; i++) {
+      modUrlSheet[i][0] = numWithFomula[i][0] ? numWithFomula[i][0] : urls[i][0];
+    }
+    Logger.log(modUrlSheet);
+    
+    // update url list sheet
+    urlListSheet.getRange(3, 1, lastRow - 2, 3).setValues(modUrlSheet);
   }
   
-  // update url list sheet
-  if (urlstr !== '*Template*') {
-    var lastRow = urlListSheet.getLastRow();
-    urlListSheet.getRange(3, 1, lastRow + 3, 3).setValues(modUrlSheet);
-  }
-  
-  // clean up for developer
+  // clean up
   deleteFallbacksheet();
   
   // return to original sheet
@@ -302,32 +297,11 @@ function addSheet(sheetname, template) {
 }
 
 /**
- * Delete Sheets
- * @param String urlstr
- * @return String
- */
-function deleteSheets(urlstr) {
-  var ss = getSpreadSheet();
-
-  var urls = urlstr.replace(/^\s+|\s+$|\n\n/g,'').split(/\n/);
-  var count = 0;
-  for (var i = 0; i < urls.length; i++) {
-    if (urls[i].charAt(0) == '*') continue;
-    var targetSheet = ss.getSheetByName(urls[i]);
-    if (targetSheet == null) continue;
-    ss.deleteSheet(targetSheet);
-    count++;
-  }
-
-  generateResultSheet();
-  return getUiLang('sheet-deleted', "%s sheet(s) deleted.").replace("%s", count);
-}
-
-/**
  * reset sheets
+ * @param Bool isAll
  * @return String
  */
-function resetSheets(urlstr) {
+function resetSheets(isAll) {
   if ( ! isDebug()) throw new Error('allowed to developer only');
   
   var ss = getSpreadSheet();
@@ -339,11 +313,16 @@ function resetSheets(urlstr) {
   var count = 0;
   for (var i = 0; i < all.length; i++) {
     if (all[i].getName() == fallbacksheetName) continue;
+    if (isAll === false && all[i].getName().charAt(0) == '*') continue;
     if (all[i] == null) continue;
     ss.deleteSheet(all[i]);
     count++;
   }
-
+  var all2 = ss.getSheets();
+  if (all2.length > 1) {
+    deleteFallbacksheet();
+  }
+  
   return getUiLang('sheet-deleted', "%s sheet(s) deleted.").replace("%s", count);
 }
 

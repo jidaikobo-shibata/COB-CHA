@@ -90,7 +90,8 @@
       $('#do-evaluate-icl').click(onClickDoEvaluateIcl);
       $('#export-result').click(onClickExportResult);
       $('#export-issue').click(onClickExportIssue);
-      $('#reset-sheets').click(onClickResetSheets);
+      $('#reset-sheets').bind('click', {isAll:true}, onClickResetSheets);
+      $('#reset-record-sheets').bind('click', {isAll:false}, onClickResetSheets);
 
       // ICL (Japanese Only)
       google.script.run
@@ -192,24 +193,24 @@
 
     /**
      * progress indicator
-     * @param String $buttonId
-     * @param String $indicatorId
-     * @param Bool $on
+     * @param String buttonId
+     * @param String indicatorId
+     * @param Bool on
      * @return Void
      */
-    function progressIndicator($buttonId, $indicatorId, $on) {
-      if ($on) {
-        $('#'+$buttonId).prop('disabled', true);
-        if ($indicatorId) {
+    function progressIndicator(buttonId, indicatorId, on) {
+      if (on) {
+        $('#'+buttonId).prop('disabled', true);
+        if (indicatorId) {
           var msg = Object.keys(lang.ui).length == 0 ? 'in progress' : lang.ui['in-progress'];
-          $('#'+$indicatorId).show();
-          $('#'+$indicatorId).html('<span class="skip">'+msg+'</span>');
+          $('#'+indicatorId).show();
+          $('#'+indicatorId).html('<span class="skip">'+msg+'</span>');
         }
       } else {
-        $('#'+$buttonId).prop('disabled', false);
-        if ($indicatorId) {
-          $('#'+$indicatorId).hide();
-          $('#'+$indicatorId).html('');
+        $('#'+buttonId).prop('disabled', false);
+        if (indicatorId) {
+          $('#'+indicatorId).hide();
+          $('#'+indicatorId).html('');
         }
       }
     }
@@ -516,12 +517,14 @@
     function showStatus(msg) {
       alert(msg);
     }
-    
+
     /**
      * reset sheets
+     * @param Object obj
      */
-    function onClickResetSheets() {
-      if (confirm('Reset All Sheets') === false) return;
+    function onClickResetSheets(obj) {
+      var isAll = obj.data.isAll;
+      if (confirm('Reset Sheets?') === false) return;
 
       google.script.run
         .withSuccessHandler(
@@ -532,7 +535,7 @@
           function(msg) {
             showStatus(msg);
           })
-        .resetSheets();
+        .resetSheets(isAll);
     }
   </script>
 
@@ -647,6 +650,7 @@
   <div id="dev">
     <details>
     <summary>Developer Only</summary>
+    <p><button id="reset-record-sheets">Reset Record Sheet</button></p>
     <p><button id="reset-sheets">Reset All</button></p>
     </details>
   </div>
