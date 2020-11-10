@@ -32,9 +32,9 @@
             $("#test-type-title").html(ui['test-type']);
             $("#title-icl").html(ui['icl']);
             $("#target-urls-setting").html(ui['target-urls-setting']);
-            $("#title-value").html(ui['value']);
+            $("#title-value").html(ui['edit-value']);
             $("#title-lump-edit").html(ui['lump-edit']);
-            $("#title-template").html(ui['template']);
+            $("#set-template").html(ui['set-template']);
             $("#title-evaluate").html(ui['evaluate']);
             $("#set-additional-criterion").html(ui['set-additional-criterion']);
             $("#generate-each-record-sheets").html(ui['generate-each-record-sheets']);
@@ -391,7 +391,7 @@
      * Make same as template
      */
     function onClickDoTemplateApplyAll() {
-      $('#do-template-apply-all').prop('disabled', true);
+      progressIndicator('do-template-apply-all', 'progress-do-template-apply-all', true);
       var msg = Object.keys(lang.ui).length == 0 ? 'CAUTION: All result will be overwritten.' : lang.ui['caution-using-template'];
       if (confirm(msg) === false) return;
 
@@ -399,12 +399,12 @@
         .withSuccessHandler(
           function(msg) {
             showStatus(msg);
-            $('#do-template-apply-all').prop('disabled', false);
+            progressIndicator('do-template-apply-all', 'progress-do-template-apply-all', false);
           })
         .withFailureHandler(
           function(msg) {
             showStatus(msg);
-            $('#do-template-apply-all').prop('disabled', false);
+            progressIndicator('do-template-apply-all', 'progress-do-template-apply-all', false);
           })
         .templateApplyAll();
     }
@@ -544,7 +544,7 @@
 
 <body>
   <details open>
-    <summary id="test-type-title">Test type</summary>
+    <summary id="test-type-title">1. Set Test type</summary>
     <p>
       <select id="lang" title="Language" style="width:3.5em;min-width:3.5em;">
         <option value="en">en</option>
@@ -566,7 +566,7 @@
   </details>
   
   <details>
-    <summary id="target-urls-setting">Target URLs Setting</summary>
+    <summary id="target-urls-setting">2. Target URLs Setting</summary>
     <p>
       <button id="generate-url-list-sheet">Generate url list sheet</button>
       <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-generate-url-list-sheet"></span>
@@ -577,33 +577,36 @@
     </p>
   </details>
   
-  <details id="control-icl">
-    <summary id="title-icl">ICL</summary>
-    <p>
-      <button id="generate-icl-tpl-sheet">Generate ICL Sheet</button>
-      <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-generate-icl-tpl-sheet"></span>
-    </p>
-    <p>
-      <button id="apply-icl-tpl">Apply ICL Sheet</button>
-      <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-apply-icl-tpl"></span>
-    </p>
-  </details>
-  
   <details>
-    <summary id="title-template">Template</summary>
+    <summary id="set-template">3. Set Template</summary>
     <p><button id="generate-template">Generate template sheet</button></p>
-    <p><button id="do-template-apply-all">Apply all</button></p>
-    <p><button id="do-template-apply-row">Apply current row</button></p>
-  </details>
-  
+    
+    <fieldset id="control-icl">
+      <legend id="title-icl">ICL</legend>
+      <p>
+        <button id="generate-icl-tpl-sheet">Generate ICL Sheet</button>
+        <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-generate-icl-tpl-sheet"></span>
+      </p>
+      <p>
+        <button id="apply-icl-tpl">Apply ICL Sheet</button>
+        <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-apply-icl-tpl"></span>
+      </p>
+    </fieldset>
+ </details>
+   
   <details>
-    <summary id="title-value">Value</summary>
+    <summary id="title-value">4. Edit Value</summary>
     <p><button id="add-screenshot">Add screenshot</button></p>
     <p>
       <button id="do-set-all-t">Set all to 'T'</button>
       <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-set-all-t"></span>
     </p>
     <p><button id="do-insert-tech">Insert Techs to sheet</button></p>
+    <p>
+      <button id="do-template-apply-all">Apply all</button>
+      <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-do-template-apply-all"></span>
+    </p>
+    <p><button id="do-template-apply-row">Apply current row</button></p>
     <fieldset>
       <legend id="title-lump-edit">Lump Edit</legend>
       <p>
@@ -618,13 +621,13 @@
   </details>
   
   <details>
-    <summary id="title-issue-control">Issue Control</summary>
+    <summary id="title-issue-control">5. Issue Control</summary>
     <p><button id="add-edit-issue">Add/Edit Issue</button></p>
     <p><button id="show-issue">Show Issue</button></p>
   </details>
     
   <details>
-    <summary id="title-evaluate">Evaluate</summary>
+    <summary id="title-evaluate">6. Evaluate</summary>
     <p>
       <button id="do-evaluate">Evaluate</button>
       <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-do-evaluate"></span>
@@ -636,7 +639,7 @@
   </details>
   
   <details>
-    <summary id="export-html-title">Export as HTML</summary>
+    <summary id="export-html-title">7. Export as HTML</summary>
     <p>
       <button id="export-result">Export Result</button>
       <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-export-result"></span>

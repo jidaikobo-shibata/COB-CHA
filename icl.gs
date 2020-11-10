@@ -17,7 +17,7 @@ function generateIclTplSheet(level) {
   iclTplSheet.activate();
   generateIcl(iclTplSheet, level);
   deleteFallbacksheet();
-  return getUiLang('sheet-generated', "%s sheet(s) generated.").replace("%s", 1);
+  return getUiLang('icl-tpl-generated', "ICL was generated. It's hard to customize ICL after reflecting the template. Customize first.");
 }
 
 /**
