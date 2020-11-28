@@ -49,13 +49,19 @@ function getAllSheets() {
  * @param String lang
  * @param String testType
  * @param String level
+ * @param String mark
  * @return Void
  */
-function setBasicValue(sheet, lang, testType, level) {
+function setBasicValue(sheet, lang, testType, level, mark) {
   sheet.getRange(1, 1).setValue('Type').setBackground(labelColor);
   sheet.getRange(1, 2).setValue(lang).setHorizontalAlignment('center');
   sheet.getRange(1, 3).setValue(testType).setHorizontalAlignment('center');
   sheet.getRange(1, 4).setValue(level).setHorizontalAlignment('center');
+
+  var msg = mark == 'tf' ?
+    getUiLang('mark-type-note-tf', "T: Pass, F: Failed, DNA: Does not apply, NT: Not tested") :
+    getUiLang('mark-type-note-ox', "o: Pass, x: Failed, -: Does not apply, ?: Not tested") ;
+  sheet.getRange(1, 7).setValue(msg);
 }
 
 /**
@@ -64,7 +70,7 @@ function setBasicValue(sheet, lang, testType, level) {
  */
 function getPulldownMenu() {
   var pullDown = SpreadsheetApp.newDataValidation();
-  pullDown.requireValueInList(['NT', 'DNA', 'T', 'F'], true);
+  pullDown.requireValueInList(getProp('mark'), true);
   return pullDown;
 }
 

@@ -154,6 +154,17 @@
             generateBulkCriteia();
           })
         .getProp('type');
+        
+        google.script.run
+        .withSuccessHandler(
+          function(ret) {
+            if (ret[0] == 'NT') {
+              $("#mark").val('tf');
+            } else {
+              $("#mark").val('ox');
+            }
+          })
+        .getProp('mark');
     }
 
     /**
@@ -550,7 +561,7 @@
         <option value="en">en</option>
         <option value="ja">ja</option>
       </select>
-      <select id="test-type" title="Test Type">
+      <select id="test-type" title="Test Type" style="width:8em;min-width:8em;">
         <option value="wcag20">WCAG 2.0</option>
         <option value="wcag21">WCAG 2.1</option>
         <option value="tt20">Trusted Tester</option>
@@ -560,6 +571,10 @@
         <option value="A">A</option>
         <option value="AA">AA</option>
         <option value="AAA">AAA</option>
+      </select>
+      <select id="mark" title="mark type" style="width:4em;min-width:4em;">
+        <option value="ox">o/x</option>
+        <option value="tf">T/F</option>
       </select>
     </p>
     <p><button id="set-additional-criterion">Set additional criteria</button></p>

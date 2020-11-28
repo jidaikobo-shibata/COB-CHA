@@ -48,10 +48,12 @@ function evaluate(lang, testType, level) {
   var activeSheet = ss.getSheetByName(resultSheetName);
   activeSheet.activate();
   activeSheet.clear();
-  activeSheet.setFrozenRows(2);
+  activeSheet.setFrozenRows(3);
   activeSheet.setFrozenColumns(2);
   activeSheet.getRange("2:2").setFontSize(8);
   activeSheet.getRange("2:2").setHorizontalAlignment('center');
+  activeSheet.getRange("3:2").setFontSize(8);
+  activeSheet.getRange("3:2").setHorizontalAlignment('center');
   activeSheet.setColumnWidth(1, 70);
 
   // headers
@@ -61,43 +63,55 @@ function evaluate(lang, testType, level) {
   activeSheet.getRange(1, 6).setValue(today);
 
   var col = 3;
-  var usingCriterions = {};
   activeSheet.getRange(2, 1).setValue('PAGE');
   activeSheet.getRange(2, 2).setValue(getUiLang('result', 'Result'));
   activeSheet.setColumnWidth(2, 35);
   
   var type4criteria = testType == 'tt20' ? 'wcag20' : testType ;
   var criteria = getUsingCriteria(lang, type4criteria, level);
+  
+  var headers = [[], []];
   for (var i = 0; i < criteria.length; i++) {
-    activeSheet.getRange(2, col).setValue(criteria[i][1]);
-    activeSheet.setColumnWidth(col, 30);
-    if (singleACriteria.indexOf(criteria[i][1]) == -1) {
-      activeSheet.getRange(2, col).setBackground(doubleAColor);
-    }
-    usingCriterions[criteria[i][1]] = col;
-    col++;
+    headers[0].push(criteria[i][1]);
+    headers[1].push(criteria[i][0]);
   }
-  activeSheet.getRange(2, col).setValue('NI').setBackground(labelColor);
-  activeSheet.getRange(2, col+1).setValue('A').setBackground(labelColor);
+  headers[0].push('NI');
+  headers[1].push('');
+  headers[0].push('A');
+  headers[1].push('');
+  var labelcel = 2;
   if (level.length > 1) {
-    activeSheet.getRange(2, col+2).setValue('AA').setBackground(labelColor);
+    headers[0].push('AA');
+    headers[1].push('');
+    labelcel++;
   }
   if (level.length > 2) {
-    activeSheet.getRange(2, col+3).setValue('AAA').setBackground(labelColor);
+    headers[0].push('AAA');
+    headers[1].push('');
+    labelcel++;
   }
+  var col = headers[0].length;
+  activeSheet.getRange(2, 3, 2, col).setValues(headers);
+  activeSheet.getRange(2, col, 2, labelcel).setBackground(labelColor);
+  activeSheet.setColumnWidths(3, col, 30);
+  var maxCol = col + labelcel - 1;
+//doubleAColor
 
-  // alignment
-  activeSheet.getRange(3, 2, allSheets.length, col+1).setHorizontalAlignment('center');
-
+  // mark
+  var mark = getProp('mark');
+  var mT = mark[2];
+  var mF = mark[3];
+  var mD = mark[1];
+  
   // conditioned cell
-  var conditionedRange = activeSheet.getRange(3, 3, allSheets.length, col);
+  var conditionedRange = activeSheet.getRange(4, 3, allSheets.length, col);
   var ruleForF = SpreadsheetApp.newConditionalFormatRule()
-      .whenTextEqualTo("F")
+      .whenTextEqualTo(mF)
       .setBackground(falseColor)
       .setRanges([conditionedRange])
       .build();
   var ruleForT = SpreadsheetApp.newConditionalFormatRule()
-      .whenTextEqualTo("T")
+      .whenTextEqualTo(mT)
       .setBackground(trueColor)
       .setRanges([conditionedRange])
       .build();
@@ -107,65 +121,68 @@ function evaluate(lang, testType, level) {
   activeSheet.setConditionalFormatRules(rules);
 
   // each row
-  var row = 3;
+  var vals = [];
+  var row = 4;
+  var num = allSheets.length + row;
   for (var i = 0; i < allSheets.length; i++) {
     if (allSheets[i].getName().charAt(0) == '*') continue;
+    var each = [];
     var targetUrl = getUrlFromSheet(allSheets[i]);
     var targetSheet = allSheets[i].getName();
-    activeSheet.getRange(row, 1).setValue('=HYPERLINK("#gid='+allSheets[i].getSheetId()+'","'+targetSheet+'")');
-    activeSheet.getRange(row, 1).setComment(targetUrl+"\n"+allSheets[i].getRange(3, 2).getValue());
-   
-    // each check value
-    for (var key in usingCriterions){
-      var col = usingCriterions[key];
-      activeSheet.getRange(row, col).setValue(generateExpression(testType, key, 'A'+row));
+    each.push('=HYPERLINK("#gid='+allSheets[i].getSheetId()+'","'+targetSheet+'")');
+    
+    // page result
+    var resultExpression = '=INDIRECT(ADDRESS(ROW(), '+maxCol+'))';
+    each.push(resultExpression);
+    
+    var chks = allSheets[i].getRange(5, 2, criteria.length, 1).getValues();
+    for (var i = 0; i < chks.length; i++) {
+      each.push(chks[i][0]);
     }
-
+    
     // Non-Interference
-    var targetRow = row-1;
+    var aRows = '2:'+num;
     var niExpressions = [];
     for (var j = 0; j < nonInterference.length; j++) {
-      niExpressions[j] = 'HLOOKUP("'+nonInterference[j]+'", 2:'+row+', '+targetRow+', false) = "F"';
+      niExpressions[j] = 'HLOOKUP("'+nonInterference[j]+'", '+aRows+', ROW() - 1, false) = "'+mF+'"';
     }
     var niExpression = 'OR('+niExpressions.join(', ')+')';
-    activeSheet.getRange(row, col+1).setValue('=IF('+niExpression+', "NI", "-")');
+    each.push('=IF('+niExpression+', "NI", "")'); // do not use mT as "NI is OK"
 
     // single-A
     var singleAExpressions = [];
     for (var j = 0; j < singleACriteria.length; j++) {
       if ((testType == 'wcag20' || testType == 'tt20') && criteria21.indexOf(singleACriteria[j]) >= 0) continue;
-      singleAExpressions[j] = 'OR(HLOOKUP("'+singleACriteria[j]+'", 2:'+row+', '+targetRow+', false) = "T"';
-      singleAExpressions[j] = singleAExpressions[j]+', HLOOKUP("'+singleACriteria[j]+'", 2:'+row+', '+targetRow+', false) = "DNA")';
+      singleAExpressions[j] = 'OR(HLOOKUP("'+singleACriteria[j]+'", '+aRows+', ROW() - 1, false) = "'+mT+'"';
+      singleAExpressions[j] = singleAExpressions[j]+', HLOOKUP("'+singleACriteria[j]+'", '+aRows+', ROW() - 1, false) = "'+mD+'")';
     }
     var singleAExpression = 'IF(AND('+singleAExpressions.join(', ')+'), "A", "A-")';
-    singleAExpression = '=IF('+niExpression+', "NI", '+singleAExpression+')';
-    activeSheet.getRange(row, col+2).setValue(singleAExpression);
-    activeSheet.getRange(row, 2).setValue(singleAExpression);
+    each.push('=IF('+niExpression+', "NI", '+singleAExpression+')');
     
     // double-A
+    var cRow = 'INDIRECT(ADDRESS(ROW(), 3)&":"&ADDRESS(ROW(), COLUMN()))';
     if (level.length > 1){
       var fullAA = (testType == 'wcag20' || testType == 'tt20') ? 38 : 50 ;
-      var isAPassed = 'HLOOKUP("A", 2:'+row+', '+targetRow+', false) = "A"'; // loop reference...
-      var partialAAexpression = 'IF(AND('+isAPassed+', COUNTIF('+row+':'+row+', "T") + COUNTIF('+row+':'+row+', "DNA") < '+fullAA+'), "AA-", "A-")';
-      var doubleAExpression = 'IF(AND('+isAPassed+', COUNTIF('+row+':'+row+', "T") + COUNTIF('+row+':'+row+', "DNA") >= '+fullAA+'), "AA", '+partialAAexpression+')';
-      doubleAExpression = '=IF('+niExpression+', "NI", '+doubleAExpression+')';
-      activeSheet.getRange(row, col+3).setValue(doubleAExpression);
-      activeSheet.getRange(row, 2).setValue(doubleAExpression);
+      var isAPassed = 'HLOOKUP("A", '+aRows+', ROW() - 1, false) = "A"'; // loop reference...
+      var partialAAexpression = 'IF(AND('+isAPassed+', COUNTIF('+cRow+', "'+mT+'") + COUNTIF('+cRow+', "'+mD+'") < '+fullAA+'), "AA-", "A-")';
+      var doubleAExpression = 'IF(AND('+isAPassed+', COUNTIF('+cRow+', "'+mT+'") + COUNTIF('+cRow+', "'+mD+'") >= '+fullAA+'), "AA", '+partialAAexpression+')';
+      each.push('=IF('+niExpression+', "NI", '+doubleAExpression+')');
     }
 
     // triple-A
     if (level.length > 2){
       var fullAAA = (testType == 'wcag20' || testType == 'tt20') ? 61 : 78 ;
-      var loouUpAA = 'HLOOKUP("AA", 2:'+row+', '+targetRow+', false)' ;
-      var isAAPassed = 'IF(AND('+loouUpAA+' = "AA", COUNTIF('+row+':'+row+', "T") + COUNTIF('+row+':'+row+', "DNA") >= '+fullAA+'), "AAA-", '+loouUpAA+')';
-      var tripleAexpression = '=IF(COUNTIF('+row+':'+row+', "T") + COUNTIF('+row+':'+row+', "DNA") = '+fullAAA+', "AAA", '+isAAPassed+')';
-      doubleAExpression = '=IF('+niExpression+', "NI", '+tripleAexpression+')';
-      activeSheet.getRange(row, col+4).setValue(tripleAexpression);
-      activeSheet.getRange(row, 2).setValue(tripleAexpression);
+      var loouUpAA = 'HLOOKUP("AA", '+aRows+', ROW() - 1, false)' ;
+      var isAAPassed = 'IF(AND('+loouUpAA+' = "AA", COUNTIF('+cRow+', "'+mT+'") + COUNTIF('+cRow+', "'+mD+'") >= '+fullAA+'), "AAA-", '+loouUpAA+')';
+      var tripleAexpression = '=IF(COUNTIF('+cRow+', "T") + COUNTIF('+cRow+', "'+mD+'") = '+fullAAA+', "AAA", '+isAAPassed+')';
+      each.push('=IF('+niExpression+', "NI", '+tripleAexpression+')');
     }
 
+    vals.push(each);
     row++;
   }
+  activeSheet.getRange(4, 1, vals.length, vals[0].length).setValues(vals);
+  activeSheet.getRange(4, 1, vals.length, vals[0].length).setHorizontalAlignment('center');
   
   // conditioned cell
   var targetText = 'A';
@@ -188,40 +205,6 @@ function evaluate(lang, testType, level) {
   activeSheet.setConditionalFormatRules(rules);
 
   return getUiLang('evaluated', 'Evaluated.');
-}
-
-/**
- * generateExpression
- * @param String testType
- * @param String currentCriterion
- * @param String row
- * @return String
- */
-function generateExpression(testType, currentCriterion, row) {
-  var ret = '';
-  if (testType.indexOf('wcag') >= 0) {
-    ret = '=VLOOKUP("'+currentCriterion+'", INDIRECT('+row+'&"!A:B") , 2, false)';
-  } else {
-    var conditions = [];
-    var strs = ["DNA", "F", "T"];
-    if (typeof relTtAndCriteria[currentCriterion] === 'undefined') return('');
-    for (var j = 0; j < strs.length; j++) {
-      for(var k = 0; k < relTtAndCriteria[currentCriterion].length; k++) {
-        conditions[k] = 'VLOOKUP("'+relTtAndCriteria[currentCriterion][k]+'", INDIRECT('+row+'&"!A:B") , 2, false) = "'+strs[j]+'"';
-      }
-      if (strs[j] == 'DNA') {
-        ret = 'IF(AND('+conditions.join(', ')+'), "'+strs[j]+'", "-")';
-      } else {
-        if (strs[j] == 'F') {
-          ret = 'IF(OR('+conditions.join(', ')+'), "'+strs[j]+'", '+ret+')';
-        } else {
-          ret = 'IF(AND('+conditions.join(', ')+'), "'+strs[j]+'", '+ret+')';
-        }
-      }
-    }
-    ret = '='+ret;
-  }
-  return ret;
 }
 
 /**

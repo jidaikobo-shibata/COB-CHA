@@ -56,7 +56,7 @@ function setContextualTechs(techs) {
 }
 
 /**
- * Apply Value to "T"
+ * Apply Value to Conformance
  * @param String testType
  * @param String level
  * @return String
@@ -76,8 +76,9 @@ function applyAllToT(testType, level) {
   rows = testType == 'tt20' ? ttCriteria.length : rows;
   
   var vals = [];
+  var mark = getProp('mark');
   for (var i = 1; i <= rows; i++) {
-    vals.push(['T']);
+    vals.push([mark[2]]);
   }
   activeSheet.getRange(5, 2, vals.length, 1).setValues(vals);
       

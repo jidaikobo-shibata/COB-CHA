@@ -17,11 +17,12 @@ function isUrlListSheetExists() {
  * @param String lang
  * @param String testType
  * @param String level
+ * @param String mark
  * @return String
  */
-function generateUrlListSheet(lang, testType, level) {
+function generateUrlListSheet(lang, testType, level, mark) {
   if (isUrlListSheetExists()) return getUiLang('url-list-sheet-already-exists', "URL List sheet is already exists.");
-  prepareUrlListSheet(lang, testType, level);
+  prepareUrlListSheet(lang, testType, level, mark);
   return getUiLang('generated-url-list-sheet', "Generate URL List.");
 }
 
@@ -30,14 +31,15 @@ function generateUrlListSheet(lang, testType, level) {
  * @param String lang
  * @param String testType
  * @param String level
+ * @param String mark
  * @return Object
  */
-function prepareUrlListSheet(lang, testType, level) {
+function prepareUrlListSheet(lang, testType, level, mark) {
   var ss = getSpreadSheet();
   ss.insertSheet(urlListSheetName, 0);
   var urlListSheet = ss.getSheetByName(urlListSheetName);
   urlListSheet.activate();
-  setBasicValue(urlListSheet, lang, testType, level);
+  setBasicValue(urlListSheet, lang, testType, level, mark);
   urlListSheet.getRange(1, 5).setValue(getUiLang('additional-criterion', "Additional Criterion")).setBackground(labelColor);
   urlListSheet.getRange(2, 1).setValue('No.');
   urlListSheet.getRange(2, 2).setValue('URL');

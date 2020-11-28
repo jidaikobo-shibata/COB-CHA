@@ -646,6 +646,9 @@ function getUiJa ()
 {
   return {
     'lang': 'ja',
+    
+    'mark-type-note-ox':'o:適合 x:不適合 -:適用なし ?:未テスト',
+    'mark-type-note-tf':'T:適合 F:不適合 DNA:適用なし NT:未テスト',
 
     'control-panel-title': 'コントロールパネル',
     'show-control-panel': 'コントロールパネルを表示',
@@ -661,7 +664,7 @@ function getUiJa ()
     'generate-url-list-sheet': 'URL一覧のシートを生成する',
     'generate-each-record-sheets': 'URLごとの記録シートを生成する',
     'url-list-sheet-is-not-exists': 'URL一覧のシートが存在しません。',
-    'this-pages-all-check-will-be-overwritten': 'このページのすべての「チェック」の値が「T」になります。',
+    'this-pages-all-check-will-be-overwritten': 'このページのすべての「チェック」の値が適合になります。',
     'caution-using-template': '全ての試験結果がテンプレートの値で上書きされます。',
     'all-pages-check-will-be-overwritten': '全てのページの値が上書きされます。',
     'url-list-sheet-already-exists': 'URL一覧シートが既に存在しています。',
@@ -728,8 +731,7 @@ function getUiJa ()
     'memo': '備考',
     'apply-tpl-all': 'テンプレートの値を全てのシートに反映',
     'apply-tpl-row': 'テンプレートの選択行のみ適用',
-    'set-all-t': 'すべてTにする',
-    'enable-set-all-t': '「すべてTにする」を有効化',
+    'set-all-t': 'すべて適合にする',
     'set-template': '3. テンプレートを設定',
     'template-already-exists': 'すでにテンプレートが存在します。新しくテンプレートを作る場合は、既存のテンプレートを削除してください',
     'no-template-found': 'テンプレートが見つかりませんでした',

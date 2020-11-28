@@ -157,7 +157,7 @@ function getProp(prop) {
   if (getProp.vals && getProp.vals[prop]) return getProp.vals[prop];
 
   var activeSheet = getActiveSheet();
-  var rets = activeSheet.getRange(1, 2, 1, 3).getValues();
+  var rets = activeSheet.getRange(1, 2, 1, 7).getValues();
   var vals = {};
   var userLocale = Session.getActiveUserLocale();
   //  activeSheet.getRange(1,1).setValue(userLocale);
@@ -166,6 +166,7 @@ function getProp(prop) {
   vals['lang']  = ['en', 'ja'].indexOf(rets[0][0]) > -1 ? rets[0][0] : userLocale;
   vals['type']  = ['wcag20', 'wcag21', 'tt20'].indexOf(rets[0][1]) > -1 ? rets[0][1] : 'wcag21';
   vals['level'] = ['A', 'AA', 'AAA'].indexOf(rets[0][2]) > -1 ? rets[0][2] : 'AA';
+  vals['mark']  = rets[0][6].toString().charAt(0) == 'T' ? ['NT', 'DNA', 'T', 'F'] : ['?', '-', 'o', 'x'];
   //  vals['lang']  = 'en';
   getProp.vals = vals;
   
