@@ -368,11 +368,13 @@ function getHtmlAndTitle(url) {
     "validateHttpsCertificates" : false,
     "followRedirects" : false,
   }
-  
+
   try {
     var res = UrlFetchApp.fetch(url, options).getContentText();
+    res = res == '' ? UrlFetchApp.fetch(url+'/', options).getContentText() : res;
     var title = res.match(/<title>.+?<\/title>/ig);
     title = String(title).replace(/<\/*title>/ig, '');
+    title = title == null ? '' : title;
     return {'title': title, 'html': res};
   } catch(e) {
     return ret;

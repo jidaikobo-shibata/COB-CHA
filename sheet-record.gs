@@ -97,13 +97,22 @@ function generateSheets(urlstr, lang, testType, level, targetId) {
   }
   if (urls.length == 1 && urls[0][0] == '') return {'msg': getUiLang('no-target-page-exists', "No target Page Exists"), 'targetId': targetId};
     
+  if (urlstr !== templateSheetName) {
+    var sheetIds = urlListSheet.getRange(3, 1, lastRow - 2, 1).getFormulas();
+    var sheetTitles = urlListSheet.getRange(3, 3, lastRow - 2, 1).getValues();
+  }
   var alreadyExists = [];
   var added = 0;
-  var modUrlSheet = urls;
 
   // generate original sheet
   var firstSheetName = urls[0][0].toString();
   var firstUrl = urls[0][1].toString();
+
+  // mark
+  var mark = getProp('mark');
+  var mT = mark[2];
+  var mF = mark[3];
+  var mD = mark[1];
   
   if (addSheet(firstSheetName) == false) {
     alreadyExists.push(firstUrl);
@@ -172,16 +181,16 @@ function generateSheets(urlstr, lang, testType, level, targetId) {
       originalSheet.getRange(row, 3).setValue(usingCriteria[j][0]).setHorizontalAlignment('center');
       row++;
     }
-
+    
     // conditioned cell
     var conditionedRange = originalSheet.getRange("B:B");
     var ruleForF = SpreadsheetApp.newConditionalFormatRule()
-      .whenTextEqualTo("F")
+      .whenTextEqualTo(mF)
       .setBackground(falseColor)
       .setRanges([conditionedRange])
       .build();
     var ruleForT = SpreadsheetApp.newConditionalFormatRule()
-      .whenTextEqualTo("T")
+      .whenTextEqualTo(mT)
       .setBackground(trueColor)
       .setRanges([conditionedRange])
       .build();
@@ -191,11 +200,10 @@ function generateSheets(urlstr, lang, testType, level, targetId) {
     originalSheet.setConditionalFormatRules(rules);
     added++;
 
-    modUrlSheet[0] = [
-      '=HYPERLINK("#gid='+originalSheet.getSheetId()+'","'+firstSheetName+'")',
-      firstUrl,
-      res['title']
-    ];
+    if (urlstr !== templateSheetName) {
+      sheetIds[0]    = ['=HYPERLINK("#gid='+originalSheet.getSheetId()+'","'+firstSheetName+'")'];
+      sheetTitles[0] = res['title'] == '' ? [sheetTitles[0][0]] : [res['title']];
+    }
   }
   
   // copy sheets
@@ -213,23 +221,15 @@ function generateSheets(urlstr, lang, testType, level, targetId) {
       saveHtml(resourceFolderName, urls[i][0], res['html']);
       added++;
       
-      modUrlSheet[i] = [
-        '=HYPERLINK("#gid='+activeSheet.getSheetId()+'","'+urls[i][0]+'")',
-        urls[i][1],
-        res['title']
-      ];
+      sheetIds[i]    = ['=HYPERLINK("#gid='+activeSheet.getSheetId()+'","'+urls[i][0]+'")'];
+      sheetTitles[i] = [res['title']];
     }
-    
-    // recover fomula
-    var numWithFomula = urlListSheet.getRange(3, 1, lastRow - 2, 1).getFormulas();
-    Logger.log(numWithFomula);
-    for(var i = 0; i < urls.length; i++) {
-      modUrlSheet[i][0] = numWithFomula[i][0] ? numWithFomula[i][0] : urls[i][0];
-    }
-    Logger.log(modUrlSheet);
-    
-    // update url list sheet
-    urlListSheet.getRange(3, 1, lastRow - 2, 3).setValues(modUrlSheet);
+  }
+
+  // update url list sheet
+  if (urlstr !== templateSheetName) {
+    urlListSheet.getRange(3, 1, lastRow - 2, 1).setValues(sheetIds);
+    urlListSheet.getRange(3, 3, lastRow - 2, 1).setValues(sheetTitles);
   }
   
   // clean up

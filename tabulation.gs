@@ -124,7 +124,11 @@ function evaluate(lang, testType, level) {
   var vals = [];
   var row = 4;
   var num = allSheets.length + row;
+  
   for (var i = 0; i < allSheets.length; i++) {
+    
+    Logger.log(allSheets[i].getName());
+    
     if (allSheets[i].getName().charAt(0) == '*') continue;
     var each = [];
     var targetUrl = getUrlFromSheet(allSheets[i]);
@@ -136,8 +140,8 @@ function evaluate(lang, testType, level) {
     each.push(resultExpression);
     
     var chks = allSheets[i].getRange(5, 2, criteria.length, 1).getValues();
-    for (var i = 0; i < chks.length; i++) {
-      each.push(chks[i][0]);
+    for (var j = 0; j < chks.length; j++) {
+      each.push(chks[j][0]);
     }
     
     // Non-Interference
@@ -177,13 +181,13 @@ function evaluate(lang, testType, level) {
       var tripleAexpression = '=IF(COUNTIF('+cRow+', "T") + COUNTIF('+cRow+', "'+mD+'") = '+fullAAA+', "AAA", '+isAAPassed+')';
       each.push('=IF('+niExpression+', "NI", '+tripleAexpression+')');
     }
-
+    
     vals.push(each);
-    row++;
+//    row++;
   }
   activeSheet.getRange(4, 1, vals.length, vals[0].length).setValues(vals);
   activeSheet.getRange(4, 1, vals.length, vals[0].length).setHorizontalAlignment('center');
-  
+    
   // conditioned cell
   var targetText = 'A';
   var targetText = level.length > 1 ? 'AA' : targetText;
