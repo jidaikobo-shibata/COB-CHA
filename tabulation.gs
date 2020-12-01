@@ -219,7 +219,7 @@ function evaluateIcl(lang, testType, level) {
   var ss = getSpreadSheet();
   var iclTplSheet = ss.getSheetByName(iclTplSheetName);
   if (iclTplSheet == null) {
-     throw new Error(getUiLang('error-icl-tpl-not-exists', "ICL sheet is not exists."));
+     throw new Error(getUiLang('icl-tpl-not-exists', "ICL sheet is not exists."));
   }
 
   // generate Sheet

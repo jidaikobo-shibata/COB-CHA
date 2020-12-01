@@ -11,7 +11,7 @@ function generateIclTplSheet(level) {
   var ss = getSpreadSheet();
   var iclTplSheet = ss.getSheetByName(iclTplSheetName);
   if (iclTplSheet) {
-     throw new Error(getUiLang('error-icl-exists', "ICL sheet is already exists. delete it manually."));
+     throw new Error(getUiLang('icl-exists', "ICL sheet is already exists. delete it manually."));
   }
   iclTplSheet = ss.insertSheet(iclTplSheetName, 0);
   iclTplSheet.activate();
