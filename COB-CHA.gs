@@ -1,8 +1,9 @@
 /**
  * COB-CHA: CollaBorative CHeck tool for Accessibility
- * powered by Google Spreadsheet
- * @Author shibata@jidaikobo.com
- *         arimatsu@jidaikobo.com
+ * Google Spreadsheet Add-on
+ * @Author  shibata@jidaikobo.com
+ *          arimatsu@jidaikobo.com
+ * @Year    2020
  * @Licence MIT
  */
 
@@ -20,8 +21,8 @@ function onInstall(e) {
  * @param Object e
  * @return Void
  */
-function onOpen (e) {
-  if(e && e.authMode == 'NONE'){
+function onOpen(e) {
+  if (e && e.authMode == 'NONE') {
     var menu = SpreadsheetApp.getUi().createAddonMenu();
     menu.addItem('Getting Started', 'askEnabled');
     menu.addToUi();
@@ -37,7 +38,7 @@ function onOpen (e) {
  */
 function askEnabled() {
   var title = 'COB-CHA';
-  var msg = 'Script has been enabled.';
+  var msg   = 'Script has been enabled.';
   var ui = SpreadsheetApp.getUi();
   ui.alert(title, msg, ui.ButtonSet.OK);
   var menu = SpreadsheetApp.getUi().createAddonMenu();
@@ -87,7 +88,7 @@ function showDialog(sheetname, width, height, title, html) {
   var output = HtmlService.createTemplateFromFile(sheetname);
   var ss = getSpreadSheet();
   title = title == null ? '' : title;
-  html = html == null ? '' : html;
+  html  = html == null  ? '' : html;
   var html = output.evaluate()
                    .setSandboxMode(HtmlService.SandboxMode.IFRAME)
                    .setWidth(width)
@@ -242,7 +243,7 @@ function getAllCriteria(lang, type) {
   var urlPointer = lang+'-'+type;
   for (var i = 0; i < allCriteria.length; i++) {
     var langPointer = type == 'wcag21' ? allCriteria[i][4] : allCriteria[i][3];
-    allCriteria[i].push(urlbase['understanding'][urlPointer]+langPointer);
+    allCriteria[i].push(gUrlbase['understanding'][urlPointer]+langPointer);
   }
   getAllCriteria.vals = allCriteria;
     
@@ -273,7 +274,7 @@ function getUsingCriteria(lang, type, level) {
   // eliminate unuse criteria
   for (var i = 0; i < usingCriteria.length; i++) {
     if (
-      (type == 'wcag20' && criteria21.indexOf(usingCriteria[i][1]) >= 0) ||
+      (type == 'wcag20' && gCriteria21.indexOf(usingCriteria[i][1]) >= 0) ||
       usingCriteria[i][0].length > level.length
     ) {
       if (additionalCriteria.indexOf(usingCriteria[i][1]) >= 0) continue;
@@ -307,10 +308,10 @@ function getUsingTechs(lang, type, level) {
   
   for (i = 0; i < usingCriteria.length; i++) {
     var criteria = usingCriteria[i][1];
-    if (relTechsAndCriteria[criteria] == null) continue;
-    for (j = 0; j < relTechsAndCriteria[criteria].length; j++) {
-      var url = urlbase['tech'][urlPointer];
-      var each = relTechsAndCriteria[criteria][j];
+    if (gRelTechsAndCriteria[criteria] == null) continue;
+    for (j = 0; j < gRelTechsAndCriteria[criteria].length; j++) {
+      var url = gUrlbase['tech'][urlPointer];
+      var each = gRelTechsAndCriteria[criteria][j];
       
       // Techniques for WCAG 2.1 has directory
       if (type == 'wcag21' && lang == 'en') {
@@ -318,12 +319,12 @@ function getUsingTechs(lang, type, level) {
         if (['M', 'L', 'V', 'C'].indefOf(each.charAt(1)) < 0) {
           dir = dir.charAt(0);
         }
-        url += techDirAbbr[dir]+'/'+each;
+        url += gTechDirAbbr[dir]+'/'+each;
       } else {
         url += each+'.html';
       }
 
-      usingTechs.push([criteria, relTechsAndCriteria[criteria][j], techNames[each], url]);
+      usingTechs.push([criteria, gRelTechsAndCriteria[criteria][j], techNames[each], url]);
     }
   }
   

@@ -402,9 +402,9 @@
      * Make same as template
      */
     function onClickDoTemplateApplyAll() {
-      progressIndicator('do-template-apply-all', 'progress-do-template-apply-all', true);
       var msg = Object.keys(lang.ui).length == 0 ? 'CAUTION: All result will be overwritten.' : lang.ui['caution-using-template'];
       if (confirm(msg) === false) return;
+      progressIndicator('do-template-apply-all', 'progress-do-template-apply-all', true);
 
       google.script.run
         .withSuccessHandler(

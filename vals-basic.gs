@@ -5,7 +5,7 @@
 /**
  * WCAG 2.1
  */
-var criteria21 = [
+var gCriteria21 = [
   '1.3.4', '1.3.5', '1.3.6', '1.4.10', '1.4.11', '1.4.12', '1.4.13',
   '2.1.4', '2.2.6', '2.3.3', '2.5.1', '2.5.2', '2.5.3', '2.5.4', '2.5.5', '2.5.6',
   '4.1.3'
@@ -14,7 +14,7 @@ var criteria21 = [
 /**
  * WCAG 2.0/2.1 Single-A criteria
  */
-var singleACriteria = [
+var gSingleACriteria = [
   '1.1.1', '1.2.1', '1.2.2', '1.2.3', '1.3.1', '1.3.2', '1.3.3', '1.4.1',
   '1.4.2', '2.1.1', '2.1.2', '2.1.4', '2.2.1', '2.2.2', '2.3.1', '2.4.1',
   '2.4.2', '2.4.3', '2.4.4', '2.5.1', '2.5.2', '2.5.3', '2.5.4', '3.1.1',
@@ -24,7 +24,7 @@ var singleACriteria = [
 /**
  * trusted tester's check value
  */
-var relTtAndCriteria = {
+var gRelTtAndCriteria = {
   '1.1.1': ['7.A', '7.B', '7.C', '7.D', '7.E'],
   '1.2.1': ['16.A', '16.B'],
   '1.2.2': ['17.A'],
@@ -68,14 +68,14 @@ var relTtAndCriteria = {
 /**
  * Non-Interference
  */
-var nonInterference = [
+var gNonInterference = [
   '1.4.2', '2.1.2', '2.2.2', '2.3.1'
 ];
 
 /**
  * URL
  */
-var urlbase = {
+var gUrlbase = {
   'understanding': {
     'en-wcag20': 'https://www.w3.org/TR/UNDERSTANDING-WCAG20/',
     'en-wcag21': 'https://www.w3.org/WAI/WCAG21/Understanding/', // and directory
@@ -90,7 +90,7 @@ var urlbase = {
   }
 };
 
-var techDirAbbr = {
+var gTechDirAbbr = {
   'G': 'general',
   'H': 'html',
   'C': 'css',
@@ -108,7 +108,7 @@ var techDirAbbr = {
 /*
  * Techs
  */
-var relTechsAndCriteria = {
+var gRelTechsAndCriteria = {
   '1.1.1': ['G68', 'G73', 'G74', 'G82', 'G92', 'G94', 'G95', 'G100', 'G143', 'G144', 'G196', 'H2', 'H24', 'H30', 'H35', 'H36', 'H37', 'H44', 'H45', 'H46', 'H53', 'H65', 'H67', 'H86', 'C9', 'C18', 'ARIA6', 'ARIA9', 'ARIA10', 'ARIA15', 'PDF1', 'PDF4', 'F3', 'F13', 'F20', 'F30', 'F38', 'F39', 'F65', 'F67', 'F71', 'F72'],
   '1.2.1': ['G158', 'G159', 'G166', 'H96', 'F30', 'F67'],
   '1.2.2': ['G87', 'G93', 'H95', 'F8', 'F74', 'F75'],
@@ -176,20 +176,18 @@ var relTechsAndCriteria = {
 /**
  * global variables
  */
-var fallbacksheetName  = '*Fallback*';
-var resultSheetName    = '*Result*';
-var issueSheetName     = '*Issue*';
-var urlListSheetName   = '*URLs*';
-var templateSheetName  = '*Template*';
-var iclSheetName       = '*ICL*'; // Japanese Only
-var iclTplSheetName    = '*ICL-TPL*'; // Japanese Only
-var resourceFolderName = 'resource';
-var exportFolderName   = 'export';
-var imagesFolderName   = 'images';
-var issueFileName      = 'issue-report';
-var trueColor          = '#f5fff3';
-var falseColor         = '#f7f3ff';
-var labelColor         = '#eeeeee';
-var doubleAColor       = '#eeeefe';
-var labelColorDark     = '#87823e';
-var labelColorDarkText = '#ffffff';
+var gFallbacksheetName  = '*Fallback*';
+var gResultSheetName    = '*Result*';
+var gIssueSheetName     = '*Issue*';
+var gUrlListSheetName   = '*URLs*';
+var gTemplateSheetName  = '*Template*';
+var gIclSheetName       = '*ICL*'; // Japanese Only
+var gIclTplSheetName    = '*ICL-TPL*'; // Japanese Only
+var gResourceFolderName = 'resource';
+var gExportFolderName   = 'export';
+var gImagesFolderName   = 'images';
+var gTrueColor          = '#f5fff3';
+var gFalseColor         = '#f7f3ff';
+var gLabelColor         = '#eeeeee';
+var gLabelColorDark     = '#87823e';
+var gLabelColorDarkText = '#ffffff';

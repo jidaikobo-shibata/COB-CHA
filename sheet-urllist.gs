@@ -8,7 +8,7 @@
  */
 function isUrlListSheetExists() {
   var ss = getSpreadSheet();
-  var urlListSheet = ss.getSheetByName(urlListSheetName);
+  var urlListSheet = ss.getSheetByName(gUrlListSheetName);
   return (urlListSheet);
 }
 
@@ -36,14 +36,14 @@ function generateUrlListSheet(lang, testType, level, mark) {
  */
 function prepareUrlListSheet(lang, testType, level, mark) {
   var ss = getSpreadSheet();
-  ss.insertSheet(urlListSheetName, 0);
-  var urlListSheet = ss.getSheetByName(urlListSheetName);
+  ss.insertSheet(gUrlListSheetName, 0);
+  var urlListSheet = ss.getSheetByName(gUrlListSheetName);
   urlListSheet.activate();
   setBasicValue(urlListSheet, lang, testType, level, mark);
-  urlListSheet.getRange(1, 5).setValue(getUiLang('additional-criterion', "Additional Criterion")).setBackground(labelColor);
+  urlListSheet.getRange(1, 5).setValue(getUiLang('additional-criterion', "Additional Criterion")).setBackground(gLabelColor);
   urlListSheet.getRange(2, 1).setValue('No.');
   urlListSheet.getRange(2, 2).setValue('URL');
-  urlListSheet.getRange('2:2').setBackground(labelColor);
+  urlListSheet.getRange('2:2').setBackground(gLabelColor);
   urlListSheet.setColumnWidth(1, 35);
   urlListSheet.setColumnWidth(2, 200);
   urlListSheet.getRange("A1:A").setHorizontalAlignment('center');
@@ -62,7 +62,7 @@ function prepareUrlListSheet(lang, testType, level, mark) {
  */
 function getAdditionalCriterion() {
   var ss = getSpreadSheet();
-  var urlListSheet = ss.getSheetByName(urlListSheetName);
+  var urlListSheet = ss.getSheetByName(gUrlListSheetName);
   if ( ! urlListSheet) return '';
   return urlListSheet.getRange(1, 6).getValue();
 }
@@ -77,7 +77,7 @@ function getAdditionalCriterion() {
 function openDialogAdditionalCriterion(lang, testType, level) {
   if (isUrlListSheetExists()) {
     var ss = getSpreadSheet();
-    var urlListSheet = ss.getSheetByName(urlListSheetName);
+    var urlListSheet = ss.getSheetByName(gUrlListSheetName);
     setBasicValue(urlListSheet, lang, testType, level);
   } else {
     var UrlListSheet = prepareUrlListSheet(lang, testType, level);
@@ -97,7 +97,7 @@ function dialogValueAdditionalCriterionValue() {
 
   ret['checked'] = getAdditionalCriterion();
   ret['criteria'] = getAllCriteria(ret['lang'], ret['type']);
-  ret['criteria21'] = criteria21;
+  ret['criteria21'] = gCriteria21;
   
   return ret;
 }
@@ -109,7 +109,7 @@ function dialogValueAdditionalCriterionValue() {
  */
 function applyAdditionalCriterion(checked) {
   var ss = getSpreadSheet();
-  var urlListSheet = ss.getSheetByName(urlListSheetName);
+  var urlListSheet = ss.getSheetByName(gUrlListSheetName);
   urlListSheet.getRange(1, 6).setValue(checked);
   return getUiLang('update-additional-criterion', 'Update additional criterion');
 }

@@ -10,14 +10,14 @@ function generateResultSheet() {
   var ss = getSpreadSheet();
   var all = ss.getSheets();
 
-  var resultSheet = ss.getSheetByName(resultSheetName);
+  var resultSheet = ss.getSheetByName(gResultSheetName);
   if (resultSheet && all.length != 1) {
     ss.deleteSheet(resultSheet);
   }
   
-  var resultSheet = ss.getSheetByName(resultSheetName);
+  var resultSheet = ss.getSheetByName(gResultSheetName);
   if ( ! resultSheet) {
-    ss.insertSheet(resultSheetName, 0);
+    ss.insertSheet(gResultSheetName, 0);
   }
   deleteFallbacksheet();
 }
@@ -45,7 +45,7 @@ function evaluate(lang, testType, level) {
   
   // activate and reset sheet
   generateResultSheet();
-  var activeSheet = ss.getSheetByName(resultSheetName);
+  var activeSheet = ss.getSheetByName(gResultSheetName);
   activeSheet.activate();
   activeSheet.clear();
   activeSheet.setFrozenRows(3);
@@ -59,7 +59,7 @@ function evaluate(lang, testType, level) {
   // headers
   setBasicValue(activeSheet, lang, testType, level);
   var today = new Date();
-  activeSheet.getRange(1, 5).setValue(getUiLang('date', 'Date')).setBackground(labelColor);
+  activeSheet.getRange(1, 5).setValue(getUiLang('date', 'Date')).setBackground(gLabelColor);
   activeSheet.getRange(1, 6).setValue(today);
 
   var col = 3;
@@ -92,10 +92,9 @@ function evaluate(lang, testType, level) {
   }
   var col = headers[0].length;
   activeSheet.getRange(2, 3, 2, col).setValues(headers);
-  activeSheet.getRange(2, col, 2, labelcel).setBackground(labelColor);
+  activeSheet.getRange(2, col, 2, labelcel).setBackground(gLabelColor);
   activeSheet.setColumnWidths(3, col, 30);
   var maxCol = col + labelcel - 1;
-//doubleAColor
 
   // mark
   var mark = getProp('mark');
@@ -107,12 +106,12 @@ function evaluate(lang, testType, level) {
   var conditionedRange = activeSheet.getRange(4, 3, allSheets.length, col);
   var ruleForF = SpreadsheetApp.newConditionalFormatRule()
       .whenTextEqualTo(mF)
-      .setBackground(falseColor)
+      .setBackground(gFalseColor)
       .setRanges([conditionedRange])
       .build();
   var ruleForT = SpreadsheetApp.newConditionalFormatRule()
       .whenTextEqualTo(mT)
-      .setBackground(trueColor)
+      .setBackground(gTrueColor)
       .setRanges([conditionedRange])
       .build();
   var rules = activeSheet.getConditionalFormatRules();
@@ -147,18 +146,18 @@ function evaluate(lang, testType, level) {
     // Non-Interference
     var aRows = '2:'+num;
     var niExpressions = [];
-    for (var j = 0; j < nonInterference.length; j++) {
-      niExpressions[j] = 'HLOOKUP("'+nonInterference[j]+'", '+aRows+', ROW() - 1, false) = "'+mF+'"';
+    for (var j = 0; j < gNonInterference.length; j++) {
+      niExpressions[j] = 'HLOOKUP("'+gNonInterference[j]+'", '+aRows+', ROW() - 1, false) = "'+mF+'"';
     }
     var niExpression = 'OR('+niExpressions.join(', ')+')';
     each.push('=IF('+niExpression+', "NI", "")'); // do not use mT as "NI is OK"
 
     // single-A
     var singleAExpressions = [];
-    for (var j = 0; j < singleACriteria.length; j++) {
-      if ((testType == 'wcag20' || testType == 'tt20') && criteria21.indexOf(singleACriteria[j]) >= 0) continue;
-      singleAExpressions[j] = 'OR(HLOOKUP("'+singleACriteria[j]+'", '+aRows+', ROW() - 1, false) = "'+mT+'"';
-      singleAExpressions[j] = singleAExpressions[j]+', HLOOKUP("'+singleACriteria[j]+'", '+aRows+', ROW() - 1, false) = "'+mD+'")';
+    for (var j = 0; j < gSingleACriteria.length; j++) {
+      if ((testType == 'wcag20' || testType == 'tt20') && gCriteria21.indexOf(gSingleACriteria[j]) >= 0) continue;
+      singleAExpressions[j] = 'OR(HLOOKUP("'+gSingleACriteria[j]+'", '+aRows+', ROW() - 1, false) = "'+mT+'"';
+      singleAExpressions[j] = singleAExpressions[j]+', HLOOKUP("'+gSingleACriteria[j]+'", '+aRows+', ROW() - 1, false) = "'+mD+'")';
     }
     var singleAExpression = 'IF(AND('+singleAExpressions.join(', ')+'), "A", "A-")';
     each.push('=IF('+niExpression+', "NI", '+singleAExpression+')');
@@ -195,12 +194,12 @@ function evaluate(lang, testType, level) {
   var conditionedRange = activeSheet.getRange(3, 2, allSheets.length, 1);
   var ruleForResult = SpreadsheetApp.newConditionalFormatRule()
       .whenTextEqualTo(targetText)
-      .setBackground(trueColor)
+      .setBackground(gTrueColor)
       .setRanges([conditionedRange])
       .build();
   var ruleForNI = SpreadsheetApp.newConditionalFormatRule()
       .whenTextEqualTo('NI')
-      .setBackground(falseColor)
+      .setBackground(gFalseColor)
       .setRanges([conditionedRange])
       .build();
   var rules = activeSheet.getConditionalFormatRules();
@@ -221,18 +220,18 @@ function evaluate(lang, testType, level) {
 function evaluateIcl(lang, testType, level) {
   // template not exists
   var ss = getSpreadSheet();
-  var iclTplSheet = ss.getSheetByName(iclTplSheetName);
+  var iclTplSheet = ss.getSheetByName(gIclTplSheetName);
   if (iclTplSheet == null) {
      throw new Error(getUiLang('icl-tpl-not-exists', "ICL sheet is not exists."));
   }
 
   // generate Sheet
-  var iclSheet = ss.getSheetByName(iclSheetName);
+  var iclSheet = ss.getSheetByName(gIclSheetName);
   if (iclSheet) {
     ss.deleteSheet(iclSheet);
   }
   iclTplSheet.activate();
-  var iclSheet = ss.duplicateActiveSheet().setName(iclSheetName);
+  var iclSheet = ss.duplicateActiveSheet().setName(gIclSheetName);
     
   iclSheet.setColumnWidth(1, 60);
   iclSheet.deleteColumn(2);

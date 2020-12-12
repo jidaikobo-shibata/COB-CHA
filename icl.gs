@@ -9,11 +9,11 @@
  */
 function generateIclTplSheet(level) {
   var ss = getSpreadSheet();
-  var iclTplSheet = ss.getSheetByName(iclTplSheetName);
+  var iclTplSheet = ss.getSheetByName(gIclTplSheetName);
   if (iclTplSheet) {
      throw new Error(getUiLang('icl-exists', "ICL sheet is already exists. delete it manually."));
   }
-  iclTplSheet = ss.insertSheet(iclTplSheetName, 0);
+  iclTplSheet = ss.insertSheet(gIclTplSheetName, 0);
   iclTplSheet.activate();
   generateIcl(iclTplSheet, level);
   deleteFallbacksheet();
@@ -37,7 +37,7 @@ function generateIcl(iclTplSheet, level) {
     var clevel = usingCriteria[j][0];
     var cCriterion = usingCriteria[j][1];
     iclTplSheet.getRange(row, 1).setValue(cCriterion+': '+usingCriteria[j][2]);
-    iclTplSheet.getRange(row+":"+row).setBackground(labelColorDark).setFontColor(labelColorDarkText).setFontWeight('bold');
+    iclTplSheet.getRange(row+":"+row).setBackground(gLabelColorDark).setFontColor(gLabelColorDarkText).setFontWeight('bold');
     row++;
     
     //    for (let testId of Object.keys(iclSituation[cCriterion])) { // Chrome V8 
@@ -46,7 +46,7 @@ function generateIcl(iclTplSheet, level) {
       var testId = eachIclSituation[key]
       if (iclSituation[cCriterion][testId] != '') {
         iclTplSheet.getRange(row, 1).setValue(iclSituation[cCriterion][testId]);
-        iclTplSheet.getRange(row+":"+row).setBackground(labelColor);
+        iclTplSheet.getRange(row+":"+row).setBackground(gLabelColor);
         row++;
       }
       var eachNum = 1;
@@ -70,10 +70,10 @@ function generateIcl(iclTplSheet, level) {
  */
 function applyIclSheet() {
   var ss = getSpreadSheet();
-  var iclTpl = ss.getSheetByName(iclTplSheetName);
+  var iclTpl = ss.getSheetByName(gIclTplSheetName);
   if (iclTpl == null) throw new Error(getUiLang('no-template-found', "No template exists"));
   var allSheets = getAllSheets();
-  var tpl = ss.getSheetByName(templateSheetName);
+  var tpl = ss.getSheetByName(gTemplateSheetName);
   var inspectSheet = tpl;
   inspectSheet = inspectSheet == null ? allSheets[0] : inspectSheet;
   

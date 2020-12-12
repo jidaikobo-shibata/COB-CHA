@@ -20,16 +20,16 @@ function getContextualTechs(criterion, checked) {
   var rets = [];
   var type = getProp('type');
   if (type.indexOf('tt') >= 0) {
-    for (var key in relTtAndCriteria) {
-      if (relTtAndCriteria[key].indexOf(criterion) < 0) continue;
-      var techs = relTechsAndCriteria[key] ? relTechsAndCriteria[key] : [] ;
+    for (var key in gRelTtAndCriteria) {
+      if (gRelTtAndCriteria[key].indexOf(criterion) < 0) continue;
+      var techs = gRelTechsAndCriteria[key] ? gRelTechsAndCriteria[key] : [] ;
       for (var i = 0; i < techs.length; i++) {
         if (techLangsSrc[techs[i]] == null) continue;
         rets.push([techs[i], techLangsSrc[techs[i]]]);
       }
     }
   } else {
-    var techs = relTechsAndCriteria[criterion] ? relTechsAndCriteria[criterion] : [] ;
+    var techs = gRelTechsAndCriteria[criterion] ? gRelTechsAndCriteria[criterion] : [] ;
     for (var i = 0; i < techs.length; i++) {
       if (techLangsSrc[techs[i]] == null) continue;
       rets.push([techs[i], techLangsSrc[techs[i]]]);
@@ -41,7 +41,7 @@ function getContextualTechs(criterion, checked) {
   var docurl = lang+'-'+type;
   var docurlEn = 'en'+'-'+type;
   
-  return {'criterion': criterion, 'techs': rets, 'checked': checked, 'lang': lang, 'type': type, 'techDirAbbr': techDirAbbr, 'urlbase': urlbase, 'docurl': docurl, 'docurlEn': docurlEn};
+  return {'criterion': criterion, 'techs': rets, 'checked': checked, 'lang': lang, 'type': type, 'techDirAbbr': gTechDirAbbr, 'urlbase': gUrlbase, 'docurl': docurl, 'docurlEn': docurlEn};
 }
 
 /**
@@ -64,7 +64,7 @@ function setContextualTechs(techs) {
 function applyAllToT(testType, level) {
   var ttCriteria = getLangSet('ttCriteria');
   var activeSheet = getActiveSheet();
-  if (activeSheet.getName() == resultSheetName) return getUiLang('current-sheet-is-not-for-webpage', 'Current sheet is not for webpage');
+  if (activeSheet.getName() == gResultSheetName) return getUiLang('current-sheet-is-not-for-webpage', 'Current sheet is not for webpage');
 
   var additionalCriteria = getAdditionalCriterion() ? getAdditionalCriterion().split(/,/) : [];
   var rows = 61; // WCAG 2.0 AAA
@@ -91,7 +91,7 @@ function applyAllToT(testType, level) {
  */
 function templateApplyAll() {
   var ss = getSpreadSheet();
-  var tpl = ss.getSheetByName(templateSheetName);
+  var tpl = ss.getSheetByName(gTemplateSheetName);
   if (tpl == null) return getUiLang('no-template-found', 'No template exists.');
 
   var n = 0;
@@ -111,11 +111,11 @@ function templateApplyAll() {
  */
 function templateApplyRow() {
   var ss = getSpreadSheet();
-  var tpl = ss.getSheetByName(templateSheetName);
+  var tpl = ss.getSheetByName(gTemplateSheetName);
   if (tpl == null) throw new Error(getUiLang('no-template-found', 'No template exists.'));
 
   var activeSheet = getActiveSheet();
-  if (templateSheetName != activeSheet.getName()) throw new Error(getUiLang('is-not-template', 'Current Sheet is not template.'));
+  if (gTemplateSheetName != activeSheet.getName()) throw new Error(getUiLang('is-not-template', 'Current Sheet is not template.'));
 
   var activeRow = activeSheet.getActiveCell().getRow();
   if (activeRow < 5) throw new Error(getUiLang('is-not-appropriate-row', 'Current Row is not Result.'));

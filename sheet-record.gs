@@ -53,7 +53,7 @@ function getAllSheets() {
  * @return Void
  */
 function setBasicValue(sheet, lang, testType, level, mark) {
-  sheet.getRange(1, 1).setValue('Type').setBackground(labelColor);
+  sheet.getRange(1, 1).setValue('Type').setBackground(gLabelColor);
   sheet.getRange(1, 2).setValue(lang).setHorizontalAlignment('center');
   sheet.getRange(1, 3).setValue(testType).setHorizontalAlignment('center');
   sheet.getRange(1, 4).setValue(level).setHorizontalAlignment('center');
@@ -86,18 +86,18 @@ function getPulldownMenu() {
 function generateSheets(urlstr, lang, testType, level, targetId) {
   var ss = getSpreadSheet();
 
-  if (urlstr === templateSheetName) {
-    if (ss.getSheetByName(templateSheetName)) return {'msg': getUiLang('template-already-exists', "*Template* is already exists."), 'targetId': targetId};
+  if (urlstr === gTemplateSheetName) {
+    if (ss.getSheetByName(gTemplateSheetName)) return {'msg': getUiLang('template-already-exists', "*Template* is already exists."), 'targetId': targetId};
     var urls = [[urlstr, urlstr]];
   } else {
     if ( ! isUrlListSheetExists()) return {'msg': getUiLang('url-list-sheet-is-not-exists', "URL List sheet is not exist."), 'targetId': targetId};
-    var urlListSheet = ss.getSheetByName(urlListSheetName);
+    var urlListSheet = ss.getSheetByName(gUrlListSheetName);
     var lastRow = urlListSheet.getLastRow();
     var urls = urlListSheet.getRange(3, 1, lastRow - 2, 3).getValues();
   }
   if (urls.length == 1 && urls[0][0] == '') return {'msg': getUiLang('no-target-page-exists', "No target Page Exists"), 'targetId': targetId};
     
-  if (urlstr !== templateSheetName) {
+  if (urlstr !== gTemplateSheetName) {
     var sheetIds = urlListSheet.getRange(3, 1, lastRow - 2, 1).getFormulas();
     var sheetTitles = urlListSheet.getRange(3, 3, lastRow - 2, 1).getValues();
   }
@@ -124,29 +124,29 @@ function generateSheets(urlstr, lang, testType, level, targetId) {
     
     setBasicValue(originalSheet, lang, testType, level);
     var today = new Date();
-    originalSheet.getRange(1, 5).setValue(getUiLang('date', 'Date')).setBackground(labelColor);
-    originalSheet.getRange(2, 5).setValue(getUiLang('screenshot', 'Screenshot')).setBackground(labelColor);
+    originalSheet.getRange(1, 5).setValue(getUiLang('date', 'Date')).setBackground(gLabelColor);
+    originalSheet.getRange(2, 5).setValue(getUiLang('screenshot', 'Screenshot')).setBackground(gLabelColor);
     originalSheet.getRange(1, 6).setValue(today);
-    originalSheet.getRange(1, 7).setValue(getUiLang('memo', 'Memo')).setBackground(labelColor);
-    originalSheet.getRange(2, 1).setValue('URL').setBackground(labelColor);
+    originalSheet.getRange(1, 7).setValue(getUiLang('memo', 'Memo')).setBackground(gLabelColor);
+    originalSheet.getRange(2, 1).setValue('URL').setBackground(gLabelColor);
     originalSheet.getRange(2, 2).setValue(firstUrl);
-    originalSheet.getRange(3, 1).setValue('title').setBackground(labelColor);
-    originalSheet.getRange(3, 5).setValue(getUiLang('tester', 'Tester')).setBackground(labelColor);
+    originalSheet.getRange(3, 1).setValue('title').setBackground(gLabelColor);
+    originalSheet.getRange(3, 5).setValue(getUiLang('tester', 'Tester')).setBackground(gLabelColor);
     originalSheet.getRange(3, 2).setValue(res['title']);
-    if (isEvaluateTarget) saveHtml(resourceFolderName, firstSheetName, res['html']);
+    if (isEvaluateTarget) saveHtml(gResourceFolderName, firstSheetName, res['html']);
     originalSheet.setFrozenRows(4);
     
     // header
     if (testType == 'tt20') {
-      originalSheet.getRange(4, 1).setValue(getUiLang('test-id', 'Test ID')).setBackground(labelColor);
+      originalSheet.getRange(4, 1).setValue(getUiLang('test-id', 'Test ID')).setBackground(gLabelColor);
     } else {
-      originalSheet.getRange(4, 1).setValue(getUiLang('criterion', 'Criterion')).setBackground(labelColor);
+      originalSheet.getRange(4, 1).setValue(getUiLang('criterion', 'Criterion')).setBackground(gLabelColor);
     }
     originalSheet.getRange(4, 2).setValue(getUiLang('check', 'Check'));
     originalSheet.getRange(4, 3).setValue(getUiLang('level', 'Level'));
     originalSheet.getRange(4, 4).setValue(getUiLang('tech', 'Techs'));
     originalSheet.getRange(4, 5).setValue(getUiLang('memo', 'Memo'));
-    originalSheet.getRange("4:4").setBackground(labelColorDark).setFontColor(labelColorDarkText).setFontWeight('bold');
+    originalSheet.getRange("4:4").setBackground(gLabelColorDark).setFontColor(gLabelColorDarkText).setFontWeight('bold');
     
     // appearance
     originalSheet.setColumnWidth(1, 60);
@@ -167,9 +167,9 @@ function generateSheets(urlstr, lang, testType, level, targetId) {
       langPointer = testType == 'wcag21' && lang == 'ja' ? usingCriteria[j][3] : langPointer;
       var urlPointer = docurl;
       urlPointer = testType == 'wcag21' && lang == 'ja' ? 'en-wcag21' : urlPointer;
-      var url = urlbase['understanding'][urlPointer]+langPointer;
-      if (lang == 'ja' && testType == 'wcag21' && criteria21.indexOf(usingCriteria[j][1]) >= 0) {
-        url = urlbase['understanding']['en-wcag21']+usingCriteria[j][4];
+      var url = gUrlbase['understanding'][urlPointer]+langPointer;
+      if (lang == 'ja' && testType == 'wcag21' && gCriteria21.indexOf(usingCriteria[j][1]) >= 0) {
+        url = gUrlbase['understanding']['en-wcag21']+usingCriteria[j][4];
       }
       
       if (testType == 'tt20') {
@@ -186,12 +186,12 @@ function generateSheets(urlstr, lang, testType, level, targetId) {
     var conditionedRange = originalSheet.getRange("B:B");
     var ruleForF = SpreadsheetApp.newConditionalFormatRule()
       .whenTextEqualTo(mF)
-      .setBackground(falseColor)
+      .setBackground(gFalseColor)
       .setRanges([conditionedRange])
       .build();
     var ruleForT = SpreadsheetApp.newConditionalFormatRule()
       .whenTextEqualTo(mT)
-      .setBackground(trueColor)
+      .setBackground(gTrueColor)
       .setRanges([conditionedRange])
       .build();
     var rules = originalSheet.getConditionalFormatRules();
@@ -200,14 +200,14 @@ function generateSheets(urlstr, lang, testType, level, targetId) {
     originalSheet.setConditionalFormatRules(rules);
     added++;
 
-    if (urlstr !== templateSheetName) {
+    if (urlstr !== gTemplateSheetName) {
       sheetIds[0]    = ['=HYPERLINK("#gid='+originalSheet.getSheetId()+'","'+firstSheetName+'")'];
       sheetTitles[0] = res['title'] == '' ? [sheetTitles[0][0]] : [res['title']];
     }
   }
   
   // copy sheets
-  if (urlstr !== templateSheetName && urls.length > 1) {
+  if (urlstr !== gTemplateSheetName && urls.length > 1) {
     for(var i = 1; i < urls.length; i++) {
       if (urls[i][1].trim() == '') continue;
       if (addSheet(urls[i][0], originalSheet) == false) {
@@ -218,7 +218,7 @@ function generateSheets(urlstr, lang, testType, level, targetId) {
       var activeSheet = ss.getActiveSheet();
       activeSheet.getRange(2, 2).setValue(urls[i][1]);
       activeSheet.getRange(3, 2).setValue(res['title']);
-      saveHtml(resourceFolderName, urls[i][0], res['html']);
+      saveHtml(gResourceFolderName, urls[i][0], res['html']);
       added++;
       
       sheetIds[i]    = ['=HYPERLINK("#gid='+activeSheet.getSheetId()+'","'+urls[i][0]+'")'];
@@ -227,7 +227,7 @@ function generateSheets(urlstr, lang, testType, level, targetId) {
   }
 
   // update url list sheet
-  if (urlstr !== templateSheetName) {
+  if (urlstr !== gTemplateSheetName) {
     urlListSheet.getRange(3, 1, lastRow - 2, 1).setValues(sheetIds);
     urlListSheet.getRange(3, 3, lastRow - 2, 1).setValues(sheetTitles);
   }
@@ -314,11 +314,11 @@ function resetSheets(isAll) {
   var all = ss.getSheets();
   
   deleteFallbacksheet();
-  ss.insertSheet(fallbacksheetName, 0);
+  ss.insertSheet(gFallbacksheetName, 0);
   
   var count = 0;
   for (var i = 0; i < all.length; i++) {
-    if (all[i].getName() == fallbacksheetName) continue;
+    if (all[i].getName() == gFallbacksheetName) continue;
     if (isAll === false && all[i].getName().charAt(0) == '*') continue;
     if (all[i] == null) continue;
     ss.deleteSheet(all[i]);
@@ -338,7 +338,7 @@ function resetSheets(isAll) {
  */
 function deleteFallbacksheet() {
   var ss = getSpreadSheet();
-  var fallbacksheet = ss.getSheetByName(fallbacksheetName);
+  var fallbacksheet = ss.getSheetByName(gFallbacksheetName);
   if (fallbacksheet) {
     ss.deleteSheet(fallbacksheet);
   }

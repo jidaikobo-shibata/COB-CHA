@@ -9,12 +9,12 @@
 function isEditIssue() {
   // if not exist issue sheet then this time is not for edit
   var ss = getSpreadSheet();
-  var issueSheet = ss.getSheetByName(issueSheetName);
+  var issueSheet = ss.getSheetByName(gIssueSheetName);
   if (issueSheet == null) return false;
 
   // if current sheet is not issue sheet then this time is not for edit
   var activeSheet = getActiveSheet();
-  if (activeSheet.getName() != issueSheetName) return false;
+  if (activeSheet.getName() != gIssueSheetName) return false;
 
   // if current row has id then this time is for edit
   var activeRow = issueSheet.getActiveCell().getRow();
@@ -73,7 +73,7 @@ function dialogValueIssue(isEdit) {
     
     // issue sheet must be existed and activated
     var ss = getSpreadSheet();
-    var issueSheet = ss.getSheetByName(issueSheetName);
+    var issueSheet = ss.getSheetByName(gIssueSheetName);
     var activeRow = issueSheet.getActiveCell().getRow();
     for (var key in ret['vals']) {
       var i = cellPlace[key];
@@ -121,11 +121,11 @@ function openDialogIssue(lang, testType, level) {
   
   // generate Issue sheet
   var ss = getSpreadSheet();
-  var issueSheet = ss.getSheetByName(issueSheetName);
+  var issueSheet = ss.getSheetByName(gIssueSheetName);
   if (issueSheet == null) {
-    addSheet(issueSheetName);
+    addSheet(gIssueSheetName);
     var issueSheet = ss.getActiveSheet();
-    issueSheet.getRange("2:2").setBackground(labelColor).setHorizontalAlignment('center');
+    issueSheet.getRange("2:2").setBackground(gLabelColor).setHorizontalAlignment('center');
     issueSheet.setFrozenRows(2);
     
     setBasicValue(issueSheet, lang, testType, level);
@@ -158,12 +158,12 @@ function openDialogIssue(lang, testType, level) {
  */
 function applyIssue(vals) {
   var ss = getSpreadSheet();
-  var issueSheet = ss.getSheetByName(issueSheetName);
+  var issueSheet = ss.getSheetByName(gIssueSheetName);
   var testType = getProp('type');
   if (testType != 'tt20') {
     vals.splice(6, 1);
   }
-  
+  Logger.log(vals);
   // issue id - edit
   if (vals[0] > 0) {
     var targetRow = issueSheet.getActiveCell().getRow();
@@ -193,12 +193,12 @@ function applyIssue(vals) {
  */
 function setIssueList() {
   var ss = getSpreadSheet();
-  var issueSheet = ss.getSheetByName(issueSheetName);
+  var issueSheet = ss.getSheetByName(gIssueSheetName);
   var activeSheet = ss.getActiveSheet();
   var activeSheetName = activeSheet.getName();
 
   // target URL
-  if (activeSheetName == resultSheetName) {
+  if (activeSheetName == gResultSheetName) {
     var targetRow = activeSheet.getActiveCell().getRow();
     var url = activeSheet.getRange(targetRow, 1).getValue();
   } else {
@@ -229,7 +229,7 @@ function setIssueList() {
  */
 function showEachIssue(row) {
   var ss = getSpreadSheet();
-  var issueSheet = ss.getSheetByName(issueSheetName);
+  var issueSheet = ss.getSheetByName(gIssueSheetName);
   issueSheet.getRange(row, 1).activate();
   showDialog('ui-issue', 500, 400, getUiLang('edit-issue', 'Edit issue'));
 }
@@ -240,7 +240,7 @@ function showEachIssue(row) {
  */
 function exportIssue() {
   var ss = getSpreadSheet();
-  var issueSheet = ss.getSheetByName(issueSheetName);
+  var issueSheet = ss.getSheetByName(gIssueSheetName);
   if (issueSheet == null) throw new Error(getUiLang('no-target-page-exists', "No Target Page Exists."));
   
   var dataObj = issueSheet.getDataRange().getValues();
@@ -350,7 +350,7 @@ function exportIssue() {
     }
   }
 
-  saveHtml(exportFolderName, filename, wrapHtmlHeaderAndFooter('Issue Report', str));
+  saveHtml(gExportFolderName, filename, wrapHtmlHeaderAndFooter('Issue Report', str));
   
   return getUiLang('issue-exported', "Issue Exported");
 }
@@ -391,7 +391,7 @@ function generateIssueReportHtml(str, vals, lang) {
       var tmp = [];
       var n = 0;
       var targetTestIds = vals[i]['testId'].split(',');
-      for (var j = 0; j < relTtAndCriteria.length; j++) {
+      for (var j = 0; j < gRelTtAndCriteria.length; j++) {
         for (var k = 0; k < targetTestIds.length; k++) {
           var cTestId = targetTestIds[k].trim();
           if (targetTestIds[j][1] != cTestId) continue;
@@ -455,5 +455,5 @@ function generateIssueReportHtml(str, vals, lang) {
  * @return Void
  */
 function uploadIssueImage(formObj) {
-  return fileUpload(imagesFolderName, formObj, "imageFile");
+  return fileUpload(gImagesFolderName, formObj, "imageFile");
 }

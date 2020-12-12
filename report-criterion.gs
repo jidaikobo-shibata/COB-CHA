@@ -11,7 +11,7 @@
  */
 function exportResult(lang, testType, level) {
   var ss = getSpreadSheet();
-  var resultSheet = ss.getSheetByName(resultSheetName);
+  var resultSheet = ss.getSheetByName(gResultSheetName);
   if (resultSheet == null) throw new Error(getUiLang('no-target-page-exists', "No Target Page Exists."));
   var dataObj = resultSheet.getDataRange().getValues();
     
@@ -62,7 +62,7 @@ function exportResult(lang, testType, level) {
   }
   str += '<table>';
  
-  saveHtml(exportFolderName, 'index.html', wrapHtmlHeaderAndFooter('Report Index', str), true);
+  saveHtml(gExportFolderName, 'index.html', wrapHtmlHeaderAndFooter('Report Index', str), true);
   
   // each page
   var dataObj = resultSheet.getDataRange().getValues();
@@ -90,7 +90,7 @@ function exportResult(lang, testType, level) {
     }
     str += '<table>';
  
-    saveHtml(exportFolderName, filename, wrapHtmlHeaderAndFooter('Report', str), true);
+    saveHtml(gExportFolderName, filename, wrapHtmlHeaderAndFooter('Report', str), true);
     n++;
  }
   

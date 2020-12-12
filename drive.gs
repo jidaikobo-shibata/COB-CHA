@@ -17,7 +17,7 @@ function getCurrentFolder() {
 
 /**
  * Get target folder object
- * @param String target [resourceFolderName, exportFolderName, imagesFolderName]
+ * @param String target [gResourceFolderName, gExportFolderName, gImagesFolderName]
  * @return Object
  */
 function getTargetFolder(target) {
@@ -27,7 +27,7 @@ function getTargetFolder(target) {
   getTargetFolder.folder = {};
   
   // is already exists?
-  var folders = [resourceFolderName, exportFolderName, imagesFolderName]
+  var folders = [gResourceFolderName, gExportFolderName, gImagesFolderName]
   while (children.hasNext()){
     var folder = children.next();
     for (var i = 0; i < folders.length; i++) {
@@ -106,7 +106,7 @@ function uploadScreenshot(formObj) {
   var activeSheet = getActiveSheet();
   if (activeSheet.getName().charAt(0) == '*') return getUiLang('current-sheet-is-not-for-webpage', "Current Sheet is not for webpage.");
   
-  var file = fileUpload(imagesFolderName, formObj, "imageFile");
+  var file = fileUpload(gImagesFolderName, formObj, "imageFile");
   activeSheet.getRange(2, 6).setValue(file[0]);
   activeSheet.getRange(2, 7).setValue('=IMAGE("https://drive.google.com/uc?export=download&id='+file[1]+'",1)');
   
