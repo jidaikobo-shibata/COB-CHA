@@ -189,5 +189,6 @@ var gImagesFolderName   = 'images';
 var gTrueColor          = '#f5fff3';
 var gFalseColor         = '#f7f3ff';
 var gLabelColor         = '#eeeeee';
+var gLabelColorText     = '#000000';
 var gLabelColorDark     = '#87823e';
 var gLabelColorDarkText = '#ffffff';

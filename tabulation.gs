@@ -237,25 +237,22 @@ function evaluateIcl(lang, testType, level) {
   iclSheet.deleteColumn(2);
   iclSheet.setColumnWidth(2, 50);
   iclSheet.setColumnWidth(3, 50);
+  iclSheet.insertRows(1, 1);
+  iclSheet.getRange('1:1').setBackground(gLabelColor).setFontColor(gLabelColorText).setFontWeight('bold');
   iclSheet.setFrozenRows(1);
   iclSheet.setFrozenColumns(3);
-  
+
   // detect ICL Rows
   var allSheets = getAllSheets();
   if (allSheets.length == 0) {
      throw new Error(getUiLang('no-target-page-exists', "No Target Page Exists."));
   }
   allSheets[0].activate();
-  var found = false;
   var iclFirstRow = 1;
-  while ( ! found) {
-    if (allSheets[0].getRange(iclFirstRow, 1).getValue() != '') {
-      iclFirstRow++;
-      continue;
-    }
-    found = true;
+  while (allSheets[0].getRange(iclFirstRow, 1).getValue() != '') {
+    iclFirstRow++;
   }
-  iclFirstRow = iclFirstRow + 3;
+  iclFirstRow++;
   var iclLastRow = allSheets[0].getLastRow();
   var rows = iclLastRow - iclFirstRow;
   iclSheet.activate();
@@ -270,7 +267,7 @@ function evaluateIcl(lang, testType, level) {
     iclSheet.getRange(1, col).setValue('=HYPERLINK("#gid='+allSheets[i].getSheetId()+'","'+numId+'")');
     iclSheet.getRange(1, col).setComment(targetUrl);
     iclSheet.setColumnWidth(col, 40)
-    allSheets[i].getRange(iclFirstRow, 2, rows, 1).copyTo(iclSheet.getRange(4, col), {contentsOnly:true});
+    allSheets[i].getRange(iclFirstRow, 2, rows + 1, 1).copyTo(iclSheet.getRange(2, col), {contentsOnly:true});
     iclSheet.getRange(1, col, iclSheet.getLastRow(), 1).setHorizontalAlignment('center');
     numId++;
     col++;
