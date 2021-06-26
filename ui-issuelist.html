@@ -28,8 +28,8 @@
                 $('h1').after('<p>no issue found.</p>');
               } else {
                 for (var i = 0; i < vals['issues'].length; i++) {
-                  var row = parseInt(vals['issues'][i][0]) + 2;
-                  $('#issues').append($('<li></li>').html('<a href="#" data-issuerow="'+row+'">'+vals['issues'][i][1]+'</a>'));
+                  var row = parseInt(vals['issues'][i][0]) + 1;
+                  $('#issues').append($('<li></li>').html('<a href="#" data-issuerow="'+row+'">'+vals['issues'][i][0]+': '+vals['issues'][i][1]+'</a>'));
                 }
               }
             }

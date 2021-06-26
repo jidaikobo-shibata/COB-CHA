@@ -3,8 +3,39 @@
  * Google Spreadsheet Add-on
  * @Author  shibata@jidaikobo.com
  *          arimatsu@jidaikobo.com
- * @Year    2020
+ * @Year    2021
  * @Licence MIT
+ * 
+ * functions:
+ * - onInstall
+ * - onOpen
+ * - askEnabled
+ * - addShowControlPannel
+ * - showControlPannel
+ * - showHelp
+ * - showCredit
+ * - showDialog
+ * - getCurrentPos
+ * - getUrlFromSheet
+ * - getSheetByUrl
+ * - getProp
+ * - getLangSet
+ * - getUiLang
+ * - getAllCriteria
+ * - getUsingCriteria
+ * - getUsingTechs
+ * - addImageFormula
+ * - removeImageFormula
+ * - getHtmlAndTitle
+ * - getSpreadSheet
+ * - getActiveSheet
+ * - getAllSheets
+ * - resetSheets
+ * - deleteFallbacksheet
+ * - isSheetExist
+ * - getSheetIfExists
+ * - generateSheetIfNotExists
+ * - prepareSheet
  */
 
 /**
@@ -33,7 +64,6 @@ function onOpen(e) {
 
 /**
  * askEnabled
- * @param Object e
  * @return Void
  */
 function askEnabled() {
@@ -53,6 +83,7 @@ function addShowControlPannel() {
   var menu = SpreadsheetApp.getUi().createAddonMenu();
   menu.addItem(getUiLang('show-control-panel', 'Show Control Panel'), 'showControlPannel');
   menu.addItem(getUiLang('help', 'COB-CHA Help'), 'showHelp');
+  menu.addItem(getUiLang('credit', 'COB-CHA credit'), 'showCredit');
   menu.addToUi();
 };
 
@@ -76,6 +107,14 @@ function showHelp() {
 }
 
 /**
+ * show credit
+ * @return Void
+ */
+function showCredit() {
+  showDialog('ui-credit', 500, 400, getUiLang('credit', 'Credit'));
+}
+
+/**
  * show dialog
  * @param String sheetname
  * @param Integer width
@@ -96,18 +135,6 @@ function showDialog(sheetname, width, height, title, html) {
                    .setTitle(title)
                    .append(html);
   ss.show(html);
-}
-
-/**
- * Get First Column
- * @return String
- */
-function getFirstColumn() {
-  var activeSheet = getActiveSheet();
-  var activeRow = activeSheet.getActiveCell().getRow();
-  var criterion = activeSheet.getRange(activeRow, 1).getValue();
-  criterion = criterion.match(/^\d\.\d\.\d+/) || criterion.match(/^\d+\.\w/) ? criterion : '';
-  return criterion;
 }
 
 /**
@@ -156,21 +183,28 @@ function getSheetByUrl(url) {
  */
 function getProp(prop) {
   if (getProp.vals && getProp.vals[prop]) return getProp.vals[prop];
-
-  var activeSheet = getActiveSheet();
-  var rets = activeSheet.getRange(1, 2, 1, 7).getValues();
-  var vals = {};
   var userLocale = Session.getActiveUserLocale();
-  //  activeSheet.getRange(1,1).setValue(userLocale);
   
-  userLocale    = ['en', 'ja'].indexOf(userLocale) > -1 ? userLocale : 'en';
-  vals['lang']  = ['en', 'ja'].indexOf(rets[0][0]) > -1 ? rets[0][0] : userLocale;
-  vals['type']  = ['wcag20', 'wcag21', 'tt20'].indexOf(rets[0][1]) > -1 ? rets[0][1] : 'wcag21';
-  vals['level'] = ['A', 'AA', 'AAA'].indexOf(rets[0][2]) > -1 ? rets[0][2] : 'AA';
-  vals['mark']  = rets[0][6].toString().charAt(0) == 'T' ? ['NT', 'DNA', 'T', 'F'] : ['?', '-', 'o', 'x'];
+  var vals = {
+    "lang"      : userLocale,
+    "type"      : "wcag21",
+    "level"     : "AA",
+    "mark"      : ['NT', 'DNA', 'T', 'F'],
+    "additional": ""
+  };
+  
+  var sheet = getSheetIfExists(gConfigSheetName);
+  if (sheet === false) return vals[prop];
+  var rets = sheet.getRange(1, 2, 5, 2).getValues();
+  
+  vals['lang']  = ['en', 'ja'].indexOf(rets[0][0]) > -1 ? rets[0][0] : vals['lang'];
+  vals['type']  = ['wcag20', 'wcag21', 'tt20'].indexOf(rets[1][0]) > -1 ? rets[1][0] : vals['type'];
+  vals['level'] = ['A', 'AA', 'AAA'].indexOf(rets[2][0]) > -1 ? rets[2][0] : vals['level'];
+  vals['mark']  = rets[3][0].toString().charAt(0) == 't' ? vals['mark'] : ['?', '-', 'o', 'x'];
+  vals['additional']  = rets[4][0].toString();
   //  vals['lang']  = 'en';
+
   getProp.vals = vals;
-  
   return getProp.vals[prop];
 }
 
@@ -218,20 +252,13 @@ function getUiLang(uiname, defaultStr) {
 }
 
 /**
- * is debug mode
- * @return Bool
- */
-function isDebug() {
-  return Session.getActiveUser().getUserLoginId() == 'jidaikobo@gmail.com';
-}
-
-/**
  * Get All Criteria Set
- * @param String lang
  * @param String type
  * @return Array
  */
-function getAllCriteria(lang, type) {
+function getAllCriteria(type) {
+  var lang = getProp('lang');
+  var type = type === undefined ? getProp('type') : type;
   var set = type.indexOf('wcag') >= 0 ? 'criteria' : 'ttCriteria' ;
   var allCriteria = getLangSet(set);
 
@@ -252,20 +279,20 @@ function getAllCriteria(lang, type) {
 
 /**
  * Get Using Criteria Set
- * @param String lang
  * @param String type
- * @param String level
  * @return Array
  */
-function getUsingCriteria(lang, type, level) {
-  var usingCriteria = getAllCriteria(lang, type);
-
+function getUsingCriteria(type) {
+  var type = type === undefined ? getProp('type') : type;
+  var level = getProp('level');
+  var usingCriteria = getAllCriteria(type);
+  
   // Trusted Tester does not apply additional criteria
   if (type.indexOf('tt') >= 0) return usingCriteria;
-  if (getUsingCriteria.vals) return getUsingCriteria.vals;
- 
+//  if (getUsingCriteria.vals) return getUsingCriteria.vals;
+
   // additional criteria
-  var additionalCriteriaArr = getAdditionalCriterion().split(/,/);
+  var additionalCriteriaArr = getProp('additional').split(/,/);
   var additionalCriteria = [];
   for (var i = 0; i < additionalCriteriaArr.length; i++) {
     additionalCriteria.push(additionalCriteriaArr[i].trim());
@@ -273,6 +300,7 @@ function getUsingCriteria(lang, type, level) {
   
   // eliminate unuse criteria
   for (var i = 0; i < usingCriteria.length; i++) {
+    if (typeof usingCriteria[i] === 'undefined') continue;
     if (
       (type == 'wcag20' && gCriteria21.indexOf(usingCriteria[i][1]) >= 0) ||
       usingCriteria[i][0].length > level.length
@@ -286,24 +314,25 @@ function getUsingCriteria(lang, type, level) {
 	return !(x === null || x === undefined || x === ""); 
   });
   
-  getUsingCriteria.vals = usingCriteria;
+//  getUsingCriteria.vals = usingCriteria;
   
   return usingCriteria;
 }
 
 /**
  * Get Using Tech Set
- * @param String lang
- * @param String type
- * @param String level
  * @return Array
  */
-function getUsingTechs(lang, type, level) {
+function getUsingTechs() {
   if (getUsingTechs.vals) return getUsingTechs.vals;
 
+  var lang = getProp('lang');
+  var type = getProp('type');
+  var level = getProp('level');
+  
   var techNames = getLangSet('tech');
   var urlPointer = lang+'-'+type;
-  var usingCriteria = getUsingCriteria(lang, type, level);
+  var usingCriteria = getUsingCriteria();
   var usingTechs = [];
   
   for (i = 0; i < usingCriteria.length; i++) {
@@ -383,38 +412,153 @@ function getHtmlAndTitle(url) {
 }
 
 /**
- * wrapHtmlHeaderAndFooter
- * @param String title
- * @param String body
+ * Get Spreadsheet
+ * @return Object
+ */
+function getSpreadSheet() {
+  if (getSpreadSheet.ss) return getSpreadSheet.ss;
+  getSpreadSheet.ss = SpreadsheetApp.getActive();
+  return getSpreadSheet.ss;
+};
+
+/**
+ * Get Active Spreadsheet
+ * @return Object
+ */
+function getActiveSheet() {
+  if (getActiveSheet.ss) return getActiveSheet.ss;
+  var ss = getSpreadSheet();
+  getActiveSheet.ss = ss.getActiveSheet();
+  return getActiveSheet.ss;
+};
+
+/**
+ * Get All sheets
+ * @return Object
+ */
+function getAllSheets() {
+  if (getAllSheets.ss) return getAllSheets.ss;
+  var ss = getSpreadSheet();
+  var all = ss.getSheets();
+  
+  ret = [];
+  for (i = 0; i < all.length; i++) {
+    if (String(all[i].getName()).charAt(0) == '*') continue;
+    ret.push(all[i]);
+  }
+
+  getAllSheets.ss = ret;
+  return getAllSheets.ss;
+};
+
+/**
+ * reset sheets
+ * @param Bool isAll
  * @return String
  */
-function wrapHtmlHeaderAndFooter(title, body) {
-  return '<!DOCTYPE html><html lang="'
-  +getProp('lang')
-  +'"><head><meta charset="utf-8"><title>'
-  +title
-  +'</title></head><body>'
-  +body
-  +'</body></html>';
+function resetSheets(isAll) {
+  var ss = getSpreadSheet();
+  var all = ss.getSheets();
+  
+  deleteFallbacksheet();
+  ss.insertSheet(gFallbackSheetName, 0);
+  
+  var count = 0;
+  for (var i = 0; i < all.length; i++) {
+    if (all[i].getName() == gFallbackSheetName) continue;
+    if (isAll === false && all[i].getName().charAt(0) == '*') continue;
+    if (all[i] == null) continue;
+    ss.deleteSheet(all[i]);
+    count++;
+  }
+  var all2 = ss.getSheets();
+  if (all2.length > 1) {
+    deleteFallbacksheet();
+  }
+  
+  return getUiLang('sheet-deleted', "%s sheet(s) deleted.").replace("%s", count);
 }
 
 /**
- * escape html
- * @thx https://qiita.com/saekis/items/c2b41cd8940923863791
+ * delete fallbacksheet
  * @return Void
  */
-function escapeHtml (string) {
-  if (typeof string !== 'string') {
-    return string;
+function deleteFallbacksheet() {
+  var sheet = getSheetIfExists(gFallbackSheetName);
+  if ( ! sheet) return;
+  getSpreadSheet().deleteSheet(sheet);
+}
+
+/**
+ * is sheet Exist
+ * @param String sheetName
+ * @return Bool
+ */
+function isSheetExist(sheetName) {
+  return (getSheetIfExists(sheetName));
+}
+
+/**
+ * get target sheet if Exists
+ * @param String sheetName
+ * @return Bool | Object
+ */
+function getSheetIfExists(sheetName) {
+  var ss = getSpreadSheet();
+  var targetSheet = ss.getSheetByName(sheetName);
+  return (targetSheet) ? targetSheet : false;
+}
+
+/**
+ * generate sheet if not exists
+ * @param String sheetName
+ * @param Array defaults
+ * @param String [header = "row"]
+ * @return Object
+ */
+function generateSheetIfNotExists(sheetName, defaults, header) {
+  if (isSheetExist(sheetName)) return getUiLang('target-sheet-already-exists', "Target sheet (%s) is already exists.").replace('%s', sheetName);
+  return prepareTargetSheet(sheetName, defaults, header);
+}
+
+/**
+ * generate sheet even if already exists
+ * @param String sheetName
+ * @return Object
+ */
+function generateSheetEvenIfAlreadyExists(sheetName) {
+  var ss = getSpreadSheet();
+  if (targetSheet = getSheetIfExists(sheetName)) {
+    ss.deleteSheet(targetSheet);
   }
-  return string.replace(/[&'`"<>]/g, function(match) {
-    return {
-      '&': '&amp;',
-      "'": '&#x27;',
-      '`': '&#x60;',
-      '"': '&quot;',
-      '<': '&lt;',
-      '>': '&gt;',
-    }[match]
-  });
+  var sheet = ss.insertSheet(sheetName, 0);
+  deleteFallbacksheet();
+  return sheet;
+}
+
+/**
+ * prepare target sheet
+ * @param String sheetName
+ * @param Array defaults
+ * @param String [header = "row"]
+ * @return Object
+ */
+function prepareTargetSheet(sheetName, defaults, header) {
+  var ss = getSpreadSheet();
+  ss.insertSheet(sheetName, 0);
+  var sheet = ss.getSheetByName(sheetName);
+  sheet.activate();
+  if (defaults)
+  {
+    sheet.getRange(1, 1, defaults.length, defaults[0].length).setValues(defaults);
+    if (header === 'row') {
+      sheet.getRange("1:1").setBackground(gLabelColor);
+      sheet.setFrozenRows(1);
+    } else {
+      sheet.getRange(1, 1, defaults.length, 1).setBackground(gLabelColor);
+    }
+    sheet.autoResizeColumn(1);
+  }
+  deleteFallbacksheet();
+  return sheet;
 }

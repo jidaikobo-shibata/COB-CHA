@@ -47,16 +47,15 @@
             
             // other language
             lang.ui = ui;
-            $("#close-btn").html(ui['close-btn']);
             $("#issue-name-title").html(ui['name']);
             $("#issue-visibility-title").html(ui['issue-visibility']);
             $("#issue-image-title").html(ui['image']);
             $("#upload-image").val(ui['upload']);
             $("#explanation-title").html(ui['explanation']);
-            $("#test-id-title").html(ui['test-id']);
             $("#criteria-title").html(ui['criterion']);
             $("#tech-title").html(ui['tech']);
             $("#places-title").html(ui['places']);
+            $("#all-page").html(ui['all-page']);
             $("#memo-title").html(ui['memo']);
           })
         .getLangSet('ui');
@@ -99,22 +98,8 @@
               $('#apply-issue').html(msg);
             }
             $('#apply-issue').after('<input type="hidden" id="issue-id" value="'+ret['vals']['issueId']+'">');
-            
-            // Trusted Tester ID
-            if (ret['type'] == 'tt20') {
-              for(var i = 0; i < ret['usingCriteria'].length; i++) {
-                var criterion = ret['usingCriteria'][i][1];
-                var idname = criterion.replace(/\./g, '_');
-                $('#test-id').append($('<tr></tr>')
-                             .append($('<td></td>').html('<input type="checkbox" id="'+idname+'" value="'+criterion+'">'))
-                             .append($('<td></td>').html('<label for="'+idname+'">'+criterion+'</label>'))
-                             );
-              }
-            } else {
-              $('#trusted-tester-test-id').hide();
-            }
 
-            // criterion
+            // criteria
             for(var i = 0; i < ret['usingCriteria'].length; i++) {
               var level = ret['usingCriteria'][i][0];
               var criterion = ret['usingCriteria'][i][1];
@@ -202,11 +187,6 @@
      * Apply Issue
      */
     function onApplyIssueClick() {
-      var testIds = [];
-      $('#test-id').find(':checked').each(function(){
-        testIds.push($(this).val());
-      });
-      
       var checked = [];
       $('#criteria').find(':checked').each(function(){
         checked.push($(this).val());
@@ -231,7 +211,6 @@
         $('#error-notice').val(),
         $('#html').val(),
         $('#explanation').val(),
-        testIds.join(', '), // TT20 Only
         checked.join(', '),
         techs.join(', '),
         places.join(', '),
@@ -320,10 +299,6 @@
     <th><label for="explanation" id="explanation-title">Explanation</label></th>
     <td><textarea id="explanation" style="width:100%;height:100px;"></textarea></td>
   </tr>
-  <tr id="trusted-tester-test-id">
-    <th id="test-id-title">Test ID</th>
-    <td style="position:relative;height:150px;"><div style="position:absolute;top:0;height:160px;overflow:auto;overflow-x:hidden;padding:5px"><table id="test-id" style="width: 100%"></table></div></td>
-  </tr>
   <tr>
     <th id="criteria-title">Criteria</th>
     <td style="position:relative;height:150px;"><div style="position:absolute;top:0;height:160px;overflow:auto;overflow-x:hidden;padding:5px"><table id="criteria" style="width: 100%"></table></div></td>
@@ -333,7 +308,7 @@
     <td style="position:relative;height:150px;"><div style="position:absolute;top:0;height:160px;overflow:auto;overflow-x:hidden;padding:5px"><table id="techs" style="width: 100%"></table></div></td>
   </tr>
   <tr>
-    <th id="places-title">Places<p><label><button onclick="$('.places').prop('checked', 'checked')">Check All</button></label></p></th>
+    <th><span id="places-title">Places</span><p><label><button onclick="$('.places').prop('checked', 'checked')" id="all-page">Check All</button></label></p></th>
     <td style="position:relative;height:150px;"><div style="position:absolute;top:0;height:160px;overflow:auto;overflow-x:hidden;padding:5px"><table id="places" style="width: 100%"></table></div></td>
   </tr>
   <tr>
@@ -354,7 +329,6 @@
   </tr>
   </table>
   <div style="position: fixed; width: 100%; bottom: 0; background: #fff; z-index: 9; padding: 10px 0 10px;">
-    <button onclick="google.script.host.close()" id="close-btn">Close</button>
     <button id="apply-issue" class="primary"></button>
   </div>
 </body>

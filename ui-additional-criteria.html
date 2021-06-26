@@ -35,12 +35,12 @@
             
             // other language
             lang.ui = ui;
-            $("#apply-additional-criterion").html(ui['set-additional-criterion']);
+            $("#set-additional-criteria").html(ui['set-additional-criteria']);
           })
         .getLangSet('ui');
       
       // on click
-      $('#apply-additional-criterion').click(onClickApplyAdditionalCriterion);
+      $('#set-additional-criteria').click(onClickSetAdditionalCriteria);
       
       // default value
       setDefaultValue();
@@ -83,13 +83,13 @@
               $("input[value='"+thisvalue+"']").prop('checked', 'checked');
             }
           })
-        .dialogValueAdditionalCriterionValue();
+        .dialogValueAdditionalCriteria();
     }
 
     /**
-     * Apply Additional Criteria
+     * Set Additional Criteria
      */
-    function onClickApplyAdditionalCriterion() {
+    function onClickSetAdditionalCriteria() {
       var checked = [];
       $('#criteria').find(':checked').each(function(){
         checked.push($(this).val());
@@ -100,14 +100,14 @@
           function(msg, element) {
             google.script.host.close();
           })
-        .applyAdditionalCriterion(checked.join(', '));
+        .setAdditionalCriteria(checked.join(', '));
     }
   </script>
   <?!= HtmlService.createHtmlOutputFromFile('ui-css').getContent(); ?>
 </head>
 <body style="padding-bottom: 4em;">
   <div style="position: fixed; width: 100%; bottom: 0; background: #fff; z-index: 9; padding: 20px;">
-    <button id="apply-additional-criterion" class="primary">Apply additional criterion</button>
+    <button id="set-additional-criteria" class="primary">Set additional criteria</button>
   </div>
   <table id="criteria" style="width: calc(100% - 100px); margin: 0 0 0 20px;"></table>
 </body>

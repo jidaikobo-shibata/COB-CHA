@@ -27,39 +27,43 @@
             
             // other languages
             lang.ui = ui;
-            $("#show-examination").html(ui['examination']);
-            $("#show-report").html(ui['report']);
-            $("#test-type-title").html(ui['test-type']);
-            $("#title-icl").html(ui['icl']);
-            $("#target-urls-setting").html(ui['target-urls-setting']);
-            $("#title-value").html(ui['edit-value']);
-            $("#title-lump-edit").html(ui['lump-edit']);
-            $("#set-template").html(ui['set-template']);
-            $("#title-evaluate").html(ui['evaluate']);
-            $("#set-additional-criterion").html(ui['set-additional-criterion']);
-            $("#generate-each-record-sheets").html(ui['generate-each-record-sheets']);
+            $("#config-title").html(ui['config-title']);
+            $("#generate-config-sheet").html(ui['generate-config-sheet']);
+            $("#set-additional-criteria").html(ui['set-additional-criteria']);
+            
+            $("#set-template-title").html(ui['set-template-title']);
+            $("#generate-sc-template-sheet").html(ui['generate-sc-template-sheet']);
+            $("#generate-icl-template-sheet").html(ui['generate-icl-template-sheet']);
+            
+            $("#target-urls-setting-title").html(ui['target-urls-setting-title']);
             $("#generate-url-list-sheet").html(ui['generate-url-list-sheet']);
-            $("#generate-icl-tpl-sheet").html(ui['generate-icl-tpl-sheet']);
-            $("#apply-icl-tpl").html(ui['apply-icl-tpl']);
+            $("#generate-each-record-sheets").html(ui['generate-each-record-sheets']);
+            
+            $("#edit-value-title").html(ui['edit-value-title']);
+            $("#apply-conformance-to-all").html(ui['apply-conformance-to-all']);
             $("#add-screenshot").html(ui['add-screenshot']);
-            $("#do-set-all-t").html(ui['set-all-t']);
-            $("#do-insert-tech").html(ui['insert-techniques-sheet']);
+            $("#lump-edit").html(ui['lump-edit']);
+            $("#template").html(ui['template']);
+            $("#apply-sc-template").html(ui['apply-sc-template']);
+            $("#apply-icl-template").html(ui['apply-icl-template']);
             $("#label-lump-val").html(ui['value']);
             $("#label-lump-pos-row").html(ui['pos-row']);
             $("#label-lump-pos-col").html(ui['pos-col']);
             $("#get-current-pos").html(ui['get-current-pos']);
-            $("#do-lump-edit").html(ui['lump-edit']);
-            $("#do-template-apply-all").html(ui['apply-tpl-all']);
-            $("#do-template-apply-row").html(ui['apply-tpl-row']);
-            $("#generate-template").html(ui['generate-template']);
-            $("#title-issue-control").html(ui['title-issue-control']);
+            $("#do-lump-edit").html(ui['do-lump-edit']);
+            
+            $("#issue-control-title").html(ui['issue-control-title']);
             $("#add-edit-issue").html(ui['add-edit-issue']);
             $("#show-issue").html(ui['show-issue']);
-            $("#export-html-title").html(ui['export-html-title']);
-            $("#export-result").html(ui['export-result']);
-            $("#export-issue").html(ui['export-issues']);
-            $("#do-evaluate").html(ui['do-evaluate']);
-            $("#do-evaluate-icl").html(ui['do-evaluate-icl']);
+            
+            $("#evaluate-title").html(ui['evaluate-title']);
+            $("#generate-report").html(ui['generate-report']);
+            $("#evaluate-sc").html(ui['evaluate-sc']);
+            $("#evaluate-icl").html(ui['evaluate-icl']);
+            
+            $("#reset-sheets").html(ui['reset-sheets']);
+            $("#reset-record-sheets").html(ui['reset-record-sheets']);
+            $("#reset-all-sheets").html(ui['reset-all-sheets']);
           })
         .getLangSet('ui');
 
@@ -67,30 +71,29 @@
       $('.fa-spinner').hide();
 
       // on change
-      $('#test-type').change(swtichLevelWhenTtOrNot);
+      $('#lang').change(switchLnaguageStatus);
+      $('#test-type').change(switchLevelWhenTtOrNot);
       $('#evaluate-level').change(switchAdditionalCriterion);
 
       // on click
-      $('#generate-each-record-sheets').bind('click', {sheets:"*urls*", targetId:'generate-each-record-sheets'}, onClickGenerateSheet);
-      $('#generate-template').bind('click', {sheets:"*Template*", targetId:'generate-template'}, onClickGenerateSheet);
+      $('#generate-config-sheet').click(onClickGenerateConfig);
+      $('#set-additional-criteria').click(onClickSetAdditionalCriteria);
+      $('#generate-report').click(onClickCreateReport);
+      $('#generate-sc-template-sheet').bind('click', {sheets:"*SC Template", targetId:'generate-sc-template-sheet'}, onClickGenerateSheet);
+      $('#generate-icl-template-sheet').click(onClickGenarateIclTpl);
+      $('#generate-each-record-sheets').bind('click', {sheets:"*URLs", targetId:'generate-each-record-sheets'}, onClickGenerateSheet);
       $('#generate-url-list-sheet').click(onClickGenarateUrlList);
-      $('#generate-icl-tpl-sheet').click(onClickGenarateIclTpl);
-      $('#apply-icl-tpl').click(onClickApplyIclTpl);
-      $('#set-additional-criterion').click(onClickSetAdditionalCriterion);
-      $('#do-template-apply-all').click(onClickDoTemplateApplyAll);
-      $('#do-template-apply-row').click(onClickDoTemplateApplyRow);
-      $('#do-insert-tech').click(onClickDoInsertTech);
-      $('#do-set-all-t').click(onClickDoapplyAllToT);
+      $('#add-screenshot').click(onClickAddScreenshot);
+      $('#apply-conformance-to-all').click(onClickApplyConformanceToAll);
       $('#get-current-pos').click(onClickGetCurrentPos);
       $('#do-lump-edit').click(onClickDoLumpEdit);
-      $('#add-screenshot').click(onClickAddScreenshot);
+      $('#apply-sc-template').click(onClickApplyScTemplate);
+      $('#apply-icl-template').click(onClickApplyIclTemplate);
       $('#add-edit-issue').click(onClickAddEditIssue);
       $('#show-issue').click(onClickShowIssue);
-      $('#do-evaluate').click(onClickDoEvaluate);
-      $('#do-evaluate-icl').click(onClickDoEvaluateIcl);
-      $('#export-result').click(onClickExportResult);
-      $('#export-issue').click(onClickExportIssue);
-      $('#reset-sheets').bind('click', {isAll:true}, onClickResetSheets);
+      $('#evaluate-sc').click(onClickEvaluateSc);
+      $('#evaluate-icl').click(onClickEvaluateIcl);
+      $('#reset-all-sheets').bind('click', {isAll:true}, onClickResetSheets);
       $('#reset-record-sheets').bind('click', {isAll:false}, onClickResetSheets);
 
       // ICL (Japanese Only)
@@ -98,22 +101,12 @@
         .withSuccessHandler(
           function(ret) {
             if (ret == 'ja') {
-              $('#do-evaluate-icl').show();
-              $('#control-icl').show();
+              $('#evaluate-icl').show();
+              $('.icl-tpl').show();
             }
           })
         .getProp('lang');
 
-      // debug mode
-      google.script.run
-        .withSuccessHandler(
-          function(ret) {
-            if (ret) {
-              $('#dev').show();
-            }
-          })
-        .isDebug();
-                
       // default value
       setDefaultValue();
     });
@@ -146,12 +139,10 @@
             } else {
               $("#evaluate-level").val('AA');
               $("#evaluate-level").prop('disabled', true);
-              $('#do-evaluate-icl').hide();
-              $('#control-icl').hide();
+              $("#set-additional-criteria").prop('disabled', true);
+              $('#evaluate-icl').hide();
+              $('.icl-tpl').hide();
             }
-
-            // generate select candidate of bulk criteria
-            generateBulkCriteia();
           })
         .getProp('type');
         
@@ -171,16 +162,31 @@
      * switch level value and status
      * Trusted Tester is fixed with AA
      */
-    function swtichLevelWhenTtOrNot() {
+    function switchLevelWhenTtOrNot() {
       if ($('#test-type').val().indexOf('tt') != -1) {
-        $('#control-icl').hide();
-        $('#do-evaluate-icl').hide();
+        $('.icl-tpl').hide();
+        $('#evaluate-icl').hide();
         $('#evaluate-level').val('AA');
         $('#evaluate-level').prop('disabled', true);
+        $("#set-additional-criteria").prop('disabled', true);
       } else {
-        $('#control-icl').show();
-        $('#do-evaluate-icl').show();
+        $('.icl-tpl').show();
+        $('#evaluate-icl').show();
         $('#evaluate-level').prop('disabled', false);
+        $("#set-additional-criteria").prop('disabled', false);
+      }
+    }
+
+    /**
+     * switch language status
+     */
+    function switchLnaguageStatus() {
+      if ($('#lang').val() == 'en') {
+        $('.icl-tpl').hide();
+        $('#evaluate-icl').hide();
+      } else {
+        $('.icl-tpl').show();
+        $('#evaluate-icl').show();
       }
     }
 
@@ -193,13 +199,6 @@
       } else {
         $('#set-additional-criterion').prop('disabled', false);
       }
-    }
-
-    /**
-     * Set Additional Criteria
-     */
-    function onClickSetAdditionalCriterion() {
-      google.script.run.openDialogAdditionalCriterion($('#lang').val(), $('#test-type').val(), $('#evaluate-level').val());
     }
 
     /**
@@ -225,46 +224,77 @@
         }
       }
     }
+    
+    /**
+     * Show Status
+     */
+    function showStatus(msg) {
+      alert(msg);
+    }
+    
+    /**
+     * Set Additional Criteria
+     */
+    function onClickSetAdditionalCriteria() {
+      google.script.run.openDialogAdditionalCriteria($('#lang').val(), $('#test-type').val(), $('#evaluate-level').val(), $('#mark').val());
+    }
+
+    /**
+     * generate Config Sheet
+     */
+    function onClickGenerateConfig() {
+      progressIndicator('generate-config-sheet', 'progress-generate-config-sheet', true);
+
+      google.script.run
+        .withSuccessHandler(
+          function(msg) {
+            showStatus(msg);
+            progressIndicator('generate-config-sheet', 'progress-generate-config-sheet', false);
+          })
+        .withFailureHandler(
+          function(msg) {
+            showStatus(msg);
+            progressIndicator('generate-config-sheet', 'progress-generate-config-sheet', false);
+          })
+        .generateConfigSheet($('#lang').val(), $('#test-type').val(), $('#evaluate-level').val(), $('#mark').val());
+    }
+
+    /**
+     * Generate Url List Sheets
+     */
+    function onClickGenarateUrlList() {
+      progressIndicator('generate-url-list-sheet', 'progress-generate-url-list-sheet', true);
+      google.script.run
+        .withSuccessHandler(
+          function(msg) {
+            showStatus(msg);
+            progressIndicator('generate-url-list-sheet', 'progress-generate-url-list-sheet', false);
+          })
+        .withFailureHandler(
+          function(msg) {
+            showStatus(msg);
+            progressIndicator('generate-url-list-sheet', 'progress-generate-url-list-sheet', false);
+          })
+        .generateUrlListSheet();
+    }
 
     /**
      * Generate Icl Template Sheets
      */
     function onClickGenarateIclTpl() {
-      progressIndicator('generate-icl-tpl-sheet', 'progress-generate-icl-tpl-sheet', true);
+      progressIndicator('generate-icl-template-sheet', 'progress-generate-icl-template-sheet', true);
       google.script.run
         .withSuccessHandler(
           function(msg) {
             showStatus(msg);
-            progressIndicator('generate-icl-tpl-sheet', 'progress-generate-icl-tpl-sheet', false);
+            progressIndicator('generate-icl-template-sheet', 'progress-generate-icl-template-sheet', false);
           })
         .withFailureHandler(
           function(msg) {
             showStatus(msg);
-            progressIndicator('generate-icl-tpl-sheet', 'progress-generate-icl-tpl-sheet', false);
+            progressIndicator('generate-icl-template-sheet', 'progress-generate-icl-template-sheet', false);
           })
-        .generateIclTplSheet($('#evaluate-level').val());
-    }
-
-    /**
-     * Apply Icl Template
-     */
-    function onClickApplyIclTpl() {
-      var msg = Object.keys(lang.ui).length == 0 ? 'This action cannot revert.' : lang.ui['apply-icl-tpl-exp'];
-      if (confirm(msg) === false) return;
-      progressIndicator('apply-icl-tpl', 'progress-apply-icl-tpl', true);
-      
-      google.script.run
-        .withSuccessHandler(
-          function(msg) {
-            showStatus(msg);
-            progressIndicator('apply-icl-tpl', 'progress-apply-icl-tpl', false);
-          })
-        .withFailureHandler(
-          function(msg) {
-            showStatus(msg);
-            progressIndicator('apply-icl-tpl', 'progress-apply-icl-tpl', false);
-          })
-        .applyIclSheet();
+        .generateIclTplSheet();
     }
 
     /**
@@ -291,29 +321,20 @@
     }
 
     /**
-     * Generate Url List Sheets
+     * show Screenshot dialog
      */
-    function onClickGenarateUrlList() {
-      google.script.run
-        .withSuccessHandler(
-          function(msg) {
-            showStatus(msg);
-          })
-        .withFailureHandler(
-          function(msg) {
-            showStatus(msg);
-          })
-        .generateUrlListSheet($('#lang').val(), $('#test-type').val(), $('#evaluate-level').val());
+    function onClickAddScreenshot() {
+      var title = Object.keys(lang.ui).length == 0 ? 'Screenshot' : lang.ui['screenshot'];
+      google.script.run.showDialog('ui-screenshot', 300, 200, title);
     }
-
+    
     /**
-     * Edit Value
+     * Apply Comformance to all
      */
-    function onClickDoapplyAllToT() {
-      progressIndicator('do-set-all-t', 'progress-set-all-t', true);
-
+    function onClickApplyConformanceToAll() {
       var msg = Object.keys(lang.ui).length == 0 ? 'This Page\'s All "Check will be overwritten."' : lang.ui['this-pages-all-check-will-be-overwritten'];
       if (confirm(msg) === false) return;
+      progressIndicator('do-set-all-t', 'progress-set-all-t', true);
 
       google.script.run
         .withSuccessHandler(
@@ -326,22 +347,51 @@
             showStatus(msg);
             progressIndicator('do-set-all-t', 'progress-set-all-t', false);
           })
-        .applyAllToT($('#test-type').val(), $('#evaluate-level').val());
+        .applyConformanceToAll();
     }
-
+    
     /**
-     * show Tech dialog
+     * apply sc template
      */
-    function onClickDoInsertTech() {
+    function onClickApplyScTemplate() {
+      var msg = Object.keys(lang.ui).length == 0 ? 'CAUTION: All result will be overwritten.' : lang.ui['caution-using-template'];
+      if (confirm(msg) === false) return;
+      progressIndicator('apply-sc-template', 'progress-apply-sc-template', true);
+
       google.script.run
         .withSuccessHandler(
-          function(criterion) {
-            var msg1 = Object.keys(lang.ui).length == 0 ? 'No appropriate criterion found.' : lang.ui['no-criterion-found'];
-            var msg2 = Object.keys(lang.ui).length == 0 ? 'Techniques for '+criterion : lang.ui['tech-for'].replace("%s", criterion);
-            var title = criterion == '' ? msg1 : msg2 ;
-            google.script.run.showDialog('ui-tech', 500, 400, title);
+          function(msg) {
+            showStatus(msg);
+            progressIndicator('apply-sc-template', 'progress-apply-sc-template', false);
           })
-        .getFirstColumn();
+        .withFailureHandler(
+          function(msg) {
+            showStatus(msg);
+            progressIndicator('apply-sc-template', 'progress-apply-sc-template', false);
+          })
+        .applyScTemplate();
+    }
+    
+    /**
+     * Apply Icl template
+     */
+    function onClickApplyIclTemplate() {
+      var msg = Object.keys(lang.ui).length == 0 ? 'This action cannot revert.' : lang.ui['caution-using-template'];
+      if (confirm(msg) === false) return;
+      progressIndicator('apply-icl-template', 'progress-apply-icl-template', true);
+      
+      google.script.run
+        .withSuccessHandler(
+          function(msg) {
+            showStatus(msg);
+            progressIndicator('apply-icl-template', 'progress-apply-icl-template', false);
+          })
+        .withFailureHandler(
+          function(msg) {
+            showStatus(msg);
+            progressIndicator('apply-icl-template', 'progress-apply-icl-template', false);
+          })
+        .applyIclTemplate();
     }
 
     /**
@@ -376,18 +426,10 @@
     }
 
     /**
-     * show Screenshot dialog
-     */
-    function onClickAddScreenshot() {
-      var title = Object.keys(lang.ui).length == 0 ? 'Screenshot' : lang.ui['screenshot'];
-      google.script.run.showDialog('ui-screenshot', 300, 200, title);
-    }
-
-    /**
      * Add Issue
      */
     function onClickAddEditIssue() {
-      google.script.run.openDialogIssue($('#lang').val(), $('#test-type').val(), $('#evaluate-level').val());
+      google.script.run.openDialogIssue();
     }
 
     /**
@@ -399,143 +441,73 @@
     }
 
     /**
-     * Make same as template
+     * create Report Sheet
      */
-    function onClickDoTemplateApplyAll() {
-      var msg = Object.keys(lang.ui).length == 0 ? 'CAUTION: All result will be overwritten.' : lang.ui['caution-using-template'];
-      if (confirm(msg) === false) return;
-      progressIndicator('do-template-apply-all', 'progress-do-template-apply-all', true);
+    function onClickCreateReport() {
+      progressIndicator('generate-report', 'progress-generate-report', true);
 
       google.script.run
         .withSuccessHandler(
           function(msg) {
             showStatus(msg);
-            progressIndicator('do-template-apply-all', 'progress-do-template-apply-all', false);
+            progressIndicator('generate-report', 'progress-generate-report', false);
           })
         .withFailureHandler(
           function(msg) {
             showStatus(msg);
-            progressIndicator('do-template-apply-all', 'progress-do-template-apply-all', false);
+            progressIndicator('generate-report', 'progress-generate-report', false);
           })
-        .templateApplyAll();
+        .generateReportSheet($('#evaluate-level').val());
     }
-
+    
     /**
-     * Make same as template row
+     * Evaluate SC
      */
-    function onClickDoTemplateApplyRow() {
-      $('#do-template-apply-row').prop('disabled', true);
-      var msg = Object.keys(lang.ui).length == 0 ? 'CAUTION: All result will be overwritten.' : lang.ui['caution-using-template'];
-      if (confirm(msg) === false) return;
-
-      google.script.run
-        .withSuccessHandler(
-          function(msg) {
-            showStatus(msg);
-            $('#do-template-apply-row').prop('disabled', false);
-          })
-        .withFailureHandler(
-          function(msg) {
-            showStatus(msg);
-            $('#do-template-apply-row').prop('disabled', false);
-          })
-        .templateApplyRow();
-    }
-
-    /**
-     * Evaluate
-     */
-    function onClickDoEvaluate() {
-      progressIndicator('do-evaluate', 'progress-do-evaluate', true);
+    function onClickEvaluateSc() {
+      progressIndicator('evaluate-sc', 'progress-evaluate-sc', true);
 
       google.script.run
         .withSuccessHandler(
           function(msg, element) {
             showStatus(msg);
-            progressIndicator('do-evaluate', 'progress-do-evaluate', false);
+            progressIndicator('evaluate-sc', 'progress-evaluate-sc', false);
           })
         .withFailureHandler(
           function(msg, element) {
             showStatus(msg);
-            progressIndicator('do-evaluate', 'progress-do-evaluate', false);
+            progressIndicator('evaluate-sc', 'progress-evaluate-sc', false);
           })
-        .evaluate($('#lang').val(), $('#test-type').val(), $('#evaluate-level').val());
+        .evaluateSc();
     }
 
     /**
      * Evaluate ICL
      */
-    function onClickDoEvaluateIcl() {
-      progressIndicator('do-evaluate-icl', 'progress-do-evaluate-icl', true);
+    function onClickEvaluateIcl() {
+      progressIndicator('evaluate-icl', 'progress-evaluate-icl', true);
 
       google.script.run
         .withSuccessHandler(
           function(msg, element) {
             showStatus(msg);
-            progressIndicator('do-evaluate-icl', 'progress-do-evaluate-icl', false);
+            progressIndicator('evaluate-icl', 'progress-evaluate-icl', false);
           })
         .withFailureHandler(
           function(msg, element) {
             showStatus(msg);
-            progressIndicator('do-evaluate-icl', 'progress-do-evaluate-icl', false);
+            progressIndicator('evaluate-icl', 'progress-evaluate-icl', false);
           })
         .evaluateIcl($('#lang').val(), $('#test-type').val(), $('#evaluate-level').val());
     }
 
     /**
-     * Export Rsult
-     */
-    function onClickExportResult() {
-      progressIndicator('export-result', 'progress-export-result', true);
-
-      google.script.run
-        .withSuccessHandler(
-          function(msg, element) {
-            showStatus(msg);
-            progressIndicator('export-result', 'progress-export-result', false);
-          })
-        .withFailureHandler(
-          function(msg, element) {
-            showStatus(msg);
-            progressIndicator('export-result', 'progress-export-result', false);
-          })
-        .exportResult($('#lang').val(), $('#test-type').val(), $('#evaluate-level').val());
-    }
-
-    /**
-     * Export Issue
-     */
-    function onClickExportIssue() {
-      progressIndicator('export-issue', 'progress-export-issue', true);
-      
-      google.script.run
-        .withSuccessHandler(
-          function(msg, element) {
-            showStatus(msg);
-            progressIndicator('export-issue', 'progress-export-issue', false);
-          })
-        .withFailureHandler(
-          function(msg, element) {
-            showStatus(msg);
-            progressIndicator('export-issue', 'progress-export-issue', false);
-          })
-        .exportIssue();
-    }
-
-    /**
-     * Show Status
-     */
-    function showStatus(msg) {
-      alert(msg);
-    }
-
-    /**
-     * reset sheets
+     * Reset sheets
      * @param Object obj
      */
     function onClickResetSheets(obj) {
       var isAll = obj.data.isAll;
-      if (confirm('Reset Sheets?') === false) return;
+      var caution = Object.keys(lang.ui).length == 0 ? 'CAUTION: Reset Sheets?' : lang.ui['reset-caution'];
+      if (confirm(caution) === false) return;
 
       google.script.run
         .withSuccessHandler(
@@ -554,8 +526,8 @@
 </head>
 
 <body>
-  <details open>
-    <summary id="test-type-title">1. Set Test type</summary>
+  <details id="config-details" open>
+    <summary id="config-title">1. Config</summary>
     <p>
       <select id="lang" title="Language" style="width:3.5em;min-width:3.5em;">
         <option value="en">en</option>
@@ -572,16 +544,36 @@
         <option value="AA">AA</option>
         <option value="AAA">AAA</option>
       </select>
-      <select id="mark" title="mark type" style="width:4em;min-width:4em;">
+      <select id="mark" title="Mark Type" style="width:4em;min-width:4em;">
         <option value="ox">o/x</option>
         <option value="tf">T/F</option>
       </select>
     </p>
-    <p><button id="set-additional-criterion">Set additional criteria</button></p>
+    <p>
+      <button id="generate-config-sheet">Generate config sheet</button>
+      <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-generate-config-sheet"></span>
+    </p>
+    <p><button id="set-additional-criteria">Set additional criteria</button></p>
+    <p>
+      <button id="generate-report">Create Report Sheet</button>
+      <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-generate-report"></span>
+    </p>
   </details>
   
   <details>
-    <summary id="target-urls-setting">2. Target URLs Setting</summary>
+    <summary id="set-template-title">2. Set Template</summary>
+    <p>
+      <button id="generate-sc-template-sheet">Generate SC template</button>
+      <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-generate-sc-template-sheet"></span>
+    </p>
+    <p class="icl-tpl">
+      <button id="generate-icl-template-sheet">Generate ICL template</button>
+      <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-generate-icl-template-sheet"></span>
+    </p>
+  </details>
+   
+  <details>
+    <summary id="target-urls-setting-title">3. Target URLs Setting</summary>
     <p>
       <button id="generate-url-list-sheet">Generate url list sheet</button>
       <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-generate-url-list-sheet"></span>
@@ -593,38 +585,26 @@
   </details>
   
   <details>
-    <summary id="set-template">3. Set Template</summary>
-    <p><button id="generate-template">Generate template sheet</button></p>
-    
-    <fieldset id="control-icl">
-      <legend id="title-icl">ICL</legend>
-      <p>
-        <button id="generate-icl-tpl-sheet">Generate ICL Sheet</button>
-        <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-generate-icl-tpl-sheet"></span>
-      </p>
-      <p>
-        <button id="apply-icl-tpl">Apply ICL Sheet</button>
-        <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-apply-icl-tpl"></span>
-      </p>
-    </fieldset>
- </details>
-   
-  <details>
-    <summary id="title-value">4. Edit Value</summary>
+    <summary id="edit-value-title">4. Edit Value</summary>
     <p><button id="add-screenshot">Add screenshot</button></p>
     <p>
-      <button id="do-set-all-t">Set all to 'T'</button>
-      <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-set-all-t"></span>
+      <button id="apply-conformance-to-all">Apply conformance to all</button>
+      <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-apply-conformance-to-all"></span>
     </p>
-    <p><button id="do-insert-tech">Insert Techs to sheet</button></p>
-    <p>
-      <button id="do-template-apply-all">Apply all</button>
-      <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-do-template-apply-all"></span>
-    </p>
-    <p><button id="do-template-apply-row">Apply current row</button></p>
     <fieldset>
-      <legend id="title-lump-edit">Lump Edit</legend>
-      <p>
+      <legend id="template">Template</legend>
+      <p style="margin-top:-5px;">
+        <button id="apply-sc-template">Apply all</button>
+        <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-apply-sc-template"></span>
+      </p>
+      <p class="icl-tpl">
+        <button id="apply-icl-template">Apply ICL Sheet</button>
+        <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-apply-icl-template"></span>
+      </p>
+    </fieldset>
+    <fieldset>
+      <legend id="lump-edit">Lump Edit</legend>
+      <p style="margin-top:-5px;">
         <label for="lump-pos-row" id="label-lump-pos-row">X</label>: <input type="text" size="3" id="lump-pos-row">
         <label for="lump-pos-col" id="label-lump-pos-col">Y</label>: <input type="text" size="3" id="lump-pos-col">
         <label for="lump-val" id="label-lump-val">Val</label>: <input type="text" size="7" id="lump-val">
@@ -636,42 +616,28 @@
   </details>
   
   <details>
-    <summary id="title-issue-control">5. Issue Control</summary>
+    <summary id="issue-control-title">5. Issue Control</summary>
     <p><button id="add-edit-issue">Add/Edit Issue</button></p>
     <p><button id="show-issue">Show Issue</button></p>
   </details>
     
   <details>
-    <summary id="title-evaluate">6. Evaluate</summary>
+    <summary id="evaluate-title">6. Evaluate</summary>
     <p>
-      <button id="do-evaluate">Evaluate</button>
-      <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-do-evaluate"></span>
+      <button id="evaluate-sc">Evaluate</button>
+      <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-evaluate-sc"></span>
     </p>
     <p>
-      <button id="do-evaluate-icl">Evaluate ICL</button>
-      <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-do-evaluate-icl"></span>
+      <button id="evaluate-icl">Evaluate ICL</button>
+      <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-evaluate-icl"></span>
     </p>
   </details>
   
   <details>
-    <summary id="export-html-title">7. Export as HTML</summary>
-    <p>
-      <button id="export-result">Export Result</button>
-      <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-export-result"></span>
-    </p>
-    <p>
-      <button id="export-issue">Export Issues</button>
-      <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-export-issue"></span>
-    </p>
-  </details>
-  
-  <div id="dev">
-    <details>
-    <summary>Developer Only</summary>
+    <summary id="reset-sheets">Reset Sheets</summary>
     <p><button id="reset-record-sheets">Reset Record Sheet</button></p>
-    <p><button id="reset-sheets">Reset All</button></p>
-    </details>
-  </div>
+    <p><button id="reset-all-sheets">Reset All</button></p>
+  </details>
 </body>
 
 </html>

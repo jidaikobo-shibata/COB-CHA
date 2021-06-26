@@ -24,6 +24,20 @@ var gSingleACriteria = [
 /**
  * trusted tester's check value
  */
+var gSingleATestTt = [
+  '2.A', '2.B', '2.C', '2.D', '3.A', '4.A', '4.B', '4.C',
+  '4.E', '4.F', '4.G', '4.H', '5.C', '5.D', '5.E', '6.A',
+  '6.B', '7.A', '7.B', '7.C', '7.D', '7.E', '8.A', '9.A',
+  '10.B', '10.C', '10.D', '11.A', '12.A', '12.B', '12.C',
+  '12.D', '13.A', '13.B', '14.A', '14.B', '14.C', '15.A',
+  '15.B', '16.A', '16.B', '17.A', '20.A'
+]
+
+var gDoubleATestTt = [
+  '4.D', '5.A', '5.B', '5.F', '5.G', '5.H', '7.E', '9.B',
+  '9.C', '10.A', '11.B', '13.C', '17.B', '17.C', '18.A', '19.A'
+];
+
 var gRelTtAndCriteria = {
   '1.1.1': ['7.A', '7.B', '7.C', '7.D', '7.E'],
   '1.2.1': ['16.A', '16.B'],
@@ -70,6 +84,13 @@ var gRelTtAndCriteria = {
  */
 var gNonInterference = [
   '1.4.2', '2.1.2', '2.2.2', '2.3.1'
+];
+
+/**
+ * Non-Interference Trusted Tester
+ */
+var gNonInterferenceTt = [
+  '2.A', '2.B', '2.C', '3.A', '4.C'
 ];
 
 /**
@@ -176,16 +197,18 @@ var gRelTechsAndCriteria = {
 /**
  * global variables
  */
-var gFallbacksheetName  = '*Fallback*';
-var gResultSheetName    = '*Result*';
-var gIssueSheetName     = '*Issue*';
-var gUrlListSheetName   = '*URLs*';
-var gTemplateSheetName  = '*Template*';
-var gIclSheetName       = '*ICL*'; // Japanese Only
-var gIclTplSheetName    = '*ICL-TPL*'; // Japanese Only
-var gResourceFolderName = 'resource';
-var gExportFolderName   = 'export';
-var gImagesFolderName   = 'images';
+var gFallbackSheetName  = '*Fallback';
+var gConfigSheetName    = '*Config';
+var gReportSheetName    = '*Report';
+var gResultSheetName    = '*Result';
+var gTotalSheetName     = '*Total';
+var gIssueSheetName     = '*Issue';
+var gUrlListSheetName   = '*URLs';
+var gTemplateSheetName  = '*SC Template';
+var gIclSheetName       = '*ICL Result'; // Japanese Only
+var gIclTplSheetName    = '*ICL Template'; // Japanese Only
+var gResourceFolderName = 'cob-cha-resource';
+var gImagesFolderName   = 'cob-cha-images';
 var gTrueColor          = '#f5fff3';
 var gFalseColor         = '#f7f3ff';
 var gLabelColor         = '#eeeeee';

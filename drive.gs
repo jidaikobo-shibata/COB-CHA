@@ -1,5 +1,12 @@
 /**
  * Google Drive Control for COB-CHA
+ * functions:
+ * - getCurrentFolder
+ * - getTargetFolder
+ * - deleteFileIfExists
+ * - saveHtml
+ * - fileUpload
+ * - uploadScreenshot
  */
 
 /**
@@ -17,7 +24,7 @@ function getCurrentFolder() {
 
 /**
  * Get target folder object
- * @param String target [gResourceFolderName, gExportFolderName, gImagesFolderName]
+ * @param String target [gResourceFolderName, gImagesFolderName]
  * @return Object
  */
 function getTargetFolder(target) {
@@ -27,7 +34,7 @@ function getTargetFolder(target) {
   getTargetFolder.folder = {};
   
   // is already exists?
-  var folders = [gResourceFolderName, gExportFolderName, gImagesFolderName]
+  var folders = [gResourceFolderName, gImagesFolderName]
   while (children.hasNext()){
     var folder = children.next();
     for (var i = 0; i < folders.length; i++) {
@@ -47,7 +54,7 @@ function getTargetFolder(target) {
 
 /**
  * delete file if exists
- * @param String target
+ * @param String targetFolder
  * @param String name
  * @return Void
  */
@@ -64,7 +71,7 @@ function deleteFileIfExists(targetFolder, name) {
 
 /**
  * save HTML
- * @param String target
+ * @param String targetFolder
  * @param String name
  * @param String html
  * @param Bool overwrite

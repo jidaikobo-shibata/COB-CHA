@@ -34,44 +34,24 @@
             // other language
             lang.ui = ui;
             
-            $("#keyboard-operation").html(ui['keyboard-operation']);
+            $("#keyboard-operation-title").html(ui['keyboard-operation-title']);
             $("#keyboard-operation-exp").html(ui['keyboard-operation-exp']);
-            $("#sheet").html(ui['sheet']);
+            $("#sheet-title").html(ui['sheet-title']);
             $("#sheet-exp").html(ui['sheet-exp']);
-            $("#operation").html(ui['operation']);
-            $("#additional-criterion").html(ui['set-additional-criterion']);
-            $("#additional-criterion-exp").html(ui['additional-criterion-exp']);
-            $("#target-urls-setting").html(ui['target-urls-setting']);
-            $("#generate-url-list-sheet-exp").html(ui['generate-url-list-sheet-exp']);
-            $("#examination").html(ui['examination']);
-            $("#testtype").html(ui['test-type']);
-            $("#testtype-exp").html(ui['testtype-exp']);
-            $("#generate-icl-tpl-sheet").html(ui['generate-icl-tpl-sheet']);
-            $("#generate-icl-tpl-sheet-exp").html(ui['generate-icl-tpl-sheet-exp']);
-            $("#apply-icl-tpl").html(ui['apply-icl-tpl']);
-            $("#apply-icl-tpl-exp").html(ui['apply-icl-tpl-exp']);
-            $("#sheet-control").html(ui['sheet-control']);
-            $("#sheet-control-exp").html(ui['sheet-control-exp']);
-            $("#using-template").html(ui['template']);
-            $("#using-template-exp").html(ui['using-template-exp']);
-            $("#add-screenshot").html(ui['add-screenshot']);
-            $("#add-screenshot-exp").html(ui['add-screenshot-exp']);
-            $("#set-all-t").html(ui['set-all-t']);
-            $("#set-all-t-exp").html(ui['set-all-t-exp']);
-            $("#insert-techniques").html(ui['insert-techniques-sheet']);
-            $("#insert-techniques-exp").html(ui['insert-techniques-exp']);
-            $("#add-edit-issue").html(ui['add-edit-issue']);
-            $("#add-edit-issue-exp").html(ui['add-edit-issue-exp']);
-            $("#show-issue").html(ui['show-issue']);
-            $("#show-issue-exp").html(ui['show-issue-exp']);
-            $("#evaluate").html(ui['do-evaluate']);
+            $("#operation-title").html(ui['operation-title']);
+            $("#config-title").html(ui['config-title']);
+            $("#config-exp").html(ui['config-exp']);
+            $("#set-template-title").html(ui['set-template-title']);
+            $("#set-template-exp").html(ui['set-template-exp']);
+            $("#generate-icl-template-sheet-exp").html(ui['generate-icl-template-sheet-exp']);
+            $("#target-urls-setting-title").html(ui['target-urls-setting-title']);
+            $("#target-urls-setting-exp").html(ui['target-urls-setting-exp']);
+            $("#edit-value-title").html(ui['edit-value-title']);
+            $("#edit-value-exp").html(ui['edit-value-exp']);
+            $("#issue-control-title").html(ui['issue-control-title']);
+            $("#issue-control-exp").html(ui['issue-control-exp']);
+            $("#evaluate-title").html(ui['evaluate-title']);
             $("#evaluate-exp").html(ui['evaluate-exp']);
-            $("#evaluate-icl").html(ui['do-evaluate-icl']);
-            $("#evaluate-icl-exp").html(ui['evaluate-icl-exp']);
-            $("#export-issues").html(ui['export-issues']);
-            $("#export-issues-exp").html(ui['export-issues-exp']);
-            $("#export-result").html(ui['export-result']);
-            $("#export-result-exp").html(ui['export-result-exp']);
           })
         .getLangSet('ui');
     });
@@ -81,87 +61,52 @@
 </head>
 <body>
 
-<h2 id="keyboard-operation">Keyboard Operation</h2>
+<h2 id="keyboard-operation-title">Keyboard Operation</h2>
 <p id="keyboard-operation-exp">By pressing <kbd>control + alt(option) + N</kbd>, keyboard focus will move to add-on menu to open COB-CHA Control Pannel.
 By pressing <kbd>ESC</kbd> close control pannel.</p>
 
-<h2 id="sheet">Sheet</h2>
-<p id="sheet-exp">Sheets with names beginning with * are the sheets that are not subject to operations such as "Apply Template".
+<h2 id="sheet-title">Sheet</h2>
+<p id="sheet-exp">Sheets with names beginning with * are the sheets that are not subject to operation by COB-CHA.
 Start with *, such as "*memo," for a sheet of notes for test records.</p>
 
-<h2 id="operation">Operation</h2>
+<h2 id="operation-title">Operation</h2>
 <table>
 <tr>
-	<th id="testtype" style="width:10em;">Test type</th>
-	<td id="testtype-exp">Choose test type from WCAG 2.0, 2.1 or Trusted Tester. And also choose target level.</td>
+	<th id="config-title" style="width:10em;">1. Config</th>
+	<td id="config-exp">Choose test type from WCAG 2.0, 2.1 or Trusted Tester.
+    And also choose target level.
+    And also you must choose Additional Criteria If you suppose to use (It's a trouble to add later).
+    Be sure to generate a settings sheet and save this setting.</td>
 </tr>
 <tr>
-	<th id="additional-criterion">Set additional criterion</th>
-	<td id="additional-criterion-exp">Add Success criterion for Additional Testing.</td>
+	<th id="set-template-title" rowspan="2">2. Set Template</th>
+	<td id="set-template-exp">You can generate template sheets according to test type, level, and additional success criteria.
+    For website exams, record the exams for common areas such as headers and footers in a template.
+    In "4. Edit value", it can be reflected in the test results on all pages at once.
+    Reflecting the template will overwrite the existing result, so please do it first.</td>
 </tr>
 <tr>
-	<th id="target-urls-setting">Target URLs Setting</th>
-	<td id="generate-url-list-sheet-exp">Generate a sheet named "*URLs*".
+	<td id="generate-icl-template-sheet-exp">(Japanese environment only) You can customize the implementation checklist template.
+    When customizing, you can also handle aggregation by matching columns B and C to the original template.</td>
+</tr>
+<tr>
+	<th id="target-urls-setting-title">3. Target URLs Setting</th>
+	<td id="target-urls-setting-exp">Generate a sheet named "*URLs*".
     Enter URLs to be tested here and execute "Generate each record sheets" to generate as many record sheets as there are URLs.</td>
 </tr>
 <tr>
-	<th id="generate-icl-tpl-sheet" style="width:10em;">Generate icl template sheet</th>
-	<td id="generate-icl-tpl-sheet-exp">Create a template for the implementation checklist.
-    You can customize this template. For "Status", enter "Status definition string" in the first column only.
-    For the check items, keep at least the format of "1st column: ID, 2nd column: dropdown, 3rd column: level".</td>
+	<th id="edit-value-title">4. Edit value</th>
+	<td id="edit-value-exp">Templates can be reflected and Lump editing can be performed.</td>
 </tr>
 <tr>
-	<th id="apply-icl-tpl" style="width:10em;">Apply icl template</th>
-	<td id="apply-icl-tpl-exp">Apply the implementation checklist template to all pages including the template.
-    All existing implementation checklists will be deleted. This action cannot be canceled.</td>
-</tr>
-<tr>
-	<th id="using-template">Using template</th>
-	<td id="using-template-exp">By pressing "Generate template sheet" generate template sheet according to test type and level.
-    By pressing "Apply all" or "Apply current row", apply template to URLs' sheets.</td>
-</tr>
-<tr>
-	<th id="add-screenshot">Add screenshot</th>
-	<td id="add-screenshot-exp">You can upload screenshot of webpage. You must activate non-asterisk named sheet.</td>
-</tr>
-<tr>
-	<th id="set-all-t">Set all to 'T'</th>
-	<td id="set-all-t-exp">By pressing "Set all to 'T'", test results turns to T at active sheet for URL.</td>
-</tr>
-<tr>
-	<th id="insert-techniques">Insert techniques</th>
-	<td id="insert-techniques-exp">By pressing "Insert Techs to sheet" techniques dialogue shows up according to WCAG criterion.
-    Your active cell must be placed column D.</td>
-</tr>
-<tr>
-	<th id="add-edit-issue">Add/Edit Issue</th>
-	<td id="add-edit-issue-exp">Generate sheet named "*Issue*" (If not exist), and show up issue dialogue to add row to issue sheet.
+	<th id="issue-control-title">5. Add/Edit Issue</th>
+	<td id="issue-control-exp">Generate sheet named "*Issue*" (If not exist), and show up issue dialogue to add row to issue sheet.
     If your active cell is at existed issue row, edit it.</td>
 </tr>
 <tr>
-	<th id="show-issue">Show Issue</th>
-	<td id="show-issue-exp">Show issues that related to active URL sheet.</td>
-</tr>
-<tr>
-	<th id="evaluate" style="width:10em;">Evaluate</th>
-	<td id="evaluate-exp">Evaluate test results according to URLs' sheet records.
-    Generate test result sheet named "*Result*" if not existed.</td>
-</tr>
-<tr>
-	<th id="evaluate-icl">Evaluate ICL</th>
-	<td id="evaluate-icl-exp">Creat Sheet for "Implement Check List".
-    Generate test result sheet named "*ICL*" if not existed.
-    Japanese Only</td>
-</tr>
-<tr>
-	<th id="export-result">Export Report</th>
-	<td id="export-result-exp">By pressing "Export HTML", Generate HTML file that contains test results of website to Google Drive.</td>
-</tr>
-<tr>
-	<th id="export-issues">Export Issues</th>
-	<td id="export-issues-exp">Generate HTML file that contains issues of website to Google Drive.</td>
+	<th id="evaluate-title" style="width:10em;">6. Evaluate</th>
+	<td id="evaluate-exp">Evaluate test results according to URLs' sheet records.</td>
 </tr>
 </table>
-<p><button onclick="google.script.host.close()" id="close-btn">Close</button></p>
 </body>
 </html>

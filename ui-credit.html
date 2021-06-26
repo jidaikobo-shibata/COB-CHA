@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base target="_top">
+  <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
+  <link href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" rel="stylesheet">
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>
+    /**
+     * lang
+     */
+    var lang = {};
+
+    /**
+     * events
+     */
+    $(function() {
+      google.script.run
+        .withSuccessHandler(
+          function(ret) {
+            $("html").attr('lang', ret);
+          })
+        .getProp('lang');
+
+      google.script.run
+        .withSuccessHandler(
+          function(ui) {
+            // English
+            if (Object.keys(ui).length == 0) {
+              lang.ui = {};
+              return;
+            }
+
+            // other language
+            lang.ui = ui;
+            
+            $("#credit").html(ui['credit']);
+            $("#jidaikobo").html(ui['jidaikobo']);
+            $("#provide-icl").html(ui['provide-icl']);
+            $("#icollabo").html(ui['icollabo']);
+          })
+        .getLangSet('ui');
+    });
+
+  </script>
+  <?!= HtmlService.createHtmlOutputFromFile('ui-css').getContent(); ?>
+</head>
+<body>
+
+<h2 id="program">GAS Program</h2>
+<p><a href="https://www.jidaikobo.com" id="jidaikobo">Jidaikobo Inc.</a></p>
+
+<h2 id="provide-icl">Provide Implement Check List</h2>
+<p><a href="https://ickobe.jp/" id="icollabo">NPO i-collaboration Kobe</a></p>
+</body>
+</html>
