@@ -133,13 +133,16 @@
 
             for(var i = 0; i < ret['allPlaces'].length; i++) {
               var place = ret['allPlaces'][i];
-              var idname = btoa(place).replace(/=/g, '');
+//              var idname = btoa(place).replace(/=/g, '');
+              var idname = 'target-place-'+i;
               $('#places').append($('<tr></tr>')
                          .append($('<td></td>').html('<input type="checkbox" id="'+idname+'" class="places" value="'+place+'">'))
                          .append($('<td></td>').html('<label for="'+idname+'">'+place+'</label>'))
                          .append($('<td></td>').html('<a target="_blank" href="'+place+'"><i class="fas fa-external-link-alt"></i><span style="position: absolute;width: 1px;height: 1px;clip: rect(0 0 0 0);">Open '+place+'</span></a>'))
                         );
             }
+            
+            if ( ! ret['isEdit']) return;
             
             $("#issue-name").val(ret['vals']['issueName']);
             $("#uploaded-file").val(ret['vals']['image']);

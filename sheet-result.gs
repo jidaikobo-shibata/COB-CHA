@@ -299,10 +299,20 @@ function criteriaFormula(criteria, num, type, level, mT, mF, mD) {
   // double-A
   var cRow = 'INDIRECT(ADDRESS(ROW(), 3)&":"&ADDRESS(ROW(), COLUMN()))';
   if (level.length > 1){
+    /*
     var fullAA = type == 'wcag20' || type == 'tt20' ? 38 : 50 ;
     var isAPassed = 'HLOOKUP("A", '+aRows+', ROW(), false) = "A"'; // loop reference...
     var partialAAexpression = 'IF(AND('+isAPassed+', COUNTIF('+cRow+', "'+mT+'") + COUNTIF('+cRow+', "'+mD+'") < '+fullAA+'), "AA-", "A-")';
     var doubleAExpression = 'IF(AND('+isAPassed+', COUNTIF('+cRow+', "'+mT+'") + COUNTIF('+cRow+', "'+mD+'") >= '+fullAA+'), "AA", '+partialAAexpression+')';
+    */
+    var doubleAExpressions = [];
+    var doubleAs = gDoubleACriteria;
+    for (var j = 0; j < doubleAs.length; j++) {
+      if ((type == 'wcag20' || type == 'tt20') && gCriteria21.indexOf(doubleAs[j]) >= 0) continue;
+      doubleAExpressions[j] = 'OR(HLOOKUP("'+doubleAs[j].toString()+'", '+aRows+', ROW(), false) = "'+mT+'"';
+      doubleAExpressions[j] = doubleAExpressions[j]+', HLOOKUP("'+doubleAs[j].toString()+'", '+aRows+', ROW(), false) = "'+mD+'")';
+    }
+    var doubleAExpression = 'IF(AND('+doubleAExpressions.join(', ')+'), "AA", '+singleAExpression+')';
     rets.push('=IF('+niExpression+', "NI", '+doubleAExpression+')');
   }
   

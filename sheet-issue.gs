@@ -37,6 +37,7 @@ function isEditIssue() {
  */
 function dialogValueIssue(isEdit) {
   var ret = {};
+  ret['isEdit'] = isEdit;
   ret['lang'] = getProp('lang');
   ret['type'] = getProp('type');
   ret['level'] = getProp('level');
@@ -48,7 +49,7 @@ function dialogValueIssue(isEdit) {
   for (i = 0; i < all.length; i++) {
     ret['allPlaces'].push(getUrlFromSheet(all[i]));
   }
-
+  
   ret['vals'] = {};
   var celposes = {
     'issueId': 1,
