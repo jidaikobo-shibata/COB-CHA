@@ -5,3 +5,5 @@
 CollaBorative CHeck tool for Accessibility
 
 powered by Google Spreadsheet
+
+- [使い方](https://www.jidaikobo.com/archives/38.html)
