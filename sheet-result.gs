@@ -10,6 +10,58 @@
  */
 
 /**
+ * setCellConditionTF
+ * @param Object sheet
+ * @param Object range
+ * @param String mT
+ * @param String mF
+ * @return Object
+ */
+function setCellConditionTF(sheet, range, mT, mF) {
+  var ruleForF = SpreadsheetApp.newConditionalFormatRule()
+      .whenTextEqualTo(mF)
+      .setBackground(gFalseColor)
+      .setRanges([range])
+      .build();
+  var ruleForT = SpreadsheetApp.newConditionalFormatRule()
+      .whenTextEqualTo(mT)
+      .setBackground(gTrueColor)
+      .setRanges([range])
+      .build();
+  var rules = sheet.getConditionalFormatRules();
+  rules.push(ruleForF);
+  rules.push(ruleForT);
+  sheet.setConditionalFormatRules(rules);
+}
+
+/**
+ * setCellConditionLv
+ * @param Object sheet
+ * @param Object range
+ * @param String level
+ * @return Object
+ */
+function setCellConditionLv(sheet, range, level) {
+  var targetText = 'A';
+  var targetText = level.length > 1 ? 'AA' : targetText;
+  var targetText = level.length > 2 ? 'AAA' : targetText;
+  var ruleForResult = SpreadsheetApp.newConditionalFormatRule()
+      .whenTextEqualTo(targetText)
+      .setBackground(gTrueColor)
+      .setRanges([range])
+      .build();
+  var ruleForNI = SpreadsheetApp.newConditionalFormatRule()
+      .whenTextEqualTo('NI')
+      .setBackground(gFalseColor)
+      .setRanges([range])
+      .build();
+  var rules = sheet.getConditionalFormatRules();
+  rules.push(ruleForResult);
+  rules.push(ruleForNI);
+  sheet.setConditionalFormatRules(rules);
+}
+
+/**
  * evaluate Sc
  * @return String
  */
@@ -20,8 +72,8 @@ function evaluateSc() {
      throw new Error(getUiLang('no-target-page-exists', "No Target Page Exists."));
   }
   
-  var lang = getProp('lang');
-  var type = getProp('type');
+  var lang  = getProp('lang');
+  var type  = getProp('type');
   var level = getProp('level');
 
   // enable iterative calculation
@@ -53,26 +105,19 @@ function evaluateSc() {
     headers[0].push(criteria[i][1]);
     headers[1].push(criteria[i][0]);
   }
-  headers[0].push('NI');
-  headers[1].push('');
-  headers[0].push('A');
-  headers[1].push('');
-  var labelcel = 2; // NI, A
-  if (level.length > 1) {
-    headers[0].push('AA');
-    headers[1].push('');
-    labelcel++; // NI, A, AA
-  }
-  if (level.length > 2) {
-    headers[0].push('AAA');
-    headers[1].push('');
-    labelcel++; // NI, A, AA, AAA
-  }
   var col = headers[0].length;
   var maxCol = col + 2;
-  sheet.getRange(1, 3, 2, col).setValues(headers);
-  sheet.getRange(1, maxCol - labelcel + 1, 2, labelcel).setBackground(gLabelColor);
-  sheet.setColumnWidths(3, col, 30);
+  var countLv = function (maxCol, lv) {
+    return '=COUNTIF(INDIRECT(ADDRESS(2, 3)&":"&ADDRESS(2, '+maxCol+')), "'+lv+'")'
+  }
+
+  headers[0] = headers[0].concat(['NI', 'A', 'AA', 'AAA']);
+  headers[1] = headers[1].concat(['', countLv(maxCol, "A"), countLv(maxCol, "AA"), countLv(maxCol, "AAA")]);
+
+  sheet.getRange(1, 3, 2, col + 4).setValues(headers);
+  sheet.getRange(1, maxCol + 1, 2, 4).setBackground(gLabelColor);
+  sheet.setColumnWidths(3, col + 4, 30);
+  maxCol = maxCol + 4;
 
   // mark
   var mark = getProp('mark');
@@ -80,15 +125,17 @@ function evaluateSc() {
   var mF = mark[3];
   var mD = mark[1];
 
+  // formulras
+  var startRow = 3;
+  var num = allSheets.length + startRow;
+  var criteriaF = criteriaFormula(maxCol, num, mF);
+  var tabulateF = tabulateFormula(maxCol, level);
+
   // tabulate
-  var tabulate = ['Total'];
-  tabulate = pageResultFormula(tabulate, maxCol);
+  var tabulate = ['Total', tabulateF];
 
   // each row
   var vals = [];
-  var row = 3;
-  var num = allSheets.length + row;
-  var criteriaF = criteriaFormula(criteria, num, type, level, mT, mF, mD);
 
   for (var i = 0; i < allSheets.length; i++) {
     if (allSheets[i].getName().charAt(0) == '*') continue;
@@ -96,8 +143,7 @@ function evaluateSc() {
     var targetUrl = getUrlFromSheet(allSheets[i]);
     var targetSheet = allSheets[i].getName();
     each.push('=HYPERLINK("#gid='+allSheets[i].getSheetId()+'","'+targetSheet+'")');
-
-    each = pageResultFormula(each, maxCol);
+    each.push(tabulateF);
 
     var chks = fetchEachResults(type, allSheets[i], criteria, mT, mF, mD);
     for (var j = 0; j < chks.length; j++) {
@@ -113,7 +159,6 @@ function evaluateSc() {
   }
 
   // tabulation row
-  //=IF(COUNTIF(C3:C5,"x") >= 1,"x", IF(COUNTIF(C3:C5,"-") = 3, "-", IF(COUNTIF(C3:C5,"o") = 3, "o","?")))
   tabulate = tabulate.concat(criteriaF);
   vals.push(tabulate);
   
@@ -199,82 +244,60 @@ function fetchEachResults(type, sheet, criteria, mT, mF, mD) {
 }
 
 /**
- * setCellConditionTF
- * @param Object sheet
- * @param Object range
- * @param String mT
- * @param String mF
- * @return Object
- */
-function setCellConditionTF(sheet, range, mT, mF) {
-  var ruleForF = SpreadsheetApp.newConditionalFormatRule()
-      .whenTextEqualTo(mF)
-      .setBackground(gFalseColor)
-      .setRanges([range])
-      .build();
-  var ruleForT = SpreadsheetApp.newConditionalFormatRule()
-      .whenTextEqualTo(mT)
-      .setBackground(gTrueColor)
-      .setRanges([range])
-      .build();
-  var rules = sheet.getConditionalFormatRules();
-  rules.push(ruleForF);
-  rules.push(ruleForT);
-  sheet.setConditionalFormatRules(rules);
-}
-
-/**
- * setCellConditionLv
- * @param Object sheet
- * @param Object range
- * @param String level
- * @return Object
- */
-function setCellConditionLv(sheet, range, level) {
-  var targetText = 'A';
-  var targetText = level.length > 1 ? 'AA' : targetText;
-  var targetText = level.length > 2 ? 'AAA' : targetText;
-  var ruleForResult = SpreadsheetApp.newConditionalFormatRule()
-      .whenTextEqualTo(targetText)
-      .setBackground(gTrueColor)
-      .setRanges([range])
-      .build();
-  var ruleForNI = SpreadsheetApp.newConditionalFormatRule()
-      .whenTextEqualTo('NI')
-      .setBackground(gFalseColor)
-      .setRanges([range])
-      .build();
-  var rules = sheet.getConditionalFormatRules();
-  rules.push(ruleForResult);
-  rules.push(ruleForNI);
-  sheet.setConditionalFormatRules(rules);
-}
-
-/**
- * pageResultFormula
- * @param Array each
+ * tabulateFormula
  * @param Interger maxCol
- * @return Array
+ * @param String level
+ * @return String
  */
-function pageResultFormula(each, maxCol) {
-  each.push('=INDIRECT(ADDRESS(ROW(), '+maxCol+'))');
-  return each;
-}
+function tabulateFormula(maxCol, level) {
+  var niCol = maxCol - 3;
+  var aCol = maxCol - 2;
+  var aaCol = maxCol - 1;
+
+  // non-interference
+  var str = '=IF(INDIRECT(ADDRESS(ROW(), '+niCol+')) = "NI", "NI",';
   
+  // each condition
+  var singleACond = 'INDIRECT(ADDRESS(ROW(), '+aCol+')) = 0';
+  var doubleACond = 'INDIRECT(ADDRESS(ROW(), '+aaCol+')) = 0';
+  var tripleACond = 'INDIRECT(ADDRESS(ROW(), '+maxCol+')) = 0';
+  var singleAF = 'IF('+singleACond+', "A", "A-")';
+  var doubleAF = 'IF(AND('+singleACond+', '+doubleACond+'), "AA",';
+  doubleAF+= 'IF(AND('+singleACond+', INDIRECT(ADDRESS(ROW(), '+aaCol+')) <= -1), "AA-", '+singleAF+'))';
+  
+  // A
+  if (level.length == 1) {
+    str+= singleAF+')';
+    return str;
+  }
+
+  // AA
+  if (level.length == 2) {
+    str+= doubleAF+')';
+    return str;
+  }
+
+  // single AA
+  if (level.length == 3) {
+    str+= 'IF(AND('+singleACond+', '+doubleACond+', '+tripleACond+'), "AAA",';
+    str+= 'IF(AND('+singleACond+', '+doubleACond+', INDIRECT(ADDRESS(ROW(), '+maxCol+')) <= -1), "AAA-",';
+    str+= doubleAF+')';
+    return str;
+  }
+}
+
 /**
  * criteriaFormula
- * @param Array criteria
+ * @param Interger maxCol
  * @param Interger num
- * @param String type
- * @param String level
- * @param String mT
  * @param String mF
- * @param String mD
  * @return Array
  */
-function criteriaFormula(criteria, num, type, level, mT, mF, mD) {
+function criteriaFormula(maxCol, num, mF) {
   var rets = [];
-
+  var cntcol = maxCol - 4;
+  var singleAcol = maxCol - 2;
+  
   // Non-Interference
   var aRows = '1:'+num;
   var niExpressions = [];
@@ -285,45 +308,16 @@ function criteriaFormula(criteria, num, type, level, mT, mF, mD) {
   var niExpression = 'OR('+niExpressions.join(', ')+')';
   rets.push('=IF('+niExpression+', "NI", "")'); // do not use mT as "NI is OK"
   
-  // single-A
-  var singleAExpressions = [];
-  var singleAs = gSingleACriteria;
-  for (var j = 0; j < singleAs.length; j++) {
-    if ((type == 'wcag20' || type == 'tt20') && gCriteria21.indexOf(singleAs[j]) >= 0) continue;
-    singleAExpressions[j] = 'OR(HLOOKUP("'+singleAs[j].toString()+'", '+aRows+', ROW(), false) = "'+mT+'"';
-    singleAExpressions[j] = singleAExpressions[j]+', HLOOKUP("'+singleAs[j].toString()+'", '+aRows+', ROW(), false) = "'+mD+'")';
-  }
-  var singleAExpression = 'IF(AND('+singleAExpressions.join(', ')+'), "A", "A-")';
-  rets.push('=IF('+niExpression+', "NI", '+singleAExpression+')');
-  
-  // double-A
-  var cRow = 'INDIRECT(ADDRESS(ROW(), 3)&":"&ADDRESS(ROW(), COLUMN()))';
-  if (level.length > 1){
-    /*
-    var fullAA = type == 'wcag20' || type == 'tt20' ? 38 : 50 ;
-    var isAPassed = 'HLOOKUP("A", '+aRows+', ROW(), false) = "A"'; // loop reference...
-    var partialAAexpression = 'IF(AND('+isAPassed+', COUNTIF('+cRow+', "'+mT+'") + COUNTIF('+cRow+', "'+mD+'") < '+fullAA+'), "AA-", "A-")';
-    var doubleAExpression = 'IF(AND('+isAPassed+', COUNTIF('+cRow+', "'+mT+'") + COUNTIF('+cRow+', "'+mD+'") >= '+fullAA+'), "AA", '+partialAAexpression+')';
-    */
-    var doubleAExpressions = [];
-    var doubleAs = gDoubleACriteria;
-    for (var j = 0; j < doubleAs.length; j++) {
-      if ((type == 'wcag20' || type == 'tt20') && gCriteria21.indexOf(doubleAs[j]) >= 0) continue;
-      doubleAExpressions[j] = 'OR(HLOOKUP("'+doubleAs[j].toString()+'", '+aRows+', ROW(), false) = "'+mT+'"';
-      doubleAExpressions[j] = doubleAExpressions[j]+', HLOOKUP("'+doubleAs[j].toString()+'", '+aRows+', ROW(), false) = "'+mD+'")';
-    }
-    var doubleAExpression = 'IF(AND('+doubleAExpressions.join(', ')+'), "AA", '+singleAExpression+')';
-    rets.push('=IF('+niExpression+', "NI", '+doubleAExpression+')');
+  var countF = function(cntcol, mF, targetLevelCol) {
+    var str = '=COUNTIFS(';
+    str+= 'INDIRECT(ADDRESS(ROW(), 3)&":"&ADDRESS(ROW(), '+cntcol+')), "'+mF+'",'; // count ""
+    str+= 'INDIRECT("C2:"&ADDRESS(2, '+cntcol+')), INDIRECT(ADDRESS(1, '+targetLevelCol+')))';
+    return str+'*-1';
   }
   
-  // triple-A
-  if (level.length > 2){
-    var fullAAA = (type == 'wcag20' || type == 'tt20') ? 61 : 78 ;
-    var loouUpAA = 'HLOOKUP("AA", '+aRows+', ROW(), false)' ;
-    var isAAPassed = 'IF(AND('+loouUpAA+' = "AA", COUNTIF('+cRow+', "'+mT+'") + COUNTIF('+cRow+', "'+mD+'") >= '+fullAA+'), "AAA-", '+loouUpAA+')';
-    var tripleAexpression = '=IF(COUNTIF('+cRow+', "T") + COUNTIF('+cRow+', "'+mD+'") = '+fullAAA+', "AAA", '+isAAPassed+')';
-    rets.push('=IF('+niExpression+', "NI", '+tripleAexpression+')');
-  }
+  rets.push(countF(cntcol, mF, singleAcol));
+  rets.push(countF(cntcol, mF, singleAcol + 1));
+  rets.push(countF(cntcol, mF, singleAcol + 2));
   return rets;
 }
 
