@@ -97,7 +97,7 @@
       
       google.script.run
         .withSuccessHandler(
-          function(msg, element) {
+          function() {
             google.script.host.close();
           })
         .setAdditionalCriteria(checked.join(', '));

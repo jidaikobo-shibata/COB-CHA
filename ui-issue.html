@@ -142,6 +142,17 @@
                         );
             }
             
+            var checkboxes = ['testId', 'checked', 'techs', 'places'];
+            for (var i = 0; i < checkboxes.length; i++) {
+              if (typeof ret['vals'][checkboxes[i]] === "undefined") continue;
+              var checked = ret['vals'][checkboxes[i]].toString().split(/,/);
+              for (var j = 0; j < checked.length; j++) {
+                var thisvalue = checked[j].trim();
+                if ($("input[value='"+thisvalue+"']").val().length < 0) continue;
+                $("input[value='"+thisvalue+"']").prop('checked', 'checked');
+              }
+            }
+            
             if ( ! ret['isEdit']) return;
             
             $("#issue-name").val(ret['vals']['issueName']);
@@ -158,29 +169,9 @@
               $("#error-notice").val('Notice');
             }
             
-            // checkboxes
+            // issue-visibility
             if (ret['vals']['issueVisibility'] == 'on') {
               $("input#issue-visibility").prop('checked', 'checked');
-            }
-
-            if (ret['vals']['common'] == 'on') {
-              $("input#common").prop('checked', 'checked');
-            }
-            
-            var targetUrl = $("#target-url").val();
-            if ($("input[value='"+targetUrl+"']").val().length > 0) {
-              $("input[value='"+targetUrl+"']").prop('checked', 'checked');
-            }
-
-            var checkboxes = ['testId', 'checked', 'techs', 'places'];
-            for (var i = 0; i < checkboxes.length; i++) {
-              if (typeof ret['vals'][checkboxes[i]] === "undefined") continue;
-              var checked = ret['vals'][checkboxes[i]].toString().split(/,/);
-              for (var j = 0; j < checked.length; j++) {
-                var thisvalue = checked[j].trim();
-                if ($("input[value='"+thisvalue+"']").val().length < 0) continue;
-                $("input[value='"+thisvalue+"']").prop('checked', 'checked');
-              }
             }
           })
         .dialogValueIssue(isEdit);
@@ -224,7 +215,7 @@
 
       google.script.run
         .withSuccessHandler(
-          function(msg, element) {
+          function() {
             google.script.host.close();
           })
         .applyIssue(vals);
@@ -304,15 +295,15 @@
   </tr>
   <tr>
     <th id="criteria-title">Criteria</th>
-    <td style="position:relative;height:150px;"><div style="position:absolute;top:0;height:160px;overflow:auto;overflow-x:hidden;padding:5px"><table id="criteria" style="width: 100%"></table></div></td>
+    <td style="position:relative;height:150px;"><div style="position:absolute;top:0;height:160px;overflow:auto;overflow-x:hidden;padding:5px;width:100%;"><table id="criteria" style="width: 100%"></table></div></td>
   </tr>
   <tr>
     <th style="vertical-align: top;" id="tech-title">Techniques</th>
-    <td style="position:relative;height:150px;"><div style="position:absolute;top:0;height:160px;overflow:auto;overflow-x:hidden;padding:5px"><table id="techs" style="width: 100%"></table></div></td>
+    <td style="position:relative;height:150px;"><div style="position:absolute;top:0;height:160px;overflow:auto;overflow-x:hidden;padding:5px;width:100%;"><table id="techs" style="width: 100%"></table></div></td>
   </tr>
   <tr>
     <th><span id="places-title">Places</span><p><label><button onclick="$('.places').prop('checked', 'checked')" id="all-page">Check All</button></label></p></th>
-    <td style="position:relative;height:150px;"><div style="position:absolute;top:0;height:160px;overflow:auto;overflow-x:hidden;padding:5px"><table id="places" style="width: 100%"></table></div></td>
+    <td style="position:relative;height:150px;"><div style="position:absolute;top:0;height:160px;overflow:auto;overflow-x:hidden;padding:5px;width:100%;"><table id="places" style="width: 100%"></table></div></td>
   </tr>
   <tr>
     <th id="issue-image-title">Image</th>

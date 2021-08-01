@@ -21,6 +21,7 @@ function generateReportSheet(level) {
 //    [getUiLang("report-urls-pages", "Pages' urls"), ""],
     [getUiLang("report-test-days", "Test date"), ""]
   ];
-  generateSheetIfNotExists(gReportSheetName, defaults);
+  var msgOrSheetObj = generateSheetIfNotExists(gReportSheetName, defaults);
+  if (typeof msgOrSheetObj == "string") return msgOrSheetObj;
   return getUiLang('target-sheet-generated', "Generate Target Sheet (%s).").replace('%s', gReportSheetName);
 }

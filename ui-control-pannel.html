@@ -24,7 +24,7 @@
               lang.ui = {};
               return;
             }
-            
+
             // other languages
             lang.ui = ui;
             $("#config-title").html(ui['config-title']);
@@ -33,6 +33,7 @@
             
             $("#set-template-title").html(ui['set-template-title']);
             $("#generate-sc-template-sheet").html(ui['generate-sc-template-sheet']);
+            $("#select-icl-template-set").html(ui['select-icl-template-set']);
             $("#generate-icl-template-sheet").html(ui['generate-icl-template-sheet']);
             
             $("#target-urls-setting-title").html(ui['target-urls-setting-title']);
@@ -46,6 +47,12 @@
             $("#template").html(ui['template']);
             $("#apply-sc-template").html(ui['apply-sc-template']);
             $("#apply-icl-template").html(ui['apply-icl-template']);
+            
+            $("#apply-icl-to-sc").html(ui['apply-icl-to-sc']);
+            $("#apply-icl-to-sc-select-e").html(ui['apply-icl-to-sc-select-e']);
+            $("#apply-icl-to-sc-select-b").html(ui['apply-icl-to-sc-select-b']);
+            $("#do-apply-icl-to-sc").html(ui['do-lump-edit']);
+            
             $("#label-lump-val").html(ui['value']);
             $("#label-lump-pos-row").html(ui['pos-row']);
             $("#label-lump-pos-col").html(ui['pos-col']);
@@ -85,6 +92,7 @@
       $('#generate-url-list-sheet').click(onClickGenarateUrlList);
       $('#add-screenshot').click(onClickAddScreenshot);
       $('#apply-conformance-to-all').click(onClickApplyConformanceToAll);
+      $('#do-apply-icl-to-sc').click(onClickDoApplyIclToSc);
       $('#get-current-pos').click(onClickGetCurrentPos);
       $('#do-lump-edit').click(onClickDoLumpEdit);
       $('#apply-sc-template').click(onClickApplyScTemplate);
@@ -156,6 +164,17 @@
             }
           })
         .getProp('mark');
+        
+        // ICL select
+        google.script.run
+        .withSuccessHandler(
+          function(icl) {
+            for (var key in icl) {
+              var label = icl[key]['label'];
+              $('#icl-template-set').append($('<option>').html(label).val(key));
+            }
+          })
+        .getLangSet('iclList');
     }
 
     /**
@@ -227,9 +246,12 @@
     
     /**
      * Show Status
+     * @param String msg
+     * @return Void
      */
     function showStatus(msg) {
-      alert(msg);
+      if (msg == "") return;
+      google.script.run.showAlert(msg);
     }
     
     /**
@@ -294,7 +316,7 @@
             showStatus(msg);
             progressIndicator('generate-icl-template-sheet', 'progress-generate-icl-template-sheet', false);
           })
-        .generateIclTplSheet();
+        .generateIclTplSheet($('#icl-template-set').val());
     }
 
     /**
@@ -332,8 +354,6 @@
      * Apply Comformance to all
      */
     function onClickApplyConformanceToAll() {
-      var msg = Object.keys(lang.ui).length == 0 ? 'This Page\'s All "Check will be overwritten."' : lang.ui['this-pages-all-check-will-be-overwritten'];
-      if (confirm(msg) === false) return;
       progressIndicator('do-set-all-t', 'progress-set-all-t', true);
 
       google.script.run
@@ -354,8 +374,6 @@
      * apply sc template
      */
     function onClickApplyScTemplate() {
-      var msg = Object.keys(lang.ui).length == 0 ? 'CAUTION: All result will be overwritten.' : lang.ui['caution-using-template'];
-      if (confirm(msg) === false) return;
       progressIndicator('apply-sc-template', 'progress-apply-sc-template', true);
 
       google.script.run
@@ -376,8 +394,6 @@
      * Apply Icl template
      */
     function onClickApplyIclTemplate() {
-      var msg = Object.keys(lang.ui).length == 0 ? 'This action cannot revert.' : lang.ui['caution-using-template'];
-      if (confirm(msg) === false) return;
       progressIndicator('apply-icl-template', 'progress-apply-icl-template', true);
       
       google.script.run
@@ -395,13 +411,32 @@
     }
 
     /**
+     * do Apply ICL To Sc
+     */
+    function onClickDoApplyIclToSc() {
+      progressIndicator('do-apply-icl-to-sc', 'progress-do-apply-icl-to-sc', true);
+      
+      google.script.run
+        .withSuccessHandler(
+          function(msg) {
+            showStatus(msg);
+            progressIndicator('do-apply-icl-to-sc', 'progress-do-apply-icl-to-sc', false);
+          })
+        .withFailureHandler(
+          function(msg) {
+            showStatus(msg);
+            progressIndicator('do-apply-icl-to-sc', 'progress-do-apply-icl-to-sc', false);
+          })
+        .doApplyIclToSc($('#apply-icl-to-sc-select').val());
+    }
+
+    /**
      * Get Current position
      */
     function onClickGetCurrentPos() {
       google.script.run
         .withSuccessHandler(
           function(pos) {
-          alert(pos);
             $('#lump-pos-row').val(pos[0]);
             $('#lump-pos-col').val(pos[1]);
             $('#lump-val').val(pos[2]);
@@ -413,8 +448,6 @@
      * Do Lump Edit
      */
     function onClickDoLumpEdit() {
-      var msg = Object.keys(lang.ui).length == 0 ? 'CAUTION: All result will be overwritten.' : lang.ui['template-caution'];
-      if (confirm(msg) === false) return;
       progressIndicator('do-lump-edit', 'progress-do-lump-edit', true);
       google.script.run
         .withSuccessHandler(
@@ -468,12 +501,12 @@
 
       google.script.run
         .withSuccessHandler(
-          function(msg, element) {
+          function(msg) {
             showStatus(msg);
             progressIndicator('evaluate-sc', 'progress-evaluate-sc', false);
           })
         .withFailureHandler(
-          function(msg, element) {
+          function(msg) {
             showStatus(msg);
             progressIndicator('evaluate-sc', 'progress-evaluate-sc', false);
           })
@@ -488,12 +521,12 @@
 
       google.script.run
         .withSuccessHandler(
-          function(msg, element) {
+          function(msg) {
             showStatus(msg);
             progressIndicator('evaluate-icl', 'progress-evaluate-icl', false);
           })
         .withFailureHandler(
-          function(msg, element) {
+          function(msg) {
             showStatus(msg);
             progressIndicator('evaluate-icl', 'progress-evaluate-icl', false);
           })
@@ -506,8 +539,6 @@
      */
     function onClickResetSheets(obj) {
       var isAll = obj.data.isAll;
-      var caution = Object.keys(lang.ui).length == 0 ? 'CAUTION: Reset Sheets?' : lang.ui['reset-caution'];
-      if (confirm(caution) === false) return;
 
       google.script.run
         .withSuccessHandler(
@@ -566,10 +597,13 @@
       <button id="generate-sc-template-sheet">Generate SC template</button>
       <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-generate-sc-template-sheet"></span>
     </p>
-    <p class="icl-tpl">
+    <fieldset class="icl-tpl">
+      <legend><label for="icl-template-set" id="select-icl-template-set">Select ICL template</label></legend>
+      <select id="icl-template-set" style="margin-bottom: 1em;">
+      </select>
       <button id="generate-icl-template-sheet">Generate ICL template</button>
       <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-generate-icl-template-sheet"></span>
-    </p>
+    </fieldset>
   </details>
    
   <details>
@@ -600,6 +634,19 @@
       <p class="icl-tpl">
         <button id="apply-icl-template">Apply ICL Sheet</button>
         <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-apply-icl-template"></span>
+      </p>
+    </fieldset>
+    <fieldset class="icl-tpl">
+      <legend id="apply-icl-to-sc">Reflect the implementation check results on each page in the success criteria</legend>
+      <p style="margin-top:-5px;">
+        <select id="apply-icl-to-sc-select" aria-labelledby="apply-icl-to-sc">
+          <option value="5" id="apply-icl-to-sc-select-e">Reflect To col:E</option>
+          <option value="2" id="apply-icl-to-sc-select-b">Reflect To col:B</option>
+        </select>
+      </p>
+      <p>
+        <button id="do-apply-icl-to-sc">Apply all</button>
+        <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-do-apply-icl-to-sc"></span>
       </p>
     </fieldset>
     <fieldset>

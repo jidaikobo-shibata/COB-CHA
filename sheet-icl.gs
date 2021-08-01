@@ -32,36 +32,40 @@ function getIclApplyPulldownMenu() {
 
 /**
  * Generate ICL Sheets
+ * @param String type
  * @return Void
  */
-function generateIclTplSheet() {
+function generateIclTplSheet(type) {
   var defaults = [[
     "ID",
     getUiLang("pass", "Pass"),
     getUiLang("eliminated", "eliminated"),
     getUiLang("memo", "memo"),
+    getUiLang("criterion", "criterion"),
     getUiLang("level", "level"),
-    getUiLang("tech", "tech"),
-    getUiLang("icl-note", "-:not applied,　o:conformance,　　x:non-conformance. \"eliminated\": test way not applied")
+    getUiLang("tech", "tech")
+//    getUiLang("icl-note", "-:not applied,　o:conformance,　　x:non-conformance. \"eliminated\": test way not applied")
   ]];
-  var sheet = generateSheetIfNotExists(gIclTplSheetName, defaults, "row");
-  generateIcl(sheet);
+  var msgOrSheetObj = generateSheetIfNotExists(gIclTplSheetName, defaults, "row");
+  if (typeof msgOrSheetObj == "string") return msgOrSheetObj;
+  generateIcl(msgOrSheetObj, type);
   return getUiLang('target-sheet-generated', "Generate Target Sheet (%s).").replace('%s', gIclTplSheetName);
 }
 
 /**
  * Generate ICL
  * @param Object sheet
+ * @param String type
  * @return Void
  */
-function generateIcl(sheet) {
+function generateIcl(sheet, type) {
   // value
   var usingCriteria = getUsingCriteria();
-  var iclSituation  = getLangSet('iclSituation');
-  var iclTest       = getLangSet('iclTest');
+  var iclSituation  = getLangSet('iclSituation'+type);
+  var iclTest       = getLangSet('iclTest'+type);
   var techNames     = getLangSet('tech');
   var row           = 2;
-  
+    
   for (var j = 0; j < usingCriteria.length; j++) {
     // criterion title
     var clevel     = usingCriteria[j][0];
@@ -85,16 +89,33 @@ function generateIcl(sheet) {
       var eachNum = 1;
       var eachTest = [];
       for (var l = 0; l < iclTest[testId].length; l++) {
+
         var eachTestId = testId+'-'+eachNum;
-        // testid, conformance, eliminated, memo, level, tech-id, tech-title
-        var eachTechNames = [];
-        for (var m = 0; m < iclTest[testId][l].length; m++) {
-          eachTechNames.push(techNames[iclTest[testId][l][m]]+" ("+iclTest[testId][l][m]+")");
+        
+        var isApply = '';
+        if (type == 'Waic') {
+          // WAIC
+          var eachTechId = iclTest[testId][l].join("\n");
+          var eachTechNames = [];
+          for (var m = 0; m < iclTest[testId][l].length; m++) {
+            eachTechNames.push(techNames[iclTest[testId][l][m]]+" ("+iclTest[testId][l][m]+")");
+          }
+          var eachTechName = eachTechNames.join("\n");
+        } else {
+          // COB-CHA , Icollabo
+          if (type == 'Cobcha') {
+            var eachTechId = iclTest[testId][l][0];
+          } else {
+            var eachTechId = iclTest[testId][l][0].split("/").join("\n");
+          }
+          var eachTechName = iclTest[testId][l][1];
+          isApply = iclTest[testId][l][2] ? "x" : isApply;
         }
-        eachTest.push([eachTestId, "", "", "", clevel, iclTest[testId][l].join("\n"), eachTechNames.join("\n")]);
+        
+        eachTest.push([eachTestId, "", isApply, "", cCriterion, clevel, eachTechId, eachTechName]);
         eachNum++;
       }
-      sheet.getRange(row, 1, eachTest.length, 7).setValues(eachTest).setVerticalAlignment('top');
+      sheet.getRange(row, 1, eachTest.length, 8).setValues(eachTest).setVerticalAlignment('top');
       sheet.getRange(row, 2, eachTest.length, 1).setDataValidation(getIclPassPulldownMenu()).setHorizontalAlignment('center');
       sheet.getRange(row, 3, eachTest.length, 1).setDataValidation(getIclApplyPulldownMenu()).setHorizontalAlignment('center');
       sheet.getRange(row, 4, eachTest.length, 1).setHorizontalAlignment('center');
@@ -108,6 +129,10 @@ function generateIcl(sheet) {
   var mF = mark[3];
     
   sheet.setColumnWidth(1, 70);
+  sheet.setColumnWidth(2, 50);
+  sheet.setColumnWidth(3, 50);
+  sheet.setColumnWidth(5, 60);
+  sheet.setColumnWidth(6, 50);
 
   var range = sheet.getRange(2, 2, row, 1);
   setCellConditionTF(sheet, range, mT, mF)

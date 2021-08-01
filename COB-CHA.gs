@@ -15,6 +15,7 @@
  * - showHelp
  * - showCredit
  * - showDialog
+ * - showAlert
  * - getCurrentPos
  * - getUrlFromSheet
  * - getSheetByUrl
@@ -138,6 +139,34 @@ function showDialog(sheetname, width, height, title, html) {
 }
 
 /**
+ * show alert
+ * @param String msg
+ * @return Void
+ */
+function showAlert(msg) {
+  var ui = SpreadsheetApp.getUi();
+  ui.alert(
+    'COB-CHA',
+    msg,
+    ui.ButtonSet.OK
+  );
+}
+
+/**
+ * show confirm
+ * @param String msg
+ * @return String
+ */
+function showConfirm(msg) {
+  var ui = SpreadsheetApp.getUi();
+  return ui.alert(
+    'COB-CHA',
+    msg,
+    ui.ButtonSet.OK_CANCEL
+  );
+}
+
+/**
  * Get Current Position
  * @return Array
  */
@@ -187,9 +216,9 @@ function getProp(prop) {
   
   var vals = {
     "lang"      : userLocale,
-    "type"      : "wcag21",
+    "type"      : "wcag20",
     "level"     : "AA",
-    "mark"      : ['NT', 'DNA', 'T', 'F'],
+    "mark"      : ['?', '-', 'o', 'x'],
     "additional": ""
   };
   
@@ -200,7 +229,7 @@ function getProp(prop) {
   vals['lang']  = ['en', 'ja'].indexOf(rets[0][0]) > -1 ? rets[0][0] : vals['lang'];
   vals['type']  = ['wcag20', 'wcag21', 'tt20'].indexOf(rets[1][0]) > -1 ? rets[1][0] : vals['type'];
   vals['level'] = ['A', 'AA', 'AAA'].indexOf(rets[2][0]) > -1 ? rets[2][0] : vals['level'];
-  vals['mark']  = rets[3][0].toString().charAt(0) == 't' ? vals['mark'] : ['?', '-', 'o', 'x'];
+  vals['mark']  = rets[3][0].toString().charAt(0) == 'o' ? vals['mark'] : ['NT', 'DNA', 'T', 'F'];
   vals['additional']  = rets[4][0].toString();
   //  vals['lang']  = 'en';
 
@@ -223,8 +252,13 @@ function getLangSet(setName) {
       case 'tech':       return getTechValJa();
       case 'ui':         return getUiJa();
       // ICL: Japanese Only
-      case 'iclSituation': return getIclSituation();
-      case 'iclTest':      return getIclTest();
+      case 'iclList':              return getIclListJa();
+      case 'iclSituationWaic':     return getIclSituationWaic();
+      case 'iclTestWaic':          return getIclTestWaic();
+      case 'iclSituationCobcha':   return getIclSituationCobcha();
+      case 'iclTestCobcha':        return getIclTestCobcha();
+      case 'iclSituationIcollabo': return getIclSituationIcollabo();
+      case 'iclTestIcollabo':      return getIclTestIcollabo();
     }
   }
   
@@ -457,6 +491,9 @@ function getAllSheets() {
  * @return String
  */
 function resetSheets(isAll) {
+  var msg = getUiLang('reset-caution', 'CAUTION: Reset Sheets?');
+  if(showConfirm(msg) == "CANCEL") return '';
+
   var ss = getSpreadSheet();
   var all = ss.getSheets();
   

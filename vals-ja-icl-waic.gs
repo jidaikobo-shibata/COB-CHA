@@ -8,7 +8,7 @@
  * Situations of Implement Check List
  * @return Array
  */
-function getIclSituation () {
+function getIclSituationWaic () {
   return {
     '1.1.1' : {
       '1.1.1-A'   : '状況A: 短い説明によって、非テキストコンテンツと同じ目的を果たし、同じ情報を提示できる場合:',
@@ -321,7 +321,7 @@ function getIclSituation () {
  * Each Test of Implement Check List
  * @return Array
  */
-function getIclTest () {
+function getIclTestWaic () {
   return {
     '1.1.1-A' : [
       ['G94'],
@@ -750,8 +750,8 @@ function getIclTest () {
 
     // 1.2.4
     '1.2.4' : [
-      ['G9/G93'],
-      ['G9/G87']
+      ['G9', 'G93'],
+      ['G9', 'G87']
     ],
 
     // 1.2.5
@@ -1071,7 +1071,7 @@ function getIclTest () {
       ['G110', 'H76']
     ],
     '3.2.5-C' : [
-      ['H83']
+      ['H83'],
       ['SCR24']
     ],
     '3.2.5-D' : [

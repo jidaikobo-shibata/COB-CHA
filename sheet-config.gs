@@ -13,9 +13,10 @@
  * @param String testType
  * @param String level
  * @param String mark
+ * @param Bool force
  * @return String
  */
-function generateConfigSheet(lang, testType, level, mark) {
+function generateConfigSheet(lang, testType, level, mark, force) {
   var defaults = [
     ["Lang", lang],
     ["Type", testType],
@@ -23,7 +24,8 @@ function generateConfigSheet(lang, testType, level, mark) {
     ["Mark Type", mark],
     ["Additional Criteria", ""]
   ];
-  generateSheetIfNotExists(gConfigSheetName, defaults);
+  var msgOrSheetObj = generateSheetIfNotExists(gConfigSheetName, defaults);
+  if (force !== true && typeof msgOrSheetObj == "string") return msgOrSheetObj;
   return getUiLang('target-sheet-generated', "Generate Target Sheet (%s).").replace('%s', gConfigSheetName);
 }
 
@@ -36,7 +38,7 @@ function generateConfigSheet(lang, testType, level, mark) {
  * @return Void
  */
 function openDialogAdditionalCriteria(lang, testType, level, mark) {
-  generateConfigSheet(lang, testType, level, mark);
+  generateConfigSheet(lang, testType, level, mark, true);
   showDialog('ui-additional-criteria', 500, 400, getUiLang('set-additional-criteria', 'Set additional criteria'));
 }
 
@@ -64,5 +66,5 @@ function setAdditionalCriteria(checked) {
   var sheet = getSheetIfExists(gConfigSheetName);
   if (sheet === false) return getUiLang('no-target-sheet-exists', "Target sheet (%s) is not exists.").replace('%s', gConfigSheetName);
   sheet.getRange(5, 2).setValue(checked);
-  Browser.msgBox(getUiLang('update-value', 'Update %s').replace('%s', getUiLang('additional-criteria', 'additional criteria')));
+  showAlert(getUiLang('update-value', 'Update %s').replace('%s', getUiLang('additional-criteria', 'additional criteria')))
 }

@@ -277,11 +277,11 @@ function tabulateFormula(maxCol, level) {
     return str;
   }
 
-  // single AA
+  // AAA
   if (level.length == 3) {
     str+= 'IF(AND('+singleACond+', '+doubleACond+', '+tripleACond+'), "AAA",';
     str+= 'IF(AND('+singleACond+', '+doubleACond+', INDIRECT(ADDRESS(ROW(), '+maxCol+')) <= -1), "AAA-",';
-    str+= doubleAF+')';
+    str+= doubleAF+')))';
     return str;
   }
 }

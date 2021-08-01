@@ -34,6 +34,8 @@
             // other language
             lang.ui = ui;
             
+            $("#online-manual-title").html(ui['online-manual-title']);
+            $("#online-manual").html(ui['online-manual']);
             $("#keyboard-operation-title").html(ui['keyboard-operation-title']);
             $("#keyboard-operation-exp").html(ui['keyboard-operation-exp']);
             $("#sheet-title").html(ui['sheet-title']);
@@ -60,6 +62,9 @@
   <?!= HtmlService.createHtmlOutputFromFile('ui-css').getContent(); ?>
 </head>
 <body>
+
+<h2 id="online-manual-title">Online Manual</h2>
+<p><a href="https://www.jidaikobo.com/archives/38.html" id="online-manual" target="_blank">Online Manual (ja, Open new tab)</a></p>
 
 <h2 id="keyboard-operation-title">Keyboard Operation</h2>
 <p id="keyboard-operation-exp">By pressing <kbd>control + alt(option) + N</kbd>, keyboard focus will move to add-on menu to open COB-CHA Control Pannel.

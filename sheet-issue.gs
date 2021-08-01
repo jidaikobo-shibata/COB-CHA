@@ -104,7 +104,7 @@ function generateIssueSheet() {
     getUiLang('preview', 'Preview'),
     getUiLang('memo', 'Memo')
   ]];
-  generateSheetIfNotExists(gIssueSheetName, defaults, "row");
+  generateSheetIfNotExists(gIssueSheetName, defaults, "row"); // do not return msg
 }
 
 /**
@@ -165,8 +165,8 @@ function setIssueList() {
   var ss = getSpreadSheet();
   var issueSheet = ss.getSheetByName(gIssueSheetName);
   var activeSheet = ss.getActiveSheet();
-  var activeSheetName = activeSheet.getName();
-
+  var activeSheetName = activeSheet.getName().toString();
+  
   // target URL
   if (activeSheetName == gResultSheetName) {
     var targetRow = activeSheet.getActiveCell().getRow();
@@ -182,7 +182,7 @@ function setIssueList() {
   var dataObj = issueSheet.getDataRange().getValues();
   var issues = [];
   for (var i = 1; i < dataObj.length; i++) {
-    var urls = dataObj[i][8].split(',');
+    var urls = dataObj[i][8].toString().split(',');
     for (var j = 0; j < urls.length; j++) {
       var issueurl = urls[j].trim();
       if (issueurl != url) continue;
