@@ -625,8 +625,10 @@ function getUiJa ()
     'no-target-sheet-exists': '対象のシート（%s）が存在しません',
     'target-sheet-already-exists': '対象のシート（%s）が既に存在しています。手動で既存のシートを削除してください',
     'target-sheet-generated': '対象のシート（%s）を生成しました',
+    'target-sheet-updated': '対象のシート（%s）を更新しました',
     'update-value': '%sを更新しました',
     'no-target-page-exists': '対象のページが存在しません',
+    'no-target-page-exists2': '対象のページが存在しません。'+gUrlListSheetName+'の「一括処理の対象」列に「o」を入れてください',
     'icl-tpl-not-exists': '実装チェックリストのテンプレート（'+gIclTplSheetName+'）が存在しません。集計対象が存在していません',
     'sheet-generated': '%s 枚のシートを生成しました',
     'sheet-deleted': '%s 枚のシートを削除しました',
@@ -634,7 +636,7 @@ function getUiJa ()
     'sheet-already-exists': "%s 枚のシートが既に存在していました\n",
     'edit-done': '編集しました',
     'add-done': '新規追加しました',
-    'this-pages-all-check-will-be-overwritten': 'このページのすべての「チェック」の値が適合になります',
+    'this-pages-all-check-will-be-overwritten': 'このページのすべての「判定」の値が合格になります',
     'caution-using-template': '全ての試験結果がテンプレートの値で上書きされます',
     'current-sheet-is-not-for-webpage': 'このシートはウェブページ用ではありません',
     'image-uploaded': '画像を登録しました',
@@ -642,64 +644,67 @@ function getUiJa ()
     'failed-upload': 'アップロードに失敗しました',
     'evaluated': '集計しました',
     'no-template-found': 'テンプレートが見つかりませんでした',
-    'template-caution': '注意！: 全てのシートの値が上書きされます',
+    'template-caution': '注意！: 対象のシートの値が上書きされます',
+    'canceled': '中止しました',
+    'error-lump-edit': '一括編集の行/列に不正な値がセットされています。範囲を指定し直してください',
 
     // words
     'additional-criteria': '追加の達成基準',
+    'symbol-using': '記号',
+    'standard-using': '規格',
+    'lang-using': '言語',
     'level': 'レベル',
     'date': '日付',
     'value': '値',
     'result': '結果',
     'criterion': '達成基準',
-    'check': 'チェック',
+    'check': '判定',
     'tech': '達成方法',
     'memo': '備考',
     'template': 'テンプレート',
     'tester': 'テスト担当者',
     'screenshot': 'スクリーンショット',
 
-    // control-pannel
+    // control-panel
     'in-progress': '処理中',
     'control-panel-title': 'コントロールパネル',
     
     'config-title': '1. 試験の方式を決定',
     'generate-config-sheet': '設定シートを生成',
     'set-additional-criteria': '追加の達成基準を設定',
-    'generate-report': '「試験結果の表示」シートを生成',
 
-    'set-template-title': '2. テンプレートを設定',
-    'generate-sc-template-sheet': 'テンプレート（達成基準）シートを生成',
-    'select-icl-template-set': '実装チェックリストを選択',
-    'generate-icl-template-sheet': 'テンプレート（実装）シートを生成',
-    
-    'target-urls-setting-title': '3. 試験対象の設定',
+    'target-urls-setting-title': '2. 試験対象の設定',
     'generate-url-list-sheet': 'URL一覧のシートを生成',
     'generate-each-record-sheets': 'URLごとの記録シートを生成',
     
+    'use-template-title': '3. テンプレート操作',
+    'generate-sc-template-sheet': '「達成基準」シートを生成',
+    'apply-sc-template': '「達成基準」を対象シートに反映',
+    'select-icl-template-set': '実装チェックリストを選択',
+    'generate-icl-template-sheet': '「実装」シートを生成',
+    'apply-icl-template': '「実装」を対象シートに反映',
+    
     'edit-value-title': '4. 値の編集',
+    'current-sheet': '現在のシート',
     'add-screenshot': 'スクリーンショット追加',
-    'apply-conformance-to-all': 'すべて適合にする',
-    'lump-edit': '一括編集',
+    'apply-conformance-to-all': 'すべて合格にする',
+    'lump-edit': '複数シート一括編集',
     'pos-row': '行',
     'pos-col': '列',
-    'get-current-pos': '現在位置を取得',
-    'do-lump-edit': '全シートに反映',
-    'apply-sc-template': 'テンプレート（達成基準）を反映',
-    'apply-icl-template': 'テンプレート（実装）を反映',
-
-    'apply-icl-to-sc': '各ページの実装チェック結果を達成基準に反映',
-    'apply-icl-to-sc-select-e': 'E列に反映（参考）',
-    'apply-icl-to-sc-select-b': 'B列に反映（上書き）',
+    'get-current-pos': '現在位置取得',
+    'do-lump-edit': '対象シートに反映',
     
     'issue-control-title': '5. 問題点管理',
     'add-edit-issue': '問題点を新規作成/編集',
     'show-issue': 'このページの問題点一覧',
 
     'evaluate-title': '6. 集計',
+    'apply-target-icl-to-sc': '対象ページごとの実装チェックを集計',
     'evaluate-sc': '達成基準チェックを集計する',
     'evaluate-icl': '実装チェックを集計する',
+    'generate-report': '「試験結果の表示」シートを生成',
 
-    'reset-sheets': 'シート削除',
+    'etc-title': 'その他',
     'reset-record-sheets': '記録シート削除',
     'reset-all-sheets': '全シート削除',
     'reset-caution': '注意!: 削除したシートは復活できません',
@@ -710,9 +715,15 @@ function getUiJa ()
     'tech-for': '%s の達成方法',
 
     // config-sheet
-    'mark-type-note-ox':'o:適合 x:不適合 -:適用なし ?:未テスト',
-    'mark-type-note-tf':'T:適合 F:不適合 DNA:適用なし NT:未テスト',
+    'mark-type-note-ox':'o:合格 x:不合格 -:適用なし ?:未テスト',
+    'mark-type-note-tf':'T:合格 F:不合格 DNA:適用なし NT:未テスト',
+    'force-update-config' : '設定シートが既に存在します。設定を上書きしてもいいですか？',
+    'confirm-control-panel-update' : '言語を変更するとコントロールパネルを再読み込みしますがよろしいですか？',
     
+    // url-list-sheet
+    'target-lump-edit': '一括処理の対象（o）',
+    'error-sheetname-must-be-numeric': 'シート名（1列目）はすべて数値にしてください',
+
     // report-sheet
     'report-declaration-day': '表明日',
     'report-standard-version': '規格の規格番号及び改正年',
@@ -726,14 +737,14 @@ function getUiJa ()
     
     // issue-sheet
     'name': '名称',
-    'issue-visibility': '問題点を表示',
+    'issue-solved': '解決済み',
     'explanation': '説明',
     'priority': '重要度',
-    'achievementDna': '達成度 (適用なし)',
     'places': 'ページ',
     'image': '画像',
     'preview': 'プレビュー',
     'edit-issue': '問題点を編集',
+    'update-issue': '問題点を更新',
     'add-new-issue': '問題点を新規作成',
     'no-particular-issue-was-reported-on-this-page': 'このページに固有の問題は存在しませんでした',
     'no-common-issue-was-reported-on-this-page': 'このページに共通の問題は存在しませんでした',
@@ -742,10 +753,15 @@ function getUiJa ()
     'common-issue-on-this-page': 'このページに存在する共通の問題',
     'all-page': 'すべてのページ',
 
+    // result
+    'achievement': '達成度',
+    'applied': '適用',
+
     // icl-sheet
-    'pass': '適合',
+    'pass': '合格',
     'eliminated': '除外',
-    'icl-note': '-:適用なし,　o:適合,　　x:不適合。「除外」は、試験方法として採用しなかったもの',
+    'icl-note': '-:適用なし,　o:合格,　　x:不合格。「除外」は、試験方法として採用しなかったもの',
+    'error-no-icl-found': '実装チェックリストが見つかりませんでした',
     
     // help
     'online-manual-title': 'オンラインマニュアル',
@@ -787,5 +803,13 @@ function getIclListJa ()
     'Cobcha': {
       'label' : 'COB-CHA式'
     },
+    'CobchaEasy': {
+      'label' : 'COB-CHA式（簡易 Aのみ）'
+    },
+    /*
+    'CobchaPdf': {
+      'label' : 'COB-CHA式 (PDF)'
+    },
+    */
   };
 }

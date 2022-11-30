@@ -1,0 +1,107 @@
+<script>
+/**
+ * Show Status
+ * @param String msg
+ * @return Void
+ */
+function showStatus(msg) {
+  if (msg == "") return;
+  google.script.run.showAlert(msg);
+}
+
+/**
+ * Show Status and turn off its progress
+ * @param String msg
+ * @param String buttonId
+ * @return Void
+ */
+function showStatusAndFin(msg, buttonId) {
+  if (msg == "") return;
+  google.script.run
+    .withSuccessHandler(
+      function(ret) {
+        progressIndicator(ret['buttonId'], 'progress-'+ret['buttonId'], false);
+      })
+    .withFailureHandler(
+      function(ret) {
+        progressIndicator(ret['buttonId'], 'progress-'+ret['buttonId'], false);
+      })
+    .showAlert(msg, buttonId);
+}
+
+/**
+ * progress indicator
+ * @param String buttonId
+ * @param String indicatorId
+ * @param Bool on
+ * @return Void
+ */
+function progressIndicator(buttonId, indicatorId, on) {
+  if (on) {
+    $('#'+buttonId).prop('disabled', true);
+    if (indicatorId) {
+      var msg = Object.keys(lang.ui).length == 0 ? 'in progress' : lang.ui['in-progress'];
+      $('#'+indicatorId).show();
+      $('#'+indicatorId).html('<span class="skip">'+msg+'</span>');
+    }
+  } else {
+    $('#'+buttonId).prop('disabled', false);
+    if (indicatorId) {
+      $('#'+indicatorId).hide();
+      $('#'+indicatorId).html('');
+    }
+  }
+}
+</script>
+
+<style>
+body
+{
+  padding: 10px;
+}
+
+details
+{
+  padding: 10px;
+  border:1px #eee solid;
+  margin-bottom: 10px;
+}
+
+summary
+{
+  font-weight: bold;
+}
+
+summary:hover,
+input[type=button],
+button
+{
+  cursor: pointer;
+}
+
+.skip
+{
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  clip: rect(0 0 0 0);
+}
+
+*:focus
+{
+  outline: solid !important;
+}
+
+kbd
+{
+  display: inline-block;
+  padding: 3px;
+  border: 1px #aaa solid;
+}
+
+#control-icl,
+#evaluate-icl
+{
+  display: none;
+}
+</style>

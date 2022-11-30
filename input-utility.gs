@@ -4,7 +4,9 @@
  * - applyAllToT
  * - applyScTemplate
  * - applyIclTemplate
+ * - getCurrentPos
  * - doLumpEdit
+ * - iclToSc
  */
 
 /**
@@ -13,7 +15,7 @@
  */
 function applyConformanceToAll() {
   var msg = getUiLang('this-pages-all-check-will-be-overwritten', 'This Page\'s All "Check will be overwritten.');
-  if(showConfirm(msg) == "CANCEL") return '';
+  if(showConfirm(msg) != "OK") return getUiLang('canceled', 'canceled');
   
   var activeSheet = getActiveSheet();
   if (
@@ -54,15 +56,17 @@ function applyConformanceToAll() {
  * @return String
  */
 function applyScTemplate() {
-  var msg = getUiLang('caution-using-template', 'CAUTION: All result will be overwritten.');
-  if(showConfirm(msg) == "CANCEL") return '';
-
   var ss = getSpreadSheet();
   var tpl = ss.getSheetByName(gScTplSheetName);
   if (tpl == null) return getUiLang('no-template-found', 'No template exists.');
 
   var n = 0;
-  var allSheets = getAllSheets();
+  var allSheets = getSelectedSheets();
+  if (allSheets.length == 0) return getUiLang('no-target-page-exists2', 'No Target Page Exists. set "o" at "*URLs" sheet');
+
+  var msg = getUiLang('caution-using-template', 'CAUTION: All result will be overwritten.');
+  if(showConfirm(msg) != "OK") return getUiLang('canceled', 'canceled');
+
   for (i = 0; i < allSheets.length; i++) {
     if (String(allSheets[i].getName()).charAt(0) == '*') continue;
     tpl.getRange(5, 1, tpl.getLastRow() - 4, 6).copyTo(allSheets[i].getRange(5, 1));
@@ -97,14 +101,15 @@ function findFirstEmptyRow(sheet) {
  * @return String
  */
 function applyIclTemplate() {
-  var msg = getUiLang('caution-using-template', 'This action cannot revert.');
-  if(showConfirm(msg) == "CANCEL") return '';
-
   var ss = getSpreadSheet();
   var iclTpl = ss.getSheetByName(gIclTplSheetName);
-  if (iclTpl == null) throw new Error(getUiLang('no-template-found', "No template exists"));
-  var allSheets = getAllSheets();
-  if (allSheets.length == 0) throw new Error(getUiLang('no-target-page-exists', "no target page exists"));
+  if (iclTpl == null) return getUiLang('no-template-found', "No template exists");
+  var allSheets = getSelectedSheets();
+  if (allSheets.length == 0) return getUiLang('no-target-page-exists2', 'No Target Page Exists. set "o" at "*URLs" sheet');
+  
+  var msg = getUiLang('caution-using-template', 'This action cannot revert.');
+  if(showConfirm(msg) != "OK") return getUiLang('canceled', 'canceled');
+  
   var inspectSheet = allSheets[0];
   
   // find row to start
@@ -112,7 +117,7 @@ function applyIclTemplate() {
  
   // copy
   var n = 0;
-  for (i = 0; i < allSheets.length; i++) {
+  for (var i = 0; i < allSheets.length; i++) {
     if (allSheets[i].getLastRow() > row2start + 5) {
       allSheets[i].deleteRows(row2start, allSheets[i].getLastRow() - row2start);
     } else {
@@ -126,20 +131,62 @@ function applyIclTemplate() {
 }
 
 /**
+ * Get Current Position
+ * @return Array
+ */
+function getCurrentPos() {
+  var activeSheet = getActiveSheet();
+  var row = activeSheet.getActiveCell().getRow();
+  var col = activeSheet.getActiveCell().getColumn();
+  var vals = activeSheet.getActiveRange().getValues();
+
+  console.log(vals);
+  
+  // escape
+  vals = vals.map(function(x){return x.map(function(y){return y.toString().replace(/;;/g, "%;%;%")})});
+  vals = vals.map(function(x){return x.map(function(y){return y.toString().replace(/::/g, "%:%:%")})});
+  vals = vals.map(function(x){return x.map(function(y){return y.toString().replace(/\r?\n/g, "%%")})});
+  vals = vals.map(function(x){return x.join(";;")}).join("::");
+
+  console.log(vals);
+
+  return [row, col, vals];
+}
+
+/**
  * Lump Edit
  * @param Integer row
  * @param Integer col
- * @param String val
+ * @param String vals
  * @return String
  */
-function doLumpEdit(row, col, val) {
+function doLumpEdit(row, col, vals) {
+  // cell coordinate must be numeric
+  if (row.toString().search(/^[0-9]+$/) == -1 || col.toString().search(/^[0-9]+$/) == -1) {
+    return getUiLang('error-lump-edit', 'An invalid value is set in the row/column of the lump edit');
+  }
+  
+  var allSheets = getSelectedSheets();
+  if (allSheets.length == 0) {
+    var msg = getUiLang('no-target-page-exists2', 'No Target Page Exists. set "o" at "*URLs" sheet');
+    showAlert(msg);
+    return getUiLang('canceled', 'canceled');
+  }
+  
   var msg = getUiLang('template-caution', 'CAUTION: All result will be overwritten.');
-  if(showConfirm(msg) == "CANCEL") return '';
+  if(showConfirm(msg) != "OK") return getUiLang('canceled', 'canceled');
 
+  // string to array
+  vals = vals.split("::");
+  vals = vals.map(function(x){return x.split(";;")});
+  vals = vals.map(function(x){return x.map(function(y){return y.toString().replace(/%;%;%/g, ";;")})});
+  vals = vals.map(function(x){return x.map(function(y){return y.toString().replace(/%:%:%/g, "::")})});
+  vals = vals.map(function(x){return x.map(function(y){return y.toString().replace(/%%/g, "\n")})});
+  
+  // apply
   var n = 0;
-  var allSheets = getAllSheets();
   for (var i = 0; i < allSheets.length; i++) {
-    allSheets[i].getRange(row, col).setValue(val);
+    allSheets[i].getRange(row, col, vals.length, vals[0].length).setValues(vals);
     n++;
   }
   return getUiLang('sheet-edited', '%s sheet(s) edited.').replace("%s", n);
@@ -147,12 +194,18 @@ function doLumpEdit(row, col, val) {
 
 /**
  * iclToSc
- * @param Integer col
  * @return String
  */
-function doApplyIclToSc(col) {
+function doApplyTargetIclToSc() {
+  var allSheets = getSelectedSheets();
+  if (allSheets.length == 0) {
+    var msg = getUiLang('no-target-page-exists2', 'No Target Page Exists. set "o" at "*URLs" sheet');
+    showAlert(msg);
+    return getUiLang('canceled', 'canceled');
+  }
+
   var msg = getUiLang('template-caution', 'CAUTION: All result will be overwritten.');
-  if(showConfirm(msg) == "CANCEL") return '';
+  if(showConfirm(msg) != "OK") return getUiLang('canceled', 'canceled');
   
   // mark
   var mark = getProp('mark');
@@ -161,7 +214,6 @@ function doApplyIclToSc(col) {
   var mD = mark[1];
 
   var n = 0;
-  var allSheets = getAllSheets();
   var usingCriteria = getUsingCriteria();
 
   // find row to start  
@@ -173,37 +225,57 @@ function doApplyIclToSc(col) {
     var iclResults = allSheets[i].getRange(row2start, 2, lastrow, 4).getValues();
     
     var ScResultsTmp = {};
+    var ScApplyTmp = {};
+    var ScMemoTmp = {};
     for (var j = 0; j < iclResults.length; j++) {
       var criterion = iclResults[j][3];
       if (criterion == '') continue;
       if (typeof ScResultsTmp[criterion] === "undefined") ScResultsTmp[criterion] = [];
+      if (typeof ScApplyTmp[criterion] === "undefined") ScApplyTmp[criterion] = [];
+      if (typeof ScMemoTmp[criterion] === "undefined") ScMemoTmp[criterion] = [];
       ScResultsTmp[criterion].push(iclResults[j][0]);
+      ScApplyTmp[criterion].push(iclResults[j][1]);
+      if (iclResults[j][2] != '' && ScMemoTmp[criterion].indexOf(iclResults[j][2])) {
+        ScMemoTmp[criterion].push(iclResults[j][2]);
+      }
     }
    
     var ScResults = [];
+    var ScMemos = [];
     for (var j = 0; j < usingCriteria.length; j++) {
       var cCriterion = usingCriteria[j][1];
       if (typeof ScResultsTmp[cCriterion] === "undefined") {
-        ScResults.push('');
+        ScResults.push(['']);
+        ScMemos.push(['']);
       } else {
+        ScMemos.push([ScMemoTmp[cCriterion].join("\n").trim()]);
+
         // at least one Fail found
         if (ScResultsTmp[cCriterion].indexOf(mF) >= 0) {
           ScResults.push([mF]);
           continue;
         }
         
-        // No comformance and N/A (N/A Only)
+        // No comformance and N/A
         if (ScResultsTmp[cCriterion].indexOf(mT) == -1 && ScResultsTmp[cCriterion].indexOf(mD) >= 0) {
           ScResults.push([mD]);
           continue;
         }
-        
+
+        // N/A Only
+        var arr = ScApplyTmp[cCriterion].join().match(/x/g);
+        if (arr !== null && arr.length == ScResultsTmp[cCriterion].length) {
+          ScResults.push([mD]);
+          continue;
+        }
+
         ScResults.push([mT]);
       }
     }
-
+    
     // set
-    allSheets[i].getRange(5, col, ScResults.length, 1).setValues(ScResults);
+    allSheets[i].getRange(5, 2, ScResults.length, 1).setValues(ScResults);
+    allSheets[i].getRange(5, 4, ScMemos.length, 1).setValues(ScMemos);
     
     n++;
   }

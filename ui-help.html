@@ -22,6 +22,14 @@
           })
         .getProp('lang');
 
+      // Version
+      google.script.run
+        .withSuccessHandler(
+          function(version) {
+                $('#cob-cha-version').html(version);
+          })
+        .getLangSet('version');
+
       google.script.run
         .withSuccessHandler(
           function(ui) {
@@ -59,16 +67,17 @@
     });
 
   </script>
-  <?!= HtmlService.createHtmlOutputFromFile('ui-css').getContent(); ?>
+  <?!= HtmlService.createHtmlOutputFromFile('ui-common').getContent(); ?>
 </head>
 <body>
+<p style="text-align:right;">COB-CHA version: <span id="cob-cha-version">--</span></p>
 
 <h2 id="online-manual-title">Online Manual</h2>
 <p><a href="https://www.jidaikobo.com/archives/38.html" id="online-manual" target="_blank">Online Manual (ja, Open new tab)</a></p>
 
 <h2 id="keyboard-operation-title">Keyboard Operation</h2>
-<p id="keyboard-operation-exp">By pressing <kbd>control + alt(option) + N</kbd>, keyboard focus will move to add-on menu to open COB-CHA Control Pannel.
-By pressing <kbd>ESC</kbd> close control pannel.</p>
+<p id="keyboard-operation-exp">By pressing <kbd>control + alt(option) + N</kbd>, keyboard focus will move to add-on menu to open COB-CHA Control Panel.
+By pressing <kbd>ESC</kbd> close control panel.</p>
 
 <h2 id="sheet-title">Sheet</h2>
 <p id="sheet-exp">Sheets with names beginning with * are the sheets that are not subject to operation by COB-CHA.

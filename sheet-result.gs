@@ -1,38 +1,12 @@
 /**
  * Tabulation for COB-CHA
  * functions:
- * - evaluate
- * - setCellConditionTF
  * - setCellConditionLv
+ * - evaluateSc
  * - pageResultFormula
  * - criteriaFormula
  * - generateToatalSheet
  */
-
-/**
- * setCellConditionTF
- * @param Object sheet
- * @param Object range
- * @param String mT
- * @param String mF
- * @return Object
- */
-function setCellConditionTF(sheet, range, mT, mF) {
-  var ruleForF = SpreadsheetApp.newConditionalFormatRule()
-      .whenTextEqualTo(mF)
-      .setBackground(gFalseColor)
-      .setRanges([range])
-      .build();
-  var ruleForT = SpreadsheetApp.newConditionalFormatRule()
-      .whenTextEqualTo(mT)
-      .setBackground(gTrueColor)
-      .setRanges([range])
-      .build();
-  var rules = sheet.getConditionalFormatRules();
-  rules.push(ruleForF);
-  rules.push(ruleForT);
-  sheet.setConditionalFormatRules(rules);
-}
 
 /**
  * setCellConditionLv
@@ -151,6 +125,9 @@ function evaluateSc() {
       var tabcol = j + 2;
       tabulate[tabcol] = tabulate[tabcol] === undefined ? chks[j] : tabulate[tabcol] ;
       tabulate[tabcol] = chks[j][0] == mF ? mF : tabulate[tabcol];
+      if (tabulate[tabcol] != mF) {
+        tabulate[tabcol] = chks[j][0] == mT ? mT : tabulate[tabcol];
+      }
     }
     
     each = each.concat(criteriaF);
@@ -341,12 +318,15 @@ function generateToatalSheet() {
   sheet.getRange(1, 2).setValue(getUiLang('name', 'Name'));
   sheet.getRange(1, 3).setValue(getUiLang('level', 'Level'));
   sheet.getRange(1, 4).setValue(getUiLang('result', 'Result'));
-  sheet.getRange(1, 5).setValue(getUiLang('achievementDna', 'Achievement (DNA)'));
+  sheet.getRange(1, 5).setValue(getUiLang('achievement', 'Achievement'));
+  sheet.getRange(1, 6).setValue(getUiLang('applied', 'Applied'));
   sheet.getRange("1:1").setBackground(gLabelColorDark).setFontColor(gLabelColorDarkText).setFontWeight('bold');
   sheet.setColumnWidth(1, 70);
   sheet.setColumnWidth(2, 200);
-  sheet.setColumnWidth(3, 40);
+  sheet.setColumnWidth(3, 50);
   sheet.setColumnWidth(4, 40);
+  sheet.setColumnWidth(5, 50);
+  sheet.setColumnWidth(6, 40);
   
   var resultSheet = ss.getSheetByName(gResultSheetName);
   var criteria = type == 'tt20' ? getUsingCriteria('wcag20') : getUsingCriteria();
@@ -411,13 +391,14 @@ function generateToatalSheet() {
       rows[i][3] = "?";
     }
 
+    rows[i][4] = rows[i][4];
     var dna = (counts[mD]) ? counts[mD] : 0;
-    rows[i][4] = rows[i][4] + ' (' + dna + ')';
+    rows[i][5] = numOfcriterion - dna;
   }
   sheet.getRange(2, 1, rows.length, rows[0].length).setValues(rows);
   sheet.getRange(rows.length + 2, 1).setValue('Total');
   sheet.getRange(rows.length + 2, 4).setValue(totalResult);
-  sheet.getRange(2, 1, rows.length + 1, 4).setHorizontalAlignment('center');
+  sheet.getRange(2, 1, rows.length + 1, 6).setHorizontalAlignment('center');
   sheet.getRange(2, 2, rows.length + 1, 1).setHorizontalAlignment('left');
 
   // conditioned cell fot T 0r F

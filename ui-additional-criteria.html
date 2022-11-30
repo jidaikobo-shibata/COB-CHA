@@ -79,6 +79,7 @@
             var checked = ret['checked'].split(/,/);
             for (var j = 0; j < checked.length; j++) {
               var thisvalue = checked[j].trim();
+              if ( ! $("input[value='"+thisvalue+"']")[0]) continue;                
               if ($("input[value='"+thisvalue+"']").val().length < 0) continue;
               $("input[value='"+thisvalue+"']").prop('checked', 'checked');
             }
@@ -103,7 +104,7 @@
         .setAdditionalCriteria(checked.join(', '));
     }
   </script>
-  <?!= HtmlService.createHtmlOutputFromFile('ui-css').getContent(); ?>
+  <?!= HtmlService.createHtmlOutputFromFile('ui-common').getContent(); ?>
 </head>
 <body style="padding-bottom: 4em;">
   <div style="position: fixed; width: 100%; bottom: 0; background: #fff; z-index: 9; padding: 20px;">

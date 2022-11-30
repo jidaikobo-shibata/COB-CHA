@@ -10,14 +10,14 @@
  * - onInstall
  * - onOpen
  * - askEnabled
- * - addShowControlPannel
- * - showControlPannel
+ * - addShowControlPanel
+ * - showControlPanel
  * - showHelp
  * - showCredit
  * - showDialog
  * - showAlert
- * - getCurrentPos
  * - getUrlFromSheet
+ * - getTitleFromSheet
  * - getSheetByUrl
  * - getProp
  * - getLangSet
@@ -37,6 +37,10 @@
  * - getSheetIfExists
  * - generateSheetIfNotExists
  * - prepareSheet
+ * - setRowConditionApplicability
+ * - setRowConditionNotYet
+ * - setCellConditionTF
+ * - setCellConditionAttn
  */
 
 /**
@@ -59,7 +63,7 @@ function onOpen(e) {
     menu.addItem('Getting Started', 'askEnabled');
     menu.addToUi();
   } else {
-    addShowControlPannel();
+    addShowControlPanel();
   }
 }
 
@@ -73,27 +77,27 @@ function askEnabled() {
   var ui = SpreadsheetApp.getUi();
   ui.alert(title, msg, ui.ButtonSet.OK);
   var menu = SpreadsheetApp.getUi().createAddonMenu();
-  addShowControlPannel(menu)
+  addShowControlPanel(menu)
 };
 
 /**
- * add "Show Control Pannel" to menu
+ * add "Show Control Panel" to menu
  * @return Void
  */
-function addShowControlPannel() {
+function addShowControlPanel() {
   var menu = SpreadsheetApp.getUi().createAddonMenu();
-  menu.addItem(getUiLang('show-control-panel', 'Show Control Panel'), 'showControlPannel');
+  menu.addItem(getUiLang('show-control-panel', 'Show Control Panel'), 'showControlPanel');
   menu.addItem(getUiLang('help', 'COB-CHA Help'), 'showHelp');
   menu.addItem(getUiLang('credit', 'COB-CHA credit'), 'showCredit');
   menu.addToUi();
 };
 
 /**
- * show control pannel
+ * show control panel
  * @return Void
  */
-function showControlPannel() {
-  var ui = HtmlService.createTemplateFromFile('ui-control-pannel')
+function showControlPanel() {
+  var ui = HtmlService.createTemplateFromFile('ui-control-panel')
                       .evaluate()
                       .setTitle('COB-CHA'+getUiLang('control-panel-title', ' Control Panel'));
   SpreadsheetApp.getUi().showSidebar(ui);
@@ -141,15 +145,21 @@ function showDialog(sheetname, width, height, title, html) {
 /**
  * show alert
  * @param String msg
- * @return Void
+ * @param String buttonId
+ * @return String
  */
-function showAlert(msg) {
-  var ui = SpreadsheetApp.getUi();
-  ui.alert(
-    'COB-CHA',
-    msg,
-    ui.ButtonSet.OK
-  );
+function showAlert(msg, buttonId) {
+  try {
+    var ui = SpreadsheetApp.getUi();
+    var ret = ui.alert(
+      'COB-CHA',
+      msg,
+      ui.ButtonSet.OK
+    );
+  } catch (e) {
+    var ret = '';
+  }
+  return {'ret': ret, 'buttonId': buttonId};
 }
 
 /**
@@ -167,24 +177,21 @@ function showConfirm(msg) {
 }
 
 /**
- * Get Current Position
- * @return Array
- */
-function getCurrentPos() {
-  var activeSheet = getActiveSheet();
-  var row = activeSheet.getActiveCell().getRow();
-  var col = activeSheet.getActiveCell().getColumn();
-  var val = activeSheet.getActiveCell().getValue().toString();
-  return [row, col, val];
-}
-
-/**
  * Get URL from sheet
  * @param Object sheet
  * @return String
  */
 function getUrlFromSheet(sheet) {
-  return sheet.getRange(2, 2).getValue();
+  return sheet.getRange(2, 2).getValue().toString();
+}
+
+/**
+ * Get title from sheet
+ * @param Object sheet
+ * @return String
+ */
+function getTitleFromSheet(sheet) {
+  return sheet.getRange(3, 2).getValue().toString();
 }
 
 /**
@@ -247,28 +254,34 @@ function getLangSet(setName) {
   // ja
   if (getProp('lang') == 'ja') {
     switch (setName) {
+      case 'version':    return getVersion();
       case 'criteria':   return getCriteriaJa();
       case 'ttCriteria': return getTtCriteriaJa();
       case 'tech':       return getTechValJa();
       case 'ui':         return getUiJa();
       // ICL: Japanese Only
-      case 'iclList':              return getIclListJa();
-      case 'iclSituationWaic':     return getIclSituationWaic();
-      case 'iclTestWaic':          return getIclTestWaic();
-      case 'iclSituationCobcha':   return getIclSituationCobcha();
-      case 'iclTestCobcha':        return getIclTestCobcha();
-      case 'iclSituationIcollabo': return getIclSituationIcollabo();
-      case 'iclTestIcollabo':      return getIclTestIcollabo();
+      case 'iclList':                return getIclListJa();
+      case 'iclSituationWaic':       return getIclSituationWaic();
+      case 'iclTestWaic':            return getIclTestWaic();
+      case 'iclSituationCobcha':     return getIclSituationCobcha();
+      case 'iclTestCobcha':          return getIclTestCobcha();
+      case 'iclSituationCobchaEasy': return getIclSituationCobchaEasy();
+      case 'iclTestCobchaEasy':      return getIclTestCobchaEasy();
+      case 'iclSituationIcollabo':   return getIclSituationIcollabo();
+      case 'iclTestIcollabo':        return getIclTestIcollabo();
     }
   }
   
   // fallback - en
   switch (setName) {
+    case 'version':    return getVersion();
     case 'criteria':   return getCriteriaEn();
     case 'ttCriteria': return getTtCriteriaEn();
     case 'tech':       return getTechValEn();
     case 'ui':         return {};
   }
+  
+  return {};
 }
 
 /**
@@ -411,6 +424,7 @@ function addImageFormula(id) {
  * @return String
  */
 function removeImageFormula(id) {
+  Logger.log(id);
   id = id.replace('=IMAGE("https://drive.google.com/uc?export=download&id=' ,'');
   id = id.replace('",1)', '');
   return id;
@@ -475,8 +489,8 @@ function getAllSheets() {
   var ss = getSpreadSheet();
   var all = ss.getSheets();
   
-  ret = [];
-  for (i = 0; i < all.length; i++) {
+  var ret = [];
+  for (var i = 0; i < all.length; i++) {
     if (String(all[i].getName()).charAt(0) == '*') continue;
     ret.push(all[i]);
   }
@@ -486,13 +500,46 @@ function getAllSheets() {
 };
 
 /**
+ * Get Selected sheets
+ * @return Array
+ */
+function getSelectedSheets() {
+  if (getSelectedSheets.ss) return getSelectedSheets.ss;
+
+  var ss = getSpreadSheet();
+  var urlsheet = ss.getSheetByName(gUrlListSheetName);
+  if (urlsheet == null) return [];
+  var rownum = urlsheet.getLastRow() - 1;
+  if (rownum <= 1) return [];
+  
+  var urls = urlsheet.getRange(2, 1, rownum, 4).getValues();
+  var targets = []
+  for (var i = 0; i < urls.length; i++) {
+    if (urls[i][3] != "o") continue;
+//    if (urls[i][3] == "x") continue;
+    targets.push(urls[i][0]);
+  }
+  
+  var all = getAllSheets();
+  var ret = [];
+  for (var i = 0; i < all.length; i++) {
+    if (targets.indexOf(String(all[i].getName())) == -1) continue;
+    ret.push(all[i]);
+  }
+
+  getSelectedSheets.ss = ret;
+  return getSelectedSheets.ss;
+};
+
+/**
  * reset sheets
  * @param Bool isAll
  * @return String
  */
 function resetSheets(isAll) {
+  var id = isAll ? 'reset-all-sheets' : 'reset-record-sheets';
   var msg = getUiLang('reset-caution', 'CAUTION: Reset Sheets?');
-  if(showConfirm(msg) == "CANCEL") return '';
+  if(showConfirm(msg) != "OK") return {'msg':getUiLang('canceled', 'canceled'), 'id': id};
 
   var ss = getSpreadSheet();
   var all = ss.getSheets();
@@ -512,8 +559,11 @@ function resetSheets(isAll) {
   if (all2.length > 1) {
     deleteFallbacksheet();
   }
-  
-  return getUiLang('sheet-deleted', "%s sheet(s) deleted.").replace("%s", count);
+    
+  return {
+    'msg': getUiLang('sheet-deleted', "%s sheet(s) deleted.").replace("%s", count),
+    'id': id
+  };
 }
 
 /**
@@ -521,7 +571,15 @@ function resetSheets(isAll) {
  * @return Void
  */
 function deleteFallbacksheet() {
-  var sheet = getSheetIfExists(gFallbackSheetName);
+  deleteSheetIfExist(gFallbackSheetName);
+}
+
+/**
+ * delete sheet if exists
+ * @return Void
+ */
+function deleteSheetIfExist(sheetName) {
+  var sheet = getSheetIfExists(sheetName);
   if ( ! sheet) return;
   getSpreadSheet().deleteSheet(sheet);
 }
@@ -551,7 +609,7 @@ function getSheetIfExists(sheetName) {
  * @param String sheetName
  * @param Array defaults
  * @param String [header = "row"]
- * @return Object
+ * @return Object | String
  */
 function generateSheetIfNotExists(sheetName, defaults, header) {
   if (isSheetExist(sheetName)) return getUiLang('target-sheet-already-exists', "Target sheet (%s) is already exists.").replace('%s', sheetName);
@@ -598,4 +656,74 @@ function prepareTargetSheet(sheetName, defaults, header) {
   }
   deleteFallbacksheet();
   return sheet;
+}
+
+/**
+ * setRowConditionApplicability
+ * @param Object sheet
+ * @param Object range
+ * @param String cond
+ * @return Object
+ */
+function setRowConditionApplicability(sheet, range, cond) {
+  var ruleNonApp = SpreadsheetApp.newConditionalFormatRule()
+      .whenFormulaSatisfied(cond)
+      .setFontColor(gLabelColor)
+      .setRanges([range])
+      .build();
+  var rules = sheet.getConditionalFormatRules();
+  rules.push(ruleNonApp);
+  sheet.setConditionalFormatRules(rules);
+}
+
+/**
+ * setRowConditionNotYet
+ * @param Object sheet
+ * @param Object range
+ * @param String cond
+ * @param bool isBold
+ * @param String textColor
+ * @param String bgColor
+ * @return Object
+ */
+function setRowConditionNotYet(sheet, range, cond, isBold, textColor, bgColor) {
+  var isBold    = isBold    === undefined ? true : isBold;
+  var textColor = textColor === undefined ? "#000000" : textColor; 
+  var bgColor   = bgColor   === undefined ? gNotYetBgColor : bgColor;
+  
+  var ruleNonApp = SpreadsheetApp.newConditionalFormatRule()
+      .whenFormulaSatisfied(cond)
+      .setBold(isBold)
+      .setFontColor(textColor)
+      .setBackground(bgColor)
+      .setRanges([range])
+      .build();
+  var rules = sheet.getConditionalFormatRules();
+  rules.push(ruleNonApp);
+  sheet.setConditionalFormatRules(rules);
+}
+
+/**
+ * setCellConditionTF
+ * @param Object sheet
+ * @param Object range
+ * @param String mT
+ * @param String mF
+ * @return Object
+ */
+function setCellConditionTF(sheet, range, mT, mF) {
+  var ruleForF = SpreadsheetApp.newConditionalFormatRule()
+      .whenTextEqualTo(mF)
+      .setBackground(gFalseColor)
+      .setRanges([range])
+      .build();
+  var ruleForT = SpreadsheetApp.newConditionalFormatRule()
+      .whenTextEqualTo(mT)
+      .setBackground(gTrueColor)
+      .setRanges([range])
+      .build();
+  var rules = sheet.getConditionalFormatRules();
+  rules.push(ruleForF);
+  rules.push(ruleForT);
+  sheet.setConditionalFormatRules(rules);
 }

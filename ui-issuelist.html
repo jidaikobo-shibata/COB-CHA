@@ -43,9 +43,9 @@
   </script>
 
 </head>
-  <?!= HtmlService.createHtmlOutputFromFile('ui-css').getContent(); ?>
+  <?!= HtmlService.createHtmlOutputFromFile('ui-common').getContent(); ?>
 <body>
-  <h1></h1>
+  <h1><span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-loading"></span></h1>
   <ul id="issues">
   </ul>
 </body>

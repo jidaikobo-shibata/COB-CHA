@@ -48,7 +48,7 @@
             // other language
             lang.ui = ui;
             $("#issue-name-title").html(ui['name']);
-            $("#issue-visibility-title").html(ui['issue-visibility']);
+            $("#issue-solved-title").html(ui['issue-solved']);
             $("#issue-image-title").html(ui['image']);
             $("#upload-image").val(ui['upload']);
             $("#explanation-title").html(ui['explanation']);
@@ -71,6 +71,7 @@
       // on load
       $('#message-area').hide();
       $('.fa-spinner').hide();
+      $('#progress-loading').show();
 
       // on click
       $('#apply-issue').click(onApplyIssueClick);
@@ -90,11 +91,11 @@
         .withSuccessHandler(
           function(ret) {
             // dialog title and button
-            if (ret['vals']['issueId'] == '') {
+            if ( ! ret['isEdit']) {
               var msg = Object.keys(lang.ui).length == 0 ? 'Add New Issue' : lang.ui['add-new-issue'];
               $('#apply-issue').html(msg);
             } else {
-              var msg = Object.keys(lang.ui).length == 0 ? 'Edit Issue' : lang.ui['edit-issue'];
+              var msg = Object.keys(lang.ui).length == 0 ? 'Update Issue' : lang.ui['update-issue'];
               $('#apply-issue').html(msg);
             }
             $('#apply-issue').after('<input type="hidden" id="issue-id" value="'+ret['vals']['issueId']+'">');
@@ -121,39 +122,58 @@
               for (var j = 0; j < ret['usingTechs'].length; j++) {
                 if (ret['usingTechs'][j][0] != criteria) continue;
                 var each = ret['usingTechs'][j][1];
+                var for_id = ret['usingTechs'][j][1]+'-'+j;
                 var label = ret['usingTechs'][j][2];
                 var url = ret['usingTechs'][j][3];
                 $('#techs').append($('<tr class="'+classname+' tech-row"></tr>')
-                           .append($('<td></td>').html('<input type="checkbox" id="'+each+'" value="'+each+'">'))
-                           .append($('<td></td>').html('<label for="'+each+'">'+each+': '+label+'</label>'))
+                           .append($('<td></td>').html('<input type="checkbox" id="'+for_id+'" value="'+each+'">'))
+                           .append($('<td></td>').html('<label for="'+for_id+'">'+each+': '+label+'</label>'))
                            .append($('<td></td>').html('<a target="_blank" href="'+url+'"><i class="fas fa-external-link-alt"></i><span style="position: absolute;width: 1px;height: 1px;clip: rect(0 0 0 0);">Open '+each+'</span></a>'))
                           );
               }
             }
 
             for(var i = 0; i < ret['allPlaces'].length; i++) {
-              var place = ret['allPlaces'][i];
-//              var idname = btoa(place).replace(/=/g, '');
+              var place = ret['allPlaces'][i]['url'];
+              var title = ret['allPlaces'][i]['title'];
+              // var idname = btoa(place).replace(/=/g, '');
               var idname = 'target-place-'+i;
               $('#places').append($('<tr></tr>')
                          .append($('<td></td>').html('<input type="checkbox" id="'+idname+'" class="places" value="'+place+'">'))
-                         .append($('<td></td>').html('<label for="'+idname+'">'+place+'</label>'))
+                         .append($('<td></td>').html('<label for="'+idname+'">'+title+'</label>'))
                          .append($('<td></td>').html('<a target="_blank" href="'+place+'"><i class="fas fa-external-link-alt"></i><span style="position: absolute;width: 1px;height: 1px;clip: rect(0 0 0 0);">Open '+place+'</span></a>'))
                         );
             }
             
+            // place
+            var activeUrl = $('#target-url').val().toString().trim();
+            if (activeUrl !== "" && $("input[value='"+activeUrl+"']").val().length > 0) {
+              $("input[value='"+activeUrl+"']").prop('checked', 'checked');
+            }
+
+            // place: all
+            if (typeof ret['vals']['places'] !== "undefined" && ret['vals']['places'] == 'all') {
+              $('.places').prop('checked', 'checked');
+            }
+            
+            // checkboxes
             var checkboxes = ['testId', 'checked', 'techs', 'places'];
             for (var i = 0; i < checkboxes.length; i++) {
               if (typeof ret['vals'][checkboxes[i]] === "undefined") continue;
               var checked = ret['vals'][checkboxes[i]].toString().split(/,/);
               for (var j = 0; j < checked.length; j++) {
                 var thisvalue = checked[j].trim();
+                if ( ! $("input[value='"+thisvalue+"']")[0]) continue;                
                 if ($("input[value='"+thisvalue+"']").val().length < 0) continue;
                 $("input[value='"+thisvalue+"']").prop('checked', 'checked');
               }
             }
-            
-            if ( ! ret['isEdit']) return;
+                        
+            if ( ! ret['isEdit']) {
+              // loading end
+              $('#progress-loading').hide();
+              return;
+            }
             
             $("#issue-name").val(ret['vals']['issueName']);
             $("#uploaded-file").val(ret['vals']['image']);
@@ -169,10 +189,13 @@
               $("#error-notice").val('Notice');
             }
             
-            // issue-visibility
+            // issue-solved
             if (ret['vals']['issueVisibility'] == 'on') {
-              $("input#issue-visibility").prop('checked', 'checked');
+              $("input#issue-solved").prop('checked', 'checked');
             }
+            
+            // loading end
+            $('#progress-loading').hide();
           })
         .dialogValueIssue(isEdit);
     }
@@ -196,7 +219,7 @@
         places.push($(this).val());
       });
 
-      var issueVisibility = $('#issue-visibility').prop('checked') ? 'on' : 'off' ;
+      var issueVisibility = $('#issue-solved').prop('checked') ? 'on' : 'off' ;
       
       var vals = [
         $('#issue-id').val(),
@@ -205,9 +228,9 @@
         $('#error-notice').val(),
         $('#html').val(),
         $('#explanation').val(),
-        checked.join(', '),
-        techs.join(', '),
-        places.join(', '),
+        checked.join(','),
+        techs.join(','),
+        places.join(','),
         $('#uploaded-file').val(),
         $('#uploaded-file-url').val(),
         $('#memo').val()
@@ -215,7 +238,8 @@
 
       google.script.run
         .withSuccessHandler(
-          function() {
+          function(msg) {
+            showStatus(msg);
             google.script.host.close();
           })
         .applyIssue(vals);
@@ -269,7 +293,7 @@
       }
     }
   </script>
-  <?!= HtmlService.createHtmlOutputFromFile('ui-css').getContent(); ?>
+  <?!= HtmlService.createHtmlOutputFromFile('ui-common').getContent(); ?>
 </head>
 <body style="padding-bottom: 4em;">
   <table style="width:95%;">
@@ -278,8 +302,8 @@
     <td><input type="text" id="issue-name" style="width:100%;"></td>
   </tr>
   <tr>
-    <th><label for="issue-visibility" id="issue-visibility-title">Issue Visibility</label></th>
-    <td><input type="checkbox" id="issue-visibility"></td>
+    <th><label for="issue-solved" id="issue-solved-title">Solved</label></th>
+    <td><input type="checkbox" id="issue-solved"></td>
   </tr>
   <tr>
     <th><label for="error-notice">Error/Notice</label></th>
@@ -323,7 +347,8 @@
   </tr>
   </table>
   <div style="position: fixed; width: 100%; bottom: 0; background: #fff; z-index: 9; padding: 10px 0 10px;">
-    <button id="apply-issue" class="primary"></button>
+    <button id="apply-issue" class="primary">Preparing</button>
+    <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-loading"></span>
   </div>
 </body>
 </html>

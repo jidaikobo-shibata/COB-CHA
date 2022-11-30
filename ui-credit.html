@@ -22,6 +22,14 @@
           })
         .getProp('lang');
 
+      // Version
+      google.script.run
+        .withSuccessHandler(
+          function(version) {
+                $('#cob-cha-version').html(version);
+          })
+        .getLangSet('version');
+
       google.script.run
         .withSuccessHandler(
           function(ui) {
@@ -43,14 +51,33 @@
     });
 
   </script>
-  <?!= HtmlService.createHtmlOutputFromFile('ui-css').getContent(); ?>
+  <?!= HtmlService.createHtmlOutputFromFile('ui-common').getContent(); ?>
 </head>
 <body>
+<p style="text-align:right;">COB-CHA version: <span id="cob-cha-version">--</span></p>
 
 <h2 id="program">GAS Program</h2>
 <p><a href="https://www.jidaikobo.com" id="jidaikobo">Jidaikobo Inc.</a></p>
 
 <h2 id="provide-icl">Provide Implement Check List</h2>
 <p><a href="https://ickobe.jp/" id="icollabo">NPO i-collaboration Kobe</a></p>
+
+<h2>Know Issue</h2>
+<ul>
+	<li>Sometimes, issue dialog cannot finish drawing itself</li>
+</ul>
+
+<h2 id="thanks">Thanks</h2>
+<ul>
+	<li>@chuff_chuff09</li>
+	<li>@cloud10designs</li>
+	<li>Kunito Adachi</li>
+	<li>Koide Junko</li>
+	<li>magi1125</li>
+	<li>Masao Yomoda, Smart UD Lab</li>
+	<li>@momdo_</li>
+	<li>yuu</li>
+</ul>
+
 </body>
 </html>

@@ -29,6 +29,7 @@ function getPulldownMenu() {
 function generateSheets(urlstr, lang, testType, level, targetId) {
   var ss = getSpreadSheet();
 
+  // template or URL sheet
   if (urlstr === gScTplSheetName) {
     if (isSheetExist(gScTplSheetName)) return {
       'msg': getUiLang('target-sheet-already-exists', "%s is already exists.").replace('%s', gScTplSheetName),
@@ -43,110 +44,57 @@ function generateSheets(urlstr, lang, testType, level, targetId) {
     var urlListSheet = ss.getSheetByName(gUrlListSheetName);
     var lastRow = urlListSheet.getLastRow();
     var urls = urlListSheet.getRange(2, 1, lastRow - 1, 3).getValues();
+    
+    // sheetname check
+    var nanFound = false;
+    for (var i = 0; i < urls.length; i++) {
+      if (urls[i][0].toString().search(/^[0-9]+$/) == -1) {
+        nanFound = true;
+      }
+    }
+    if (nanFound) return {
+      'msg': getUiLang('error-sheetname-must-be-numeric', "Error. All Sheetname must be numeric."),
+      'targetId': targetId
+    }
   }
   if (urls.length == 1 && urls[0][0] == '') return {'msg': getUiLang('no-target-page-exists', "No target Page Exists"), 'targetId': targetId};
     
-  if (urlstr !== gScTplSheetName) {
-    var sheetIds = urlListSheet.getRange(2, 1, lastRow - 1, 1).getFormulas();
-    var sheetTitles = urlListSheet.getRange(2, 3, lastRow - 1, 1).getValues();
-  }
   var alreadyExists = [];
   var added = 0;
-
-  // generate original sheet
-  var firstSheetName = urls[0][0].toString();
-  var firstUrl = urls[0][1].toString();
-
-  // mark
-  var mark = getProp('mark');
-  var mT = mark[2];
-  var mF = mark[3];
-  var mD = mark[1];
-
-  if (addSheet(firstSheetName) == false) {
-    alreadyExists.push(firstUrl);
-    var originalSheet = ss.getSheetByName(firstSheetName);
-  } else {
-    var isEvaluateTarget = firstSheetName.charAt(0) != '*';
+  var urlsVals = [];
+  
+  // generate a originalsheet
+  for(var i = 0; i < urls.length; i++) {
+    var targetSheetname = urls[i][0].toString().trim();
+    var targetUrl = urls[i][1].toString().trim();
+    if (targetUrl == "") continue;
+    
+    // check already exists
+    if (addSheet(targetSheetname) == false) {
+      alreadyExists.push(targetUrl.toString());
+      urlsVals = generateUrlsSheetValues(urlsVals, ss.getSheetByName(targetSheetname), targetSheetname, false)
+      continue;
+    }
+    
+    // generate a originalsheet
+    var isEvaluateTarget = targetSheetname.charAt(0) != '*';
     var originalSheet = ss.getActiveSheet();
-    var res = isEvaluateTarget ? getHtmlAndTitle(firstUrl) : {'title':firstUrl, 'html':''};
+    var res = isEvaluateTarget ? getHtmlAndTitle(targetUrl) : {'title':targetUrl, 'html':''};
     
-    var today = new Date();
-    originalSheet.getRange(1, 1).setValue(getUiLang('memo', 'Memo')).setBackground(gLabelColor);
-    originalSheet.getRange(2, 1).setValue('URL').setBackground(gLabelColor);
-    originalSheet.getRange(2, 2).setValue(firstUrl);
-    originalSheet.getRange(2, 5).setValue(getUiLang('screenshot', 'Screenshot')).setBackground(gLabelColor);
-    originalSheet.getRange(3, 1).setValue('title').setBackground(gLabelColor);
-    originalSheet.getRange(3, 2).setValue(res['title']);
-    originalSheet.getRange(3, 5).setValue(getUiLang('tester', 'Tester')).setBackground(gLabelColor);
-    originalSheet.getRange(3, 7).setValue(getUiLang('date', 'Date')).setBackground(gLabelColor);
-    originalSheet.getRange(3, 8).setValue(Utilities.formatDate(today, "JST", "yyyy/MM/dd"));
-    if (isEvaluateTarget) saveHtml(gResourceFolderName, firstSheetName, res['html']);
-    originalSheet.setFrozenRows(4);
-    
-    // header
-    if (testType == 'tt20') {
-      originalSheet.getRange(4, 1).setValue(getUiLang('test-id', 'Test ID')).setBackground(gLabelColor);
-    } else {
-      originalSheet.getRange(4, 1).setValue(getUiLang('criterion', 'Criterion')).setBackground(gLabelColor);
-    }
-    originalSheet.getRange(4, 2).setValue(getUiLang('check', 'Check'));
-    originalSheet.getRange(4, 3).setValue(getUiLang('level', 'Level'));
-    originalSheet.getRange(4, 4).setValue(getUiLang('memo', 'Memo'));
-    originalSheet.getRange("4:4").setBackground(gLabelColorDark).setFontColor(gLabelColorDarkText).setFontWeight('bold');
-    
-    // appearance
-    originalSheet.setColumnWidth(1, 60);
-    originalSheet.setColumnWidth(2, 50);
-    originalSheet.setColumnWidth(3, 50);
-    originalSheet.getRange('4:4').setHorizontalAlignment('center');
-    
-    // test type
-    var usingCriteria = getUsingCriteria();
-    
-    // complex language selection ...
-    var docurl = lang+'-'+testType;
-    
-    // each row
-    var row = 5;
-    for (var j = 0; j < usingCriteria.length; j++) {
-      var langPointer = testType == 'wcag21' ? usingCriteria[j][4] : usingCriteria[j][3];
-      langPointer = testType == 'wcag21' && lang == 'ja' ? usingCriteria[j][3] : langPointer;
-      var urlPointer = docurl;
-      urlPointer = testType == 'wcag21' && lang == 'ja' ? 'en-wcag21' : urlPointer;
-      var url = gUrlbase['understanding'][urlPointer]+langPointer;
-      if (lang == 'ja' && testType == 'wcag21' && gCriteria21.indexOf(usingCriteria[j][1]) >= 0) {
-        url = gUrlbase['understanding']['en-wcag21']+usingCriteria[j][4];
-      }
-      
-      if (testType == 'tt20') {
-        originalSheet.getRange(row, 1).setValue(usingCriteria[j][1]).setHorizontalAlignment('center');
-      } else {
-        originalSheet.getRange(row, 1).setValue('=HYPERLINK("'+url+'", "'+usingCriteria[j][1]+'")').setHorizontalAlignment('center');
-      }
-      originalSheet.getRange(row, 2).setDataValidation(getPulldownMenu()).setHorizontalAlignment('center').setComment(usingCriteria[j][2]);
-      originalSheet.getRange(row, 3).setValue(usingCriteria[j][0]).setHorizontalAlignment('center');
-      row++;
-    }
-    
-    // conditioned cell
-    var range = originalSheet.getRange("B:B");
-    setCellConditionTF(originalSheet, range, mT, mF); // see sheet-result.gs
+    originalSheet = generateASheet(testType, originalSheet, targetUrl, res, targetSheetname, isEvaluateTarget);
+    urlsVals = generateUrlsSheetValues(urlsVals, originalSheet, targetSheetname, true);
     added++;
-
-    if (urlstr !== gScTplSheetName) {
-      sheetIds[0]    = ['=HYPERLINK("#gid='+originalSheet.getSheetId()+'","'+firstSheetName+'")'];
-      sheetTitles[0] = res['title'] == '' ? [sheetTitles[0][0]] : [res['title']];
-    }
   }
+  var lastSheetKey = i;
   
   // copy sheets
   if (urlstr !== gScTplSheetName && urls.length > 1) {
-    for(var i = 1; i < urls.length; i++) {
-      var eachSheet = urls[i][1].toString(); 
-      if (eachSheet.trim() == '') continue;
+    for(var i = lastSheetKey; i < urls.length; i++) {
+      var eachSheet = urls[i][1].toString().trim(); 
+      if (eachSheet == '') continue;
       if (addSheet(urls[i][0], originalSheet) == false) {
         alreadyExists.push(eachSheet);
+        urlsVals = generateUrlsSheetValues(urlsVals, ss.getSheetByName(urls[i][0]), urls[i][0], false);
         continue;
       }
       res = getHtmlAndTitle(eachSheet);
@@ -154,17 +102,14 @@ function generateSheets(urlstr, lang, testType, level, targetId) {
       activeSheet.getRange(2, 2).setValue(eachSheet);
       activeSheet.getRange(3, 2).setValue(res['title']);
       saveHtml(gResourceFolderName, urls[i][0], res['html']);
+      urlsVals = generateUrlsSheetValues(urlsVals, activeSheet, urls[i][0], true);
       added++;
-      
-      sheetIds[i]    = ['=HYPERLINK("#gid='+activeSheet.getSheetId()+'","'+urls[i][0]+'")'];
-      sheetTitles[i] = [res['title']];
     }
   }
 
   // update url list sheet
   if (urlstr !== gScTplSheetName) {
-    urlListSheet.getRange(2, 1, lastRow - 1, 1).setValues(sheetIds);
-    urlListSheet.getRange(2, 3, lastRow - 1, 1).setValues(sheetTitles);
+    urlListSheet.getRange(2, 1, urlsVals.length, urlsVals[0].length).setValues(urlsVals);
   }
   
   // clean up
@@ -180,6 +125,96 @@ function generateSheets(urlstr, lang, testType, level, targetId) {
   }
 
   return {'msg': msg.join("\n"), 'targetId': targetId};
+}
+
+/**
+ * Generate a Sheet
+ * @param String testType
+ * @param Object sheet
+ * @param String targetUrl
+ * @param Array res
+ * @param String sheetname
+ * @param Bool isEvaluateTarget
+ * @return Object
+ */
+function generateASheet(testType, sheet, targetUrl, res, sheetname, isEvaluateTarget) {
+  var today = new Date();
+  sheet.getRange(1, 1).setValue(getUiLang('memo', 'Memo')).setBackground(gLabelColor);
+  sheet.getRange(2, 1).setValue('URL').setBackground(gLabelColor);
+  sheet.getRange(2, 2).setValue(targetUrl);
+  sheet.getRange(2, 5).setValue(getUiLang('screenshot', 'Screenshot')).setBackground(gLabelColor);
+  sheet.getRange(3, 1).setValue('title').setBackground(gLabelColor);
+  sheet.getRange(3, 2).setValue(res['title']);
+  sheet.getRange(3, 5).setValue(getUiLang('tester', 'Tester')).setBackground(gLabelColor);
+  sheet.getRange(3, 7).setValue(getUiLang('date', 'Date')).setBackground(gLabelColor);
+  sheet.getRange(3, 8).setValue(Utilities.formatDate(today, "JST", "yyyy/MM/dd"));
+  if (isEvaluateTarget) saveHtml(gResourceFolderName, sheetname, res['html']);
+  sheet.setFrozenRows(4);
+  
+  // header
+  if (testType == 'tt20') {
+    sheet.getRange(4, 1).setValue(getUiLang('test-id', 'Test ID')).setBackground(gLabelColor);
+  } else {
+    sheet.getRange(4, 1).setValue(getUiLang('criterion', 'Criterion')).setBackground(gLabelColor);
+  }
+  sheet.getRange(4, 2).setValue(getUiLang('check', 'Check'));
+  sheet.getRange(4, 3).setValue(getUiLang('level', 'Level'));
+  sheet.getRange(4, 4).setValue(getUiLang('memo', 'Memo'));
+  sheet.getRange("4:4").setBackground(gLabelColorDark).setFontColor(gLabelColorDarkText).setFontWeight('bold');
+  
+  // appearance
+  sheet.setColumnWidth(1, 60);
+  sheet.setColumnWidth(2, 50);
+  sheet.setColumnWidth(3, 50);
+  sheet.getRange('4:4').setHorizontalAlignment('center');
+  
+  // test type
+  var usingCriteria = getUsingCriteria();
+  
+  // each row
+  var row = 5;
+  for (var j = 0; j < usingCriteria.length; j++) {
+    if (testType == 'tt20') {
+      sheet.getRange(row, 1).setValue(usingCriteria[j][1]).setHorizontalAlignment('center');
+    } else {
+      sheet.getRange(row, 1).setValue('=HYPERLINK("'+usingCriteria[j][5]+'", "'+usingCriteria[j][1]+'")').setHorizontalAlignment('center');
+    }
+    sheet.getRange(row, 2).setDataValidation(getPulldownMenu()).setHorizontalAlignment('center').setComment(usingCriteria[j][2]);
+    sheet.getRange(row, 3).setValue(usingCriteria[j][0]).setHorizontalAlignment('center');
+    row++;
+  }
+  
+  // mark
+  var mark = getProp('mark');
+  var mT = mark[2];
+  var mF = mark[3];
+  var mD = mark[1];
+
+  // conditioned cell
+  var range = sheet.getRange("B:B");
+  setCellConditionTF(sheet, range, mT, mF); // see sheet-result.gs
+  
+  var range = sheet.getRange(5, 1, sheet.getLastRow() - 4, 3);
+  setRowConditionNotYet(sheet, range, "=$B5=\"\"");
+  
+  return sheet;
+}
+
+/**
+ * generate Urls sheet Values
+ * @param Array urlsVals
+ * @param Object sheet
+ * @param String sheetname
+ * @param Bool isNew
+ * @return Array
+ */
+function generateUrlsSheetValues(urlsVals, sheet, sheetname, isNew) {
+  var id    = '=HYPERLINK("#gid='+sheet.getSheetId()+'","'+sheetname+'")';
+  var url   = getUrlFromSheet(sheet);
+  var title = getTitleFromSheet(sheet);
+  var apply = isNew ? "o" : "";
+  urlsVals.push([id, url, title, apply]);
+  return urlsVals;
 }
 
 /**

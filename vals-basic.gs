@@ -3,6 +3,15 @@
  */
 
 /**
+ * COB-CHA Version
+ * @return Integer
+ */
+function getVersion ()
+{
+  return 40;
+}
+
+/**
  * WCAG 2.1
  */
 var gCriteria21 = [
@@ -206,7 +215,6 @@ var gRelTechsAndCriteria = {
   '4.1.2': ['G10', 'G108', 'G135', 'H44', 'H64', 'H65', 'H88', 'H91', 'ARIA4', 'ARIA5', 'ARIA14', 'ARIA16', 'PDF10', 'PDF12', 'F15', 'F20', 'F42', 'F59', 'F68', 'F79', 'F86', 'F89']
 };
 
-
 /**
  * global variables
  */
@@ -228,3 +236,5 @@ var gLabelColor         = '#eeeeee';
 var gLabelColorText     = '#000000';
 var gLabelColorDark     = '#87823e';
 var gLabelColorDarkText = '#ffffff';
+var gNotYetBgColor      = '#fff1ac';
+var gNotYetIssueBgColor = '#f0f5f7';

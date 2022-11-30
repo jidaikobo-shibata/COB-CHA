@@ -18,14 +18,23 @@
  */
 function generateConfigSheet(lang, testType, level, mark, force) {
   var defaults = [
-    ["Lang", lang],
-    ["Type", testType],
-    ["Level", level],
-    ["Mark Type", mark],
-    ["Additional Criteria", ""]
+    [getUiLang('lang-using', "Lang"), lang],
+    [getUiLang('standard-using', "Type"), testType],
+    [getUiLang('level', "Level"), level],
+    [getUiLang('symbol-using', "Mark Type"), mark],
+    [getUiLang('additional-criteria', "Additional Criteria"), ""]
   ];
   var msgOrSheetObj = generateSheetIfNotExists(gConfigSheetName, defaults);
-  if (force !== true && typeof msgOrSheetObj == "string") return msgOrSheetObj;
+  
+  //if (force !== true && typeof msgOrSheetObj == "string") return msgOrSheetObj;
+  if (force !== true && typeof msgOrSheetObj == "string") {
+    var msg = getUiLang('force-update-config', 'Config Sheet is alreadt exists. Update config?');
+    if(showConfirm(msg) != "OK") return getUiLang('canceled', 'canceled');
+    var sheet = getSheetIfExists(gConfigSheetName);
+    sheet.getRange(1, 2, 4, 1).setValues([[lang], [testType], [level], [mark]]);
+    return getUiLang('target-sheet-updated', "Update Target Sheet (%s).").replace('%s', gConfigSheetName);
+  }
+
   return getUiLang('target-sheet-generated', "Generate Target Sheet (%s).").replace('%s', gConfigSheetName);
 }
 
@@ -67,4 +76,26 @@ function setAdditionalCriteria(checked) {
   if (sheet === false) return getUiLang('no-target-sheet-exists', "Target sheet (%s) is not exists.").replace('%s', gConfigSheetName);
   sheet.getRange(5, 2).setValue(checked);
   showAlert(getUiLang('update-value', 'Update %s').replace('%s', getUiLang('additional-criteria', 'additional criteria')))
+}
+
+/**
+ * force update Language
+ * @param String lang
+ * @return Void
+ */
+function forceUpdateLang(lang) {
+  var msg = getUiLang('confirm-control-panel-update', 'Change of language cause reload control panel.');
+  if(showConfirm(msg) != "OK") return getProp('lang');
+  
+  var sheet = getSheetIfExists(gConfigSheetName);
+  
+  // if sheet exists then update language
+  if (sheet !== false) {
+    sheet.getRange(1, 2).setValue(lang);
+  } else {
+    generateConfigSheet(lang, '', '', '', true);
+  }
+    
+  // when language was update, renew control panel
+  showControlPanel();
 }

@@ -5,7 +5,7 @@
  * - getIclApplyPulldownMenu
  * - generateIclTplSheet
  * - generateIcl
- * - setRowConditionApplicability
+ * - evaluateIcl
  */
 
 /**
@@ -38,7 +38,7 @@ function getIclApplyPulldownMenu() {
 function generateIclTplSheet(type) {
   var defaults = [[
     "ID",
-    getUiLang("pass", "Pass"),
+    getUiLang("check", "Check"),
     getUiLang("eliminated", "eliminated"),
     getUiLang("memo", "memo"),
     getUiLang("criterion", "criterion"),
@@ -48,15 +48,18 @@ function generateIclTplSheet(type) {
   ]];
   var msgOrSheetObj = generateSheetIfNotExists(gIclTplSheetName, defaults, "row");
   if (typeof msgOrSheetObj == "string") return msgOrSheetObj;
-  generateIcl(msgOrSheetObj, type);
-  return getUiLang('target-sheet-generated', "Generate Target Sheet (%s).").replace('%s', gIclTplSheetName);
+  if (generateIcl(msgOrSheetObj, type)){
+    return getUiLang('target-sheet-generated', "Generate Target Sheet (%s).").replace('%s', gIclTplSheetName);
+  }
+  deleteSheetIfExist(gIclTplSheetName);
+  return getUiLang('error-no-icl-found', "Error: ICL template was not found.");
 }
 
 /**
  * Generate ICL
  * @param Object sheet
  * @param String type
- * @return Void
+ * @return Bool
  */
 function generateIcl(sheet, type) {
   // value
@@ -65,6 +68,8 @@ function generateIcl(sheet, type) {
   var iclTest       = getLangSet('iclTest'+type);
   var techNames     = getLangSet('tech');
   var row           = 2;
+  
+  if (iclSituation.length == 0) return false;
     
   for (var j = 0; j < usingCriteria.length; j++) {
     // criterion title
@@ -103,7 +108,7 @@ function generateIcl(sheet, type) {
           var eachTechName = eachTechNames.join("\n");
         } else {
           // COB-CHA , Icollabo
-          if (type == 'Cobcha') {
+          if (type.indexOf('Cobcha') != -1) {
             var eachTechId = iclTest[testId][l][0];
           } else {
             var eachTechId = iclTest[testId][l][0].split("/").join("\n");
@@ -118,7 +123,7 @@ function generateIcl(sheet, type) {
       sheet.getRange(row, 1, eachTest.length, 8).setValues(eachTest).setVerticalAlignment('top');
       sheet.getRange(row, 2, eachTest.length, 1).setDataValidation(getIclPassPulldownMenu()).setHorizontalAlignment('center');
       sheet.getRange(row, 3, eachTest.length, 1).setDataValidation(getIclApplyPulldownMenu()).setHorizontalAlignment('center');
-      sheet.getRange(row, 4, eachTest.length, 1).setHorizontalAlignment('center');
+      sheet.getRange(row, 5, eachTest.length, 2).setHorizontalAlignment('center');
       row = row + eachTest.length;
     }
   }
@@ -138,26 +143,10 @@ function generateIcl(sheet, type) {
   setCellConditionTF(sheet, range, mT, mF)
 
   var range = sheet.getRange(2, 1, sheet.getLastRow(), 26);
-  setRowConditionApplicability(sheet, range, "C2", mF);
-}
+  setRowConditionApplicability(sheet, range, "=$C2=\""+mF+"\"");
+  setRowConditionNotYet(sheet, range, "=AND($B2=\"\", NOT($E2=\"\"))");
 
-/**
- * setRowConditionApplicability
- * @param Object sheet
- * @param Object range
- * @param String flagcell
- * @param String mF
- * @return Object
- */
-function setRowConditionApplicability(sheet, range, flagcell, mF) {
-  var ruleNonApp = SpreadsheetApp.newConditionalFormatRule()
-      .whenFormulaSatisfied("=$"+flagcell+"=\""+mF+"\"")
-      .setFontColor(gLabelColor)
-      .setRanges([range])
-      .build();
-  var rules = sheet.getConditionalFormatRules();
-  rules.push(ruleNonApp);
-  sheet.setConditionalFormatRules(rules);
+  return true;
 }
 
 /**
@@ -211,19 +200,24 @@ function evaluateIcl(lang, testType, level) {
 
   // copy value
   var col = 6;
-  var numId = 1;
 
   for (var i = 0; i < allSheets.length; i++) {
-    if (allSheets[i].getName().charAt(0) == '*') continue;
+    var eachSheetName = allSheets[i].getName();
+    if (eachSheetName.charAt(0) == '*') continue;
     var targetUrl = getUrlFromSheet(allSheets[i]);
-    iclSheet.getRange(1, col).setValue('=HYPERLINK("#gid='+allSheets[i].getSheetId()+'","'+numId+'")');
+    iclSheet.getRange(1, col).setValue('=HYPERLINK("#gid='+allSheets[i].getSheetId()+'","'+eachSheetName+'")');
     iclSheet.getRange(1, col).setComment(targetUrl);
     iclSheet.setColumnWidth(col, 40)
     allSheets[i].getRange(iclFirstRow, 2, rows + 1, 1).copyTo(iclSheet.getRange(2, col), {contentsOnly:true});
     iclSheet.getRange(1, col, iclSheet.getLastRow(), 1).setHorizontalAlignment('center');
-    numId++;
     col++;
   }
 
+  var mark = getProp('mark');
+  var mT = mark[2];
+  var mF = mark[3];
+  var range = iclSheet.getRange(5, 6, rows + 1, allSheets.length);
+  setCellConditionTF(iclSheet, range, mT, mF)
+ 
   return getUiLang('target-sheet-generated', "Generate Target Sheet (%s).").replace('%s', gIclSheetName);
 }

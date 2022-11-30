@@ -10,10 +10,10 @@
  */
 function generateUrlListSheet() {
   var defaults = [
-    ["No.", "URL"],
+    ["No.", "URL", "title", getUiLang('target-lump-edit', "Target for lump edit (o)")],
   ];
   for (var i = 1; i <= 40; i++) {
-    defaults.push([i, ""]);
+    defaults.push([i, "", "", ""]);
   }
   var msgOrSheetObj = generateSheetIfNotExists(gUrlListSheetName, defaults, "row");
   if (typeof msgOrSheetObj == "string") return msgOrSheetObj;
