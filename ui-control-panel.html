@@ -43,7 +43,6 @@
             $("#edit-value-title").html(ui['edit-value-title']);
             $("#current-sheet").html(ui['current-sheet']);
             $("#apply-conformance-to-all").html(ui['apply-conformance-to-all']);
-            $("#add-screenshot").html(ui['add-screenshot']);
             $("#lump-edit").html(ui['lump-edit']);
             $("#success-criteria").html(ui['criterion']);
             $("#apply-sc-template").html(ui['apply-sc-template']);
@@ -97,7 +96,6 @@
       $('#generate-url-list-sheet').click(onClickGenarateUrlList);
       $('#apply-sc-template').click(onClickApplyScTemplate);
       $('#apply-icl-template').click(onClickApplyIclTemplate);
-      $('#add-screenshot').click(onClickAddScreenshot);
       $('#apply-conformance-to-all').click(onClickApplyConformanceToAll);
       $('#get-current-pos').click(onClickGetCurrentPos);
       $('#do-lump-edit').click(onClickDoLumpEdit);
@@ -326,7 +324,6 @@
         .applyIclTemplate();
     }
 
-
     /**
      * Generate Sheets
      * @param Object sheetsObj
@@ -346,14 +343,6 @@
             showStatusAndFin(rets['msg'], rets['targetId']);
           })
         .generateSheets(sheets, $('#lang').val(), $('#test-type').val(), $('#evaluate-level').val(), targetId);
-    }
-
-    /**
-     * show Screenshot dialog
-     */
-    function onClickAddScreenshot() {
-      var title = Object.keys(lang.ui).length == 0 ? 'Screenshot' : lang.ui['screenshot'];
-      google.script.run.showDialog('ui-screenshot', 300, 200, title);
     }
     
     /**
@@ -535,6 +524,7 @@
       <select id="test-type" title="Test Type" style="width:8em;min-width:8em;">
         <option value="wcag20">WCAG 2.0</option>
         <option value="wcag21">WCAG 2.1</option>
+        <option value="wcag22" disabled>WCAG 2.2 - not yet</option>
         <option value="tt20">Trusted Tester</option>
         <!--  <option value="tt21">Trusted Tester (WCAG 2.1)</option>-->
       </select>
@@ -597,7 +587,6 @@
     <summary id="edit-value-title">4. Edit Value</summary>
     <fieldset>
       <legend id="current-sheet">Current Sheet</legend>
-      <p style="margin-top:-5px;"><button id="add-screenshot">Add screenshot</button></p>
       <p>
         <button id="apply-conformance-to-all">Apply conformance to all</button>
         <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-apply-conformance-to-all"></span>

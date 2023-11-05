@@ -25,8 +25,6 @@
  * - getAllCriteria
  * - getUsingCriteria
  * - getUsingTechs
- * - addImageFormula
- * - removeImageFormula
  * - getHtmlAndTitle
  * - getSpreadSheet
  * - getActiveSheet
@@ -36,6 +34,7 @@
  * - isSheetExist
  * - getSheetIfExists
  * - generateSheetIfNotExists
+ * - generateSheetEvenIfAlreadyExists
  * - prepareSheet
  * - setRowConditionApplicability
  * - setRowConditionNotYet
@@ -182,7 +181,7 @@ function showConfirm(msg) {
  * @return String
  */
 function getUrlFromSheet(sheet) {
-  return sheet.getRange(2, 2).getValue().toString();
+  return sheet.getRange(1, 2).getValue().toString();
 }
 
 /**
@@ -191,7 +190,7 @@ function getUrlFromSheet(sheet) {
  * @return String
  */
 function getTitleFromSheet(sheet) {
-  return sheet.getRange(3, 2).getValue().toString();
+  return sheet.getRange(1, 6).getValue().toString();
 }
 
 /**
@@ -371,12 +370,12 @@ function getUsingCriteria(type) {
  * @return Array
  */
 function getUsingTechs() {
+Logger.log(1);
   if (getUsingTechs.vals) return getUsingTechs.vals;
 
   var lang = getProp('lang');
   var type = getProp('type');
-  var level = getProp('level');
-  
+
   var techNames = getLangSet('tech');
   var urlPointer = lang+'-'+type;
   var usingCriteria = getUsingCriteria();

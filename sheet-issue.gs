@@ -1,5 +1,5 @@
 /**
- * Issue Report for COB-CHA
+ * Issue sheet for COB-CHA
  * functions:
  * - isEditIssue
  * - dialogValueIssue
@@ -8,7 +8,6 @@
  * - applyIssue
  * - setIssueList
  * - showEachIssue
- * - uploadIssueImage
  */
 
 /**
@@ -47,7 +46,6 @@ function dialogValueIssue(isEdit) {
   ret['allPlaces'] = [];
   var all = getAllSheets();
   for (i = 0; i < all.length; i++) {
-//    ret['allPlaces'].push(getUrlFromSheet(all[i]));
     ret['allPlaces'].push({
       'url' : getUrlFromSheet(all[i]),
       'title' : getTitleFromSheet(all[i])
@@ -65,9 +63,7 @@ function dialogValueIssue(isEdit) {
     'checked': 7,
     'techs': 8,
     'places': 9,
-    'image': 10,
-    'preview': 11,
-    'memo': 12
+    'memo': 10
   };
 
   if (isEdit) {
@@ -77,13 +73,8 @@ function dialogValueIssue(isEdit) {
     var activeRow = sheet.getActiveCell().getRow();
     for (var key in celposes) {
       var celpos = celposes[key];
-      if (key !== 'preview') {
-        ret['vals'][key] = sheet.getRange(activeRow, celpos).getValue().toString();
-      } else {
-        ret['vals'][key] = sheet.getRange(activeRow, celpos).getFormula();
-      }
+      ret['vals'][key] = sheet.getRange(activeRow, celpos).getValue().toString();
     }
-    ret['vals']['preview'] = removeImageFormula(ret['vals']['preview']);
   }
 
   return ret;
@@ -107,8 +98,6 @@ function generateIssueSheet() {
     getUiLang('criterion', 'Criteria'),
     getUiLang('tech', 'Techniques'),
     getUiLang('places', 'Places'),
-    getUiLang('image', 'Image'),
-    getUiLang('preview', 'Preview'),
     getUiLang('memo', 'Memo')
   ]];
   var sheet = generateSheetIfNotExists(gIssueSheetName, defaults, "row"); // do not return msg
@@ -119,6 +108,9 @@ function generateIssueSheet() {
   sheet.setColumnWidth(4, 45);
   sheet.setColumnWidth(5, 200);
   sheet.setColumnWidth(6, 200);
+
+  // When I tried to set conditional formatting for the entire sheet in advance,
+  // it was very heavy and impractical, so I decided to set it each time.
 }
 
 /**
@@ -167,14 +159,14 @@ function applyIssue(vals) {
     }
     sheet.getRange(targetRow, i + 1).setValue(vals[i]);
   }
-  var preview = sheet.getRange(targetRow, 11).getValue();
-  if (preview) {
-    sheet.getRange(targetRow, 11).setValue('=IMAGE("https://drive.google.com/uc?export=download&id='+preview+'",1)')
+
+  // set condition - add several rows
+  for (var i = targetRow; i < targetRow + 3; i++) {
+    var range = sheet.getRange(i+":"+i);
+    setRowConditionSolved(sheet, range, i);
   }
-  
-  var range = sheet.getRange(targetRow+":"+targetRow);
-  setRowConditionSolved(sheet, range, targetRow);
-  
+
+  // return  
   if (vals[0] > 0) {
     return getUiLang('edit-done', 'Edited');
   }
@@ -260,13 +252,4 @@ function showEachIssue(row) {
   var issueSheet = ss.getSheetByName(gIssueSheetName);
   issueSheet.getRange(row, 1).activate();
   showDialog('ui-issue', 500, 400, getUiLang('edit-issue', 'Edit issue'));
-}
-
-/**
- * upload Issue image
- * @param Object formObj
- * @return Object
- */
-function uploadIssueImage(formObj) {
-  return fileUpload(gImagesFolderName, formObj, "imageFile");
 }

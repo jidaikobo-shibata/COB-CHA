@@ -1,5 +1,5 @@
 /**
- * Tabulation for COB-CHA
+ * Result sheet for COB-CHA
  * functions:
  * - setCellConditionLv
  * - evaluateSc

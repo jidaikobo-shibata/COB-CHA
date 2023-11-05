@@ -49,8 +49,6 @@
             lang.ui = ui;
             $("#issue-name-title").html(ui['name']);
             $("#issue-solved-title").html(ui['issue-solved']);
-            $("#issue-image-title").html(ui['image']);
-            $("#upload-image").val(ui['upload']);
             $("#explanation-title").html(ui['explanation']);
             $("#criteria-title").html(ui['criterion']);
             $("#tech-title").html(ui['tech']);
@@ -176,8 +174,6 @@
             }
             
             $("#issue-name").val(ret['vals']['issueName']);
-            $("#uploaded-file").val(ret['vals']['image']);
-            $("#uploaded-file-url").val(ret['vals']['preview']);
             
             var textarea = ['html', 'memo', 'explanation'];
             for (var i = 0; i < textarea.length; i++) {
@@ -231,8 +227,6 @@
         checked.join(','),
         techs.join(','),
         places.join(','),
-        $('#uploaded-file').val(),
-        $('#uploaded-file-url').val(),
         $('#memo').val()
       ];
 
@@ -243,35 +237,6 @@
             google.script.host.close();
           })
         .applyIssue(vals);
-    }
-    
-    /**
-     * Upload Image
-     */
-    function onClickUploadImage(obj) {
-      $('#upload-image').prop('disabled', true);
-      $('#progress-upload').show();
-      var msg = Object.keys(lang.ui).length == 0 ? 'in progress' : lang.ui['in-progress'];
-      $('#progress-upload').html('<span class="skip">'+msg+'</span>');
-      
-      google.script.run
-        .withSuccessHandler(function (ret){
-          $('#message-area').show();
-          $('#message-area').html('File Uploaded');
-          $('#uploaded-file').val(ret[0]);
-          $('#uploaded-file-url').val(ret[1]);
-          $('#progress-upload').hide();
-          $('#progress-upload').html('');
-        })
-        .withFailureHandler(function (ret){
-          var msg = Object.keys(lang.ui).length == 0 ? 'Failed file Uploading' : lang.ui['failed-upload'];
-          $('#message-area').show();
-          $('#message-area').addClass('error').html(msg);
-          $('#upload-image').prop('disabled', false);
-          $('#progress-upload').hide();
-          $('#progress-upload').html('');
-        })
-        .uploadIssueImage(obj);
     }
 
     /**
@@ -328,18 +293,6 @@
   <tr>
     <th><span id="places-title">Places</span><p><label><button onclick="$('.places').prop('checked', 'checked')" id="all-page">Check All</button></label></p></th>
     <td style="position:relative;height:150px;"><div style="position:absolute;top:0;height:160px;overflow:auto;overflow-x:hidden;padding:5px;width:100%;"><table id="places" style="width: 100%"></table></div></td>
-  </tr>
-  <tr>
-    <th id="issue-image-title">Image</th>
-    <td>
-      <form id="upload-form" onsubmit="onClickUploadImage(this)">
-        <input type="file" name="imageFile"> <input type="submit" id="upload-image" value="upload">
-        <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-upload"></span>
-        <input type="text" id="uploaded-file" value="">
-        <input type="hidden" id="uploaded-file-url" value="">
-      </form>
-      <div role="region" aria-live="polite" id="message-area" style="margin-top:15px;background-color: #eeeeee;padding:5px;"></div>
-    </td>
   </tr>
   <tr>
     <th><label for="memo" id="memo-title">Memo</label></th>

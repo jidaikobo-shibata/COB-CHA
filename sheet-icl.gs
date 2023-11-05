@@ -1,5 +1,5 @@
 /**
- * ICL Sheet control for COB-CHA - Japanese Only
+ * ICL sheet for COB-CHA - Japanese Only
  * functions:
  * - getIclPassPulldownMenu
  * - getIclApplyPulldownMenu

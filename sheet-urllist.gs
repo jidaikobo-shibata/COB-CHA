@@ -1,5 +1,5 @@
 /**
- * Config for COB-CHA
+ * URL List sheet for COB-CHA
  * functions:
  * - generateUrlListSheet
  */

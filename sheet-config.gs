@@ -1,5 +1,5 @@
 /**
- * Config for COB-CHA
+ * Config sheet for COB-CHA
  * functions:
  * - generateConfigSheet
  * - openDialogAdditionalCriteria

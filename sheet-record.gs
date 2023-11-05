@@ -1,6 +1,6 @@
 /**
- * Sheet control for COB-CHA
- * finctions:
+ * Record sheet for COB-CHA
+ * functions:
  * - getPulldownMenu
  * - generateSheets
  * - getSheets
@@ -29,14 +29,18 @@ function getPulldownMenu() {
 function generateSheets(urlstr, lang, testType, level, targetId) {
   var ss = getSpreadSheet();
 
-  // template or URL sheet
+  // Generate "SC template sheet" or "Webpage sheet"
+  // SC template sheet
   if (urlstr === gScTplSheetName) {
+    // Error: already exists
     if (isSheetExist(gScTplSheetName)) return {
       'msg': getUiLang('target-sheet-already-exists', "%s is already exists.").replace('%s', gScTplSheetName),
       'targetId': targetId
     };
     var urls = [[urlstr, urlstr]];
+  // Webpage sheet
   } else {
+    // Error: URL list was not exist
     if ( ! isSheetExist(gUrlListSheetName)) return {
       'msg': getUiLang('no-target-sheet-exists', "sheet (%s) is not exist.").replace('%s', gUrlListSheetName),
       'targetId': targetId
@@ -45,20 +49,27 @@ function generateSheets(urlstr, lang, testType, level, targetId) {
     var lastRow = urlListSheet.getLastRow();
     var urls = urlListSheet.getRange(2, 1, lastRow - 1, 3).getValues();
     
-    // sheetname check
+    // sheetname check - check not a number
     var nanFound = false;
     for (var i = 0; i < urls.length; i++) {
       if (urls[i][0].toString().search(/^[0-9]+$/) == -1) {
         nanFound = true;
       }
     }
+    // Error: sheetname of not a number was exist
     if (nanFound) return {
       'msg': getUiLang('error-sheetname-must-be-numeric', "Error. All Sheetname must be numeric."),
       'targetId': targetId
     }
   }
-  if (urls.length == 1 && urls[0][0] == '') return {'msg': getUiLang('no-target-page-exists', "No target Page Exists"), 'targetId': targetId};
-    
+
+  // Error: No URLs exist
+  if (urls.length == 1 && urls[0][0] == '') return {
+    'msg': getUiLang('no-target-page-exists', "No target Page Exists"),
+    'targetId': targetId
+  };
+
+  // start generate
   var alreadyExists = [];
   var added = 0;
   var urlsVals = [];
@@ -69,7 +80,7 @@ function generateSheets(urlstr, lang, testType, level, targetId) {
     var targetUrl = urls[i][1].toString().trim();
     if (targetUrl == "") continue;
     
-    // check already exists
+    // check already exists. just add values for update URL Sheet and continue
     if (addSheet(targetSheetname) == false) {
       alreadyExists.push(targetUrl.toString());
       urlsVals = generateUrlsSheetValues(urlsVals, ss.getSheetByName(targetSheetname), targetSheetname, false)
@@ -87,7 +98,7 @@ function generateSheets(urlstr, lang, testType, level, targetId) {
   }
   var lastSheetKey = i;
   
-  // copy sheets
+  // copy sheets from originalsheet - copying seems faster than generate
   if (urlstr !== gScTplSheetName && urls.length > 1) {
     for(var i = lastSheetKey; i < urls.length; i++) {
       var eachSheet = urls[i][1].toString().trim(); 
@@ -101,7 +112,7 @@ function generateSheets(urlstr, lang, testType, level, targetId) {
       var activeSheet = ss.getActiveSheet();
       activeSheet.getRange(2, 2).setValue(eachSheet);
       activeSheet.getRange(3, 2).setValue(res['title']);
-      saveHtml(gResourceFolderName, urls[i][0], res['html']);
+      activeSheet.getRange(3, 2).setValue(res['html'].substring(0, 45000));
       urlsVals = generateUrlsSheetValues(urlsVals, activeSheet, urls[i][0], true);
       added++;
     }
@@ -139,17 +150,18 @@ function generateSheets(urlstr, lang, testType, level, targetId) {
  */
 function generateASheet(testType, sheet, targetUrl, res, sheetname, isEvaluateTarget) {
   var today = new Date();
-  sheet.getRange(1, 1).setValue(getUiLang('memo', 'Memo')).setBackground(gLabelColor);
-  sheet.getRange(2, 1).setValue('URL').setBackground(gLabelColor);
-  sheet.getRange(2, 2).setValue(targetUrl);
-  sheet.getRange(2, 5).setValue(getUiLang('screenshot', 'Screenshot')).setBackground(gLabelColor);
-  sheet.getRange(3, 1).setValue('title').setBackground(gLabelColor);
-  sheet.getRange(3, 2).setValue(res['title']);
-  sheet.getRange(3, 5).setValue(getUiLang('tester', 'Tester')).setBackground(gLabelColor);
-  sheet.getRange(3, 7).setValue(getUiLang('date', 'Date')).setBackground(gLabelColor);
-  sheet.getRange(3, 8).setValue(Utilities.formatDate(today, "JST", "yyyy/MM/dd"));
-  if (isEvaluateTarget) saveHtml(gResourceFolderName, sheetname, res['html']);
-  sheet.setFrozenRows(4);
+  sheet.getRange(1, 1).setValue('URL').setBackground(gLabelColor);
+  sheet.getRange(1, 2).setValue(targetUrl);
+  sheet.getRange(1, 5).setValue('Title').setBackground(gLabelColor);
+  sheet.getRange(1, 6).setValue(res['title']);
+  sheet.getRange(2, 1).setValue(getUiLang('date', 'Date')).setBackground(gLabelColor);
+  sheet.getRange(2, 2).setValue(Utilities.formatDate(today, "JST", "yyyy/MM/dd"));
+  sheet.getRange(2, 3).setValue(getUiLang('tester', 'Tester')).setBackground(gLabelColor);
+  sheet.getRange(2, 5).setValue(getUiLang('memo', 'Memo')).setBackground(gLabelColor);
+  sheet.getRange(3, 1).setValue('HTML').setBackground(gLabelColor);
+  sheet.getRange(3, 2).setValue(res['html'].substring(0, 45000)); //Google Spreadsheet allow 50000 chr/1 cell
+  sheet.hideRow(sheet.getRange(3, 1));
+  sheet.setFrozenRows(2);
   
   // header
   if (testType == 'tt20') {
@@ -163,9 +175,12 @@ function generateASheet(testType, sheet, targetUrl, res, sheetname, isEvaluateTa
   sheet.getRange("4:4").setBackground(gLabelColorDark).setFontColor(gLabelColorDarkText).setFontWeight('bold');
   
   // appearance
+/*
+  // 20231104 try to use default width
   sheet.setColumnWidth(1, 60);
   sheet.setColumnWidth(2, 50);
   sheet.setColumnWidth(3, 50);
+*/
   sheet.getRange('4:4').setHorizontalAlignment('center');
   
   // test type
@@ -244,7 +259,7 @@ function addSheet(sheetname, template) {
   var sheet = ss.getSheetByName(sheetname);
   var sheetIndex  = sheetname.charAt(0) == '*' ? 0 : ss.getSheets().length + 1;
 
-  // sheet which name started with * must be refreashed
+  // sheet which name started with * must be refreshed
   if (sheetIndex == 0 && sheet != null) {
     ss.deleteSheet(sheet);
   }

@@ -1,6 +1,6 @@
 /**
- * Report Index for COB-CHA
- * finctions:
+ * Report sheet for COB-CHA
+ * functions:
  * - generateReportSheet
  */
 

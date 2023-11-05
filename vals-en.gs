@@ -613,6 +613,6 @@ function getTechValEn ()
     'SM14': 'Providing sign language interpretation through synchronized video streams in SMIL 2.0',
     'T1': 'Using standard text formatting conventions for paragraphs',
     'T2': 'Using standard text formatting conventions for lists',
-    'T3': 'Using standard text formatting conventions for headings',
+    'T3': 'Using standard text formatting conventions for headings'
   }
 }

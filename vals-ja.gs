@@ -639,9 +639,6 @@ function getUiJa ()
     'this-pages-all-check-will-be-overwritten': 'このページのすべての「判定」の値が合格になります',
     'caution-using-template': '全ての試験結果がテンプレートの値で上書きされます',
     'current-sheet-is-not-for-webpage': 'このシートはウェブページ用ではありません',
-    'image-uploaded': '画像を登録しました',
-    'upload': 'アップロード',
-    'failed-upload': 'アップロードに失敗しました',
     'evaluated': '集計しました',
     'no-template-found': 'テンプレートが見つかりませんでした',
     'template-caution': '注意！: 対象のシートの値が上書きされます',
@@ -663,7 +660,6 @@ function getUiJa ()
     'memo': '備考',
     'template': 'テンプレート',
     'tester': 'テスト担当者',
-    'screenshot': 'スクリーンショット',
 
     // control-panel
     'in-progress': '処理中',
@@ -686,7 +682,6 @@ function getUiJa ()
     
     'edit-value-title': '4. 値の編集',
     'current-sheet': '現在のシート',
-    'add-screenshot': 'スクリーンショット追加',
     'apply-conformance-to-all': 'すべて合格にする',
     'lump-edit': '複数シート一括編集',
     'pos-row': '行',
