@@ -189,6 +189,8 @@ function fetchEachResults(type, sheet, criteria, mT, mF, mD) {
     }
   }
 
+console.log(tmp);
+
   // union  
   for (var key in tmp) {
     // at least one Fail found
