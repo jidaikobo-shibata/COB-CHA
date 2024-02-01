@@ -3,8 +3,11 @@
  * Google Spreadsheet Add-on
  * @Author  shibata@jidaikobo.com
  *          arimatsu@jidaikobo.com
- * @Year    2021
+ * @Year    2021 - 
  * @Licence MIT
+ * 
+ * TODO:
+ * addImageFormulaとremoveImageFormulaは削除予定？
  * 
  * functions:
  * - onInstall

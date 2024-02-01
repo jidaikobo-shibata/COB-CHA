@@ -7,7 +7,7 @@
  */
 
 /**
- * WCAG 2.0/2.1 criteria
+ * WCAG 2.0/2.1/2.2 criteria
  * @return Array
  */
 function getCriteriaEn ()
@@ -65,12 +65,17 @@ function getCriteriaEn ()
     ['AAA', '2.4.8',  'Location', 'navigation-mechanisms-location', 'location'],
     ['AAA', '2.4.9',  'Link Purpose (Link Only)', 'navigation-mechanisms-link', 'link-purpose-link-only'],
     ['AAA', '2.4.10', 'Section Headings', 'navigation-mechanisms-headings', 'section-headings'],
+    ['AA',  '2.4.11', 'Focus Not Obscured (Minimum)', '', '', ''],
+    ['AAA', '2.4.12', 'Focus Not Obscured (Enhanced)', '', '', ''],
+    ['AAA', '2.4.13', 'Focus Appearance', '', '', ''],
     ['A',   '2.5.1',  'Pointer Gestures', '', 'pointer-gestures'],
     ['A',   '2.5.2',  'Pointer Cancellation', '', 'pointer-cancellation'],
     ['A',   '2.5.3',  'Label in Name', '', 'label-in-name'],
     ['A',   '2.5.4',  'Motion Actuation', '', 'motion-actuation'],
-    ['AAA', '2.5.5',  'Target Size', '', 'target-size'],
+    ['AAA', '2.5.5',  'Target Size (Enhanced)', '', 'target-size'],
     ['AAA', '2.5.6',  'Concurrent Input Mechanisms', '', 'concurrent-input-mechanisms'],
+    ['AA',  '2.5.7',  'Dragging Movements ', '', ''],
+    ['AA',  '2.5.8',  'Target Size (Minimum)', '', ''],
     ['A',   '3.1.1',  'Language of Page', 'meaning-doc-lang-id', 'language-of-page'],
     ['AA',  '3.1.2',  'Language of Parts', 'meaning-other-lang-id', 'language-of-parts'],
     ['AAA', '3.1.3',  'Unusual Words', 'meaning-idioms', 'unusual-words'],
@@ -82,12 +87,16 @@ function getCriteriaEn ()
     ['AA',  '3.2.3',  'Consistent Navigation', 'consistent-behavior-consistent-locations', 'consistent-navigation'],
     ['AA',  '3.2.4',  'Consistent Identification', 'consistent-behavior-consistent-functionality', 'consistent-identification'],
     ['AAA', '3.2.5',  'Change on Request', 'consistent-behavior-no-extreme-changes-context', 'change-on-request'],
+    ['A',   '3.2.6',  'Consistent Help', '', ''],
     ['A',   '3.3.1',  'Error Identification', 'minimize-error-identified', 'error-identification'],
     ['A',   '3.3.2',  'Labels or Instructions', 'minimize-error-cues', 'labels-or-instructions'],
     ['AA',  '3.3.3',  'Error Suggestion', 'minimize-error-suggestions', 'error-suggestion'],
     ['AA',  '3.3.4',  'Error Prevention (Legal, Financial, Data)', 'minimize-error-reversible', 'error-prevention-legal-financial-data'],
     ['AAA', '3.3.5',  'Help', 'minimize-error-context-help', 'help'],
     ['AAA', '3.3.6',  'Error Prevention (All)', 'minimize-error-reversible-all', 'error-prevention-all'],
+    ['A',   '3.3.7',  'Redundant Entry', '', ''],
+    ['AA',  '3.3.8',  'Accessible Authentication (Minimum)', '', ''],
+    ['AAA', '3.3.9',  'Accessible Authentication (Enhanced)', '', ''],
     ['A',   '4.1.1',  'Parsing', 'ensure-compat-parses', 'parsing'],
     ['A',   '4.1.2',  'Name, Role, Value', 'ensure-compat-rsv', 'name-role-value'],
     ['AA',  '4.1.3',  'Status Messages', '', 'status-messages']

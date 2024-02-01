@@ -189,7 +189,7 @@ function fetchEachResults(type, sheet, criteria, mT, mF, mD) {
     }
   }
 
-console.log(tmp);
+// console.log(tmp);
 
   // union  
   for (var key in tmp) {
