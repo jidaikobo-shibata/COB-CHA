@@ -7,7 +7,8 @@
  * @Licence MIT
  * 
  * TODO:
- * addImageFormulaとremoveImageFormulaは削除予定？
+ * - 解説書、達成基準へのリンクは削除予定（#del-link）
+ * - showConfirm()において、キャンセルボタンでキャンセルしたら問題がないが、エスケープキーではエラーになる。try-catchで捉えようとしたが、捉えられていない（#cannot-esc）
  * 
  * functions:
  * - onInstall
@@ -151,6 +152,7 @@ function showDialog(sheetname, width, height, title, html) {
  * @return String
  */
 function showAlert(msg, buttonId) {
+  // #cannot-esc
   try {
     var ui = SpreadsheetApp.getUi();
     var ret = ui.alert(
@@ -170,12 +172,26 @@ function showAlert(msg, buttonId) {
  * @return String
  */
 function showConfirm(msg) {
-  var ui = SpreadsheetApp.getUi();
+  // #cannot-esc
+  try {
+    var ui = SpreadsheetApp.getUi();
+    var ret = ui.alert(
+      'COB-CHA',
+      msg,
+      ui.ButtonSet.OK_CANCEL
+    );
+  } catch (e) {
+    var ret = '';
+  }
+  return ret;
+
+/*
   return ui.alert(
     'COB-CHA',
     msg,
     ui.ButtonSet.OK_CANCEL
   );
+*/
 }
 
 /**
@@ -236,7 +252,7 @@ function getProp(prop) {
   var rets = sheet.getRange(1, 2, 5, 2).getValues();
   
   vals['lang']  = ['en', 'ja'].indexOf(rets[0][0]) > -1 ? rets[0][0] : vals['lang'];
-  vals['type']  = ['wcag20', 'wcag21', 'tt20'].indexOf(rets[1][0]) > -1 ? rets[1][0] : vals['type'];
+  vals['type']  = ['wcag20', 'wcag21', 'wcag22', 'tt20'].indexOf(rets[1][0]) > -1 ? rets[1][0] : vals['type'];
   vals['level'] = ['A', 'AA', 'AAA'].indexOf(rets[2][0]) > -1 ? rets[2][0] : vals['level'];
   vals['mark']  = rets[3][0].toString().charAt(0) == 'o' ? vals['mark'] : ['NT', 'DNA', 'T', 'F'];
   vals['additional']  = rets[4][0].toString();
@@ -315,6 +331,8 @@ function getAllCriteria(type) {
   if (set == 'ttCriteria') return allCriteria;
   if (getAllCriteria.vals) return getAllCriteria.vals;
   
+/*
+  // #del-link
   // add URL
   var urlPointer = lang+'-'+type;
   for (var i = 0; i < allCriteria.length; i++) {
@@ -322,7 +340,8 @@ function getAllCriteria(type) {
     allCriteria[i].push(gUrlbase['understanding'][urlPointer]+langPointer);
   }
   getAllCriteria.vals = allCriteria;
-    
+*/
+
   return allCriteria;
 }
 
@@ -351,7 +370,9 @@ function getUsingCriteria(type) {
   for (var i = 0; i < usingCriteria.length; i++) {
     if (typeof usingCriteria[i] === 'undefined') continue;
     if (
-      (type == 'wcag20' && gCriteria21.indexOf(usingCriteria[i][1]) >= 0) ||
+      (type == 'wcag20' && (gCriteria21.indexOf(usingCriteria[i][1]) >= 0 || gCriteria22.indexOf(usingCriteria[i][1]) >= 0)) ||
+      (type == 'wcag21' && gCriteria22.indexOf(usingCriteria[i][1]) >= 0) ||
+      (type == 'wcag22' && usingCriteria[i][1] == '4.1.1') ||
       usingCriteria[i][0].length > level.length
     ) {
       if (additionalCriteria.indexOf(usingCriteria[i][1]) >= 0) continue;
@@ -360,7 +381,7 @@ function getUsingCriteria(type) {
   }
   
   usingCriteria = usingCriteria.filter(function(x){
-	return !(x === null || x === undefined || x === ""); 
+	  return !(x === null || x === undefined || x === ""); 
   });
   
 //  getUsingCriteria.vals = usingCriteria;
@@ -373,7 +394,6 @@ function getUsingCriteria(type) {
  * @return Array
  */
 function getUsingTechs() {
-Logger.log(1);
   if (getUsingTechs.vals) return getUsingTechs.vals;
 
   var lang = getProp('lang');
@@ -388,10 +408,12 @@ Logger.log(1);
     var criteria = usingCriteria[i][1];
     if (gRelTechsAndCriteria[criteria] == null) continue;
     for (j = 0; j < gRelTechsAndCriteria[criteria].length; j++) {
-      var url = gUrlbase['tech'][urlPointer];
       var each = gRelTechsAndCriteria[criteria][j];
       
+/*
+      // #del-link
       // Techniques for WCAG 2.1 has directory
+      var url = gUrlbase['tech'][urlPointer];
       if (type == 'wcag21' && lang == 'en') {
         var dir = each.charAt(0)+each.charAt(1);
         if (['M', 'L', 'V', 'C'].indefOf(each.charAt(1)) < 0) {
@@ -401,8 +423,9 @@ Logger.log(1);
       } else {
         url += each+'.html';
       }
-
       usingTechs.push([criteria, gRelTechsAndCriteria[criteria][j], techNames[each], url]);
+*/
+      usingTechs.push([criteria, gRelTechsAndCriteria[criteria][j], techNames[each]]);
     }
   }
   
@@ -410,27 +433,6 @@ Logger.log(1);
     
   return usingTechs;
 }
-
-/**
- * add image formula
- * @param String id
- * @return String
- */
-function addImageFormula(id) {
-  return '=IMAGE("https://drive.google.com/uc?export=download&id='+id+'",1)';
-};
-
-/**
- * remove image formula
- * @param String id
- * @return String
- */
-function removeImageFormula(id) {
-  Logger.log(id);
-  id = id.replace('=IMAGE("https://drive.google.com/uc?export=download&id=' ,'');
-  id = id.replace('",1)', '');
-  return id;
-};
 
 /**
  * Get HTML and its title
@@ -546,8 +548,12 @@ function resetSheets(isAll) {
   var ss = getSpreadSheet();
   var all = ss.getSheets();
   
-  deleteFallbacksheet();
-  ss.insertSheet(gFallbackSheetName, 0);
+  if (all.length > 1) {
+    deleteFallbacksheet();
+  }
+  if (all.length == 1 && all[0].getName() != gFallbackSheetName) {
+    ss.insertSheet(gFallbackSheetName, 0);
+  }
   
   var count = 0;
   for (var i = 0; i < all.length; i++) {

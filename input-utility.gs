@@ -139,16 +139,12 @@ function getCurrentPos() {
   var row = activeSheet.getActiveCell().getRow();
   var col = activeSheet.getActiveCell().getColumn();
   var vals = activeSheet.getActiveRange().getValues();
-
-  console.log(vals);
   
   // escape
   vals = vals.map(function(x){return x.map(function(y){return y.toString().replace(/;;/g, "%;%;%")})});
   vals = vals.map(function(x){return x.map(function(y){return y.toString().replace(/::/g, "%:%:%")})});
   vals = vals.map(function(x){return x.map(function(y){return y.toString().replace(/\r?\n/g, "%%")})});
   vals = vals.map(function(x){return x.join(";;")}).join("::");
-
-  console.log(vals);
 
   return [row, col, vals];
 }

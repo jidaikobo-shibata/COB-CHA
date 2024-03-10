@@ -192,7 +192,8 @@ function generateASheet(testType, sheet, targetUrl, res, sheetname, isEvaluateTa
     if (testType == 'tt20') {
       sheet.getRange(row, 1).setValue(usingCriteria[j][1]).setHorizontalAlignment('center');
     } else {
-      sheet.getRange(row, 1).setValue('=HYPERLINK("'+usingCriteria[j][5]+'", "'+usingCriteria[j][1]+'")').setHorizontalAlignment('center');
+//      sheet.getRange(row, 1).setValue('=HYPERLINK("'+usingCriteria[j][5]+'", "'+usingCriteria[j][1]+'")').setHorizontalAlignment('center');
+      sheet.getRange(row, 1).setValue(usingCriteria[j][1]).setHorizontalAlignment('center');
     }
     sheet.getRange(row, 2).setDataValidation(getPulldownMenu()).setHorizontalAlignment('center').setComment(usingCriteria[j][2]);
     sheet.getRange(row, 3).setValue(usingCriteria[j][0]).setHorizontalAlignment('center');

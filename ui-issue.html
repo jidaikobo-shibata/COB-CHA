@@ -104,11 +104,11 @@
               var criterion = ret['usingCriteria'][i][1];
               var exp = ret['usingCriteria'][i][2];
               var idname = criterion.replace(/\./g, '_')+'-criterion';
-              var url = ret['usingCriteria'][i][5];
+//              var url = ret['usingCriteria'][i][5]; // #del-link
               $('#criteria').append($('<tr></tr>')
                          .append($('<td></td>').html('<input type="checkbox" class="criteria-chk" id="'+idname+'" value="'+criterion+'">'))
                          .append($('<td></td>').html('<label for="'+idname+'">'+criterion+': '+exp+'</label>'))
-                         .append($('<td></td>').html('<a target="_blank" href="'+url+'.html"><i class="fas fa-external-link-alt"></i><span style="position: absolute;width: 1px;height: 1px;clip: rect(0 0 0 0);">Open '+criterion+'</span></a>'))
+//                         .append($('<td></td>').html('<a target="_blank" href="'+url+'.html"><i class="fas fa-external-link-alt"></i><span style="position: absolute;width: 1px;height: 1px;clip: rect(0 0 0 0);">Open '+criterion+'</span></a>')) // #del-link
                         );
             }
             
@@ -122,11 +122,11 @@
                 var each = ret['usingTechs'][j][1];
                 var for_id = ret['usingTechs'][j][1]+'-'+j;
                 var label = ret['usingTechs'][j][2];
-                var url = ret['usingTechs'][j][3];
+//                var url = ret['usingTechs'][j][3]; // #del-link
                 $('#techs').append($('<tr class="'+classname+' tech-row"></tr>')
                            .append($('<td></td>').html('<input type="checkbox" id="'+for_id+'" value="'+each+'">'))
                            .append($('<td></td>').html('<label for="'+for_id+'">'+each+': '+label+'</label>'))
-                           .append($('<td></td>').html('<a target="_blank" href="'+url+'"><i class="fas fa-external-link-alt"></i><span style="position: absolute;width: 1px;height: 1px;clip: rect(0 0 0 0);">Open '+each+'</span></a>'))
+//                           .append($('<td></td>').html('<a target="_blank" href="'+url+'"><i class="fas fa-external-link-alt"></i><span style="position: absolute;width: 1px;height: 1px;clip: rect(0 0 0 0);">Open '+each+'</span></a>')) // #del-link
                           );
               }
             }

@@ -56,22 +56,26 @@
           function(ret) {
             // generate table
             for(var i = 0; i < ret['criteria'].length; i++) {
-              if (ret['type'] == 'wcag20' && ret['criteria21'].indexOf(ret['criteria'][i][1]) >= 0) continue;
+              if (ret['type'] == 'wcag20' && (ret['criteria21'].indexOf(ret['criteria'][i][1]) >= 0 || ret['criteria22'].indexOf(ret['criteria'][i][1]) >= 0)) continue;
+              if (ret['type'] == 'wcag21' && ret['criteria22'].indexOf(ret['criteria'][i][1]) >= 0) continue;
               if (ret['criteria'][i][0].length <= ret['level'].length) continue;
 
               var criterion = ret['criteria'][i][1];
               var exp = ret['criteria'][i][2];
-              var url = ret['criteria'][i][5];
+//              var url = ret['criteria'][i][5]; // #del-link
               var idname = criterion.replace(/\./g, '_')+'-criterion';
               
               var inputstr = '<input type="checkbox" class="criteria-chk" id="'+idname+'" value="'+criterion+'">';
+              /*
+              // #del-link
               var linkstr = '<a target="_blank" href="'+url+'.html">'
                             +'<i class="fas fa-external-link-alt"></i>'
                             +'<span class="skip">Open '+criterion+'</span></a>';
+              */
               $('#criteria').append($('<tr>')
                             .append($('<td>').html(inputstr))
                             .append($('<td>').html('<label for="'+idname+'">'+criterion+': '+exp+'</label>'))
-                            .append($('<td>').append(linkstr))
+//                            .append($('<td>').append(linkstr)) // #del-link
               );
             }
             
@@ -110,6 +114,6 @@
   <div style="position: fixed; width: 100%; bottom: 0; background: #fff; z-index: 9; padding: 20px;">
     <button id="set-additional-criteria" class="primary">Set additional criteria</button>
   </div>
-  <table id="criteria" style="width: calc(100% - 100px); margin: 0 0 0 20px;"></table>
+  <table id="criteria" style="width: calc(100% - 50px); margin: 0 0 20px 20px;"></table>
 </body>
 </html>

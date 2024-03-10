@@ -22,6 +22,10 @@ function generateReportSheet(level) {
     [getUiLang("report-test-days", "Test date"), ""]
   ];
   var msgOrSheetObj = generateSheetIfNotExists(gReportSheetName, defaults);
+
+  var sheet = getSheetIfExists(gReportSheetName);
+  sheet.setColumnWidth(1, 200);
+
   if (typeof msgOrSheetObj == "string") return msgOrSheetObj;
   return getUiLang('target-sheet-generated', "Generate Target Sheet (%s).").replace('%s', gReportSheetName);
 }

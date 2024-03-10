@@ -168,7 +168,7 @@ function evaluateSc() {
  * @return Array
  */
 function fetchEachResults(type, sheet, criteria, mT, mF, mD) {
-  // WCAG 2.0/2.1
+  // WCAG 2.0/2.1/2.2
   if (type != 'tt20') {
     return sheet.getRange(5, 2, criteria.length, 1).getValues();
   }  
@@ -188,8 +188,6 @@ function fetchEachResults(type, sheet, criteria, mT, mF, mD) {
       tmp[key].push(chk);
     }
   }
-
-// console.log(tmp);
 
   // union  
   for (var key in tmp) {

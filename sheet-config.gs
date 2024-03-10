@@ -25,12 +25,14 @@ function generateConfigSheet(lang, testType, level, mark, force) {
     [getUiLang('additional-criteria', "Additional Criteria"), ""]
   ];
   var msgOrSheetObj = generateSheetIfNotExists(gConfigSheetName, defaults);
-  
+
+  var sheet = getSheetIfExists(gConfigSheetName);
+  sheet.setColumnWidth(1, 100);
+
   //if (force !== true && typeof msgOrSheetObj == "string") return msgOrSheetObj;
   if (force !== true && typeof msgOrSheetObj == "string") {
     var msg = getUiLang('force-update-config', 'Config Sheet is alreadt exists. Update config?');
     if(showConfirm(msg) != "OK") return getUiLang('canceled', 'canceled');
-    var sheet = getSheetIfExists(gConfigSheetName);
     sheet.getRange(1, 2, 4, 1).setValues([[lang], [testType], [level], [mark]]);
     return getUiLang('target-sheet-updated', "Update Target Sheet (%s).").replace('%s', gConfigSheetName);
   }
@@ -63,6 +65,7 @@ function dialogValueAdditionalCriteria() {
   ret['checked'] = getProp('additional');
   ret['criteria'] = getAllCriteria();
   ret['criteria21'] = gCriteria21;
+  ret['criteria22'] = gCriteria22;
   return ret;
 }
 
