@@ -667,6 +667,7 @@ function getUiJa ()
     'evaluated': '集計しました',
     'no-template-found': 'テンプレートが見つかりませんでした',
     'template-caution': '注意！: 対象のシートの値が上書きされます',
+    'template-caution-updated': '注意！: 対象のシートの値が更新されます',
     'canceled': '中止しました',
     'error-lump-edit': '一括編集の行/列に不正な値がセットされています。範囲を指定し直してください',
 
@@ -713,7 +714,8 @@ function getUiJa ()
     'pos-col': '列',
     'get-current-pos': '現在位置取得',
     'do-lump-edit': '対象シートに反映',
-    
+    'lump-is_append': '上書きせず加筆する',
+
     'issue-control-title': '5. 問題点管理',
     'add-edit-issue': '問題点を新規作成/編集',
     'show-issue': 'このページの問題点一覧',

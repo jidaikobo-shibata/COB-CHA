@@ -154,9 +154,13 @@ function getCurrentPos() {
  * @param Integer row
  * @param Integer col
  * @param String vals
+ * @param bool is_append
  * @return String
  */
-function doLumpEdit(row, col, vals) {
+function doLumpEdit(row, col, vals, is_append) {
+  // is append value
+  is_append = is_append === undefined ? false : is_append;
+
   // cell coordinate must be numeric
   if (row.toString().search(/^[0-9]+$/) == -1 || col.toString().search(/^[0-9]+$/) == -1) {
     return getUiLang('error-lump-edit', 'An invalid value is set in the row/column of the lump edit');
@@ -169,7 +173,11 @@ function doLumpEdit(row, col, vals) {
     return getUiLang('canceled', 'canceled');
   }
   
-  var msg = getUiLang('template-caution', 'CAUTION: All result will be overwritten.');
+  if (is_append) {
+    var msg = getUiLang('template-caution-updated', 'CAUTION: All result will be updated.');
+  } else {
+    var msg = getUiLang('template-caution', 'CAUTION: All result will be overwritten.');
+  }
   if(showConfirm(msg) != "OK") return getUiLang('canceled', 'canceled');
 
   // string to array
@@ -181,8 +189,31 @@ function doLumpEdit(row, col, vals) {
   
   // apply
   var n = 0;
+  var targetvals = [];
   for (var i = 0; i < allSheets.length; i++) {
-    allSheets[i].getRange(row, col, vals.length, vals[0].length).setValues(vals);
+    if (is_append) {
+      // append value
+      targetvals = allSheets[i].getRange(row, col, vals.length, vals[0].length).getValues();
+      for (var tmprow = 0; tmprow < vals.length; tmprow++) {
+        for (var tmpcol = 0; tmpcol < vals[0].length; tmpcol++) {
+          // ignore single char value. it must be symbol, not words
+          if (targetvals[tmprow][tmpcol].toString().length == 1) continue;
+          // do not append same value
+          if (targetvals[tmprow][tmpcol].toString() == vals[tmprow][tmpcol].toString()) continue;
+          // newline or not
+          if (targetvals[tmprow][tmpcol].toString().length == 0) {
+            targetvals[tmprow][tmpcol] = vals[tmprow][tmpcol].toString();
+          } else {
+            targetvals[tmprow][tmpcol] = targetvals[tmprow][tmpcol].toString() + "\n" + vals[tmprow][tmpcol].toString();
+          }
+        }
+      }
+      // append - update
+      allSheets[i].getRange(row, col, vals.length, vals[0].length).setValues(targetvals);
+    } else {
+      // orverwrite - update
+      allSheets[i].getRange(row, col, vals.length, vals[0].length).setValues(vals);
+    }
     n++;
   }
   return getUiLang('sheet-edited', '%s sheet(s) edited.').replace("%s", n);

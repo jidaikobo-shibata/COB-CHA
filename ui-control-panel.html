@@ -52,8 +52,9 @@
             $("#label-lump-pos-row").html(ui['pos-row']);
             $("#label-lump-pos-col").html(ui['pos-col']);
             $("#get-current-pos").html(ui['get-current-pos']);
+            $("#label-lump-is_append").html(ui['lump-is_append']);
             $("#do-lump-edit").html(ui['do-lump-edit']);
-            
+
             $("#issue-control-title").html(ui['issue-control-title']);
             $("#add-edit-issue").html(ui['add-edit-issue']);
             $("#show-issue").html(ui['show-issue']);
@@ -407,6 +408,8 @@
      */
     function onClickDoLumpEdit() {
       progressIndicator('do-lump-edit', 'progress-do-lump-edit', true);
+      var is_append = $('#lump-is_append').prop('checked');
+
       google.script.run
         .withSuccessHandler(
           function(msg) {
@@ -416,7 +419,7 @@
           function() {
             showStatusAndFin('failed', 'do-lump-edit');
           })
-        .doLumpEdit($('#lump-pos-row').val(), $('#lump-pos-col').val(), $('#lump-val').val());
+        .doLumpEdit($('#lump-pos-row').val(), $('#lump-pos-col').val(), $('#lump-val').val(), is_append);
     }
 
     /**
@@ -587,7 +590,7 @@
     <summary id="edit-value-title">4. Edit Value</summary>
     <fieldset>
       <legend id="current-sheet">Current Sheet</legend>
-      <p>
+      <p style="margin:0;padding:0;lin-height:1;">
         <button id="apply-conformance-to-all">Apply conformance to all</button>
         <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-apply-conformance-to-all"></span>
       </p>
@@ -595,9 +598,10 @@
     <fieldset>
       <legend id="lump-edit">Lump Edit</legend>
       <p style="margin-top:-5px;">
-        <label for="lump-pos-row" id="label-lump-pos-row">X</label>: <input type="text" size="3" id="lump-pos-row">
-        <label for="lump-pos-col" id="label-lump-pos-col">Y</label>: <input type="text" size="3" id="lump-pos-col">
-        <label for="lump-val" id="label-lump-val">Val</label>: <input type="text" size="7" id="lump-val">
+        <label for="lump-pos-row" id="label-lump-pos-row">X</label>: <input type="text" size="2" id="lump-pos-row">
+        <label for="lump-pos-col" id="label-lump-pos-col">Y</label>: <input type="text" size="2" id="lump-pos-col">
+        <label for="lump-val" id="label-lump-val">Val</label>: <input type="text" size="5" id="lump-val">
+        <input type="checkbox" id="lump-is_append" checked="checked"> <label for="lump-is_append" id="label-lump-is_append">Append not overwrite</label>
         <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-get-current-pos"></span>
         <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-do-lump-edit"></span>
       </p>
