@@ -650,7 +650,8 @@ function getUiJa ()
     'target-sheet-already-exists': '対象のシート（%s）が既に存在しています。手動で既存のシートを削除してください',
     'target-sheet-generated': '対象のシート（%s）を生成しました',
     'target-sheet-updated': '対象のシート（%s）を更新しました',
-    'update-value': '%sを更新しました',
+    'add-value': '%s を新規追加しました',
+    'update-value': '%s を更新しました',
     'no-target-page-exists': '対象のページが存在しません',
     'no-target-page-exists2': '対象のページが存在しません。'+gUrlListSheetName+'の「一括処理の対象」列に「o」を入れてください',
     'icl-tpl-not-exists': '実装チェックリストのテンプレート（'+gIclTplSheetName+'）が存在しません。集計対象が存在していません',
@@ -742,6 +743,12 @@ function getUiJa ()
     // url-list-sheet
     'target-lump-edit': '一括処理の対象（o）',
     'error-sheetname-must-be-numeric': 'シート名（1列目）はすべて数値にしてください',
+    'video': '動画あり',
+    'time-based': '時間依存あり',
+    'form': 'フォームあり',
+    'table': 'tableあり',
+    'help': 'ヘルプあり',
+    'ads': '広告あり',
 
     // report-sheet
     'report-declaration-day': '表明日',

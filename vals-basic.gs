@@ -125,6 +125,8 @@ var gNonInterferenceTt = [
 /**
  * URL
  */
+/*
+// #del-link
 var gUrlbase = {
   'understanding': {
     'en-wcag20': 'https://www.w3.org/TR/UNDERSTANDING-WCAG20/',
@@ -154,6 +156,7 @@ var gTechDirAbbr = {
   'SV': 'server-side-script',
   'SC': 'client-side-script'
 };
+*/
 
 /*
  * Techs

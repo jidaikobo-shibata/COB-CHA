@@ -166,11 +166,12 @@ function applyIssue(vals) {
     setRowConditionSolved(sheet, range, i);
   }
 
-  // return  
+  // return
+  var issue_id = targetRow - 1;
   if (vals[0] > 0) {
-    return getUiLang('edit-done', 'Edited');
+    return getUiLang('update-value', 'Edited: %s').replace("%s", 'Issue "' + issue_id + '"');
   }
-  return getUiLang('add-done', 'Added');
+  return getUiLang('add-value', 'Added: %s').replace("%s", 'Issue "' + issue_id + '"');
 }
 
 /**
@@ -225,7 +226,7 @@ function setIssueList() {
     if (activeSheetName.charAt(0) == '*') {
       return {'url': '', 'issues': []};
     } else {
-      var url = activeSheet.getRange(2, 2).getValue();
+      var url = getUrlFromSheet(activeSheet);
     }
   }
 
@@ -251,5 +252,6 @@ function showEachIssue(row) {
   var ss = getSpreadSheet();
   var issueSheet = ss.getSheetByName(gIssueSheetName);
   issueSheet.getRange(row, 1).activate();
-  showDialog('ui-issue', 500, 400, getUiLang('edit-issue', 'Edit issue'));
+  var html = '<input type="hidden" id="target-url" value="">';
+  showDialog('ui-issue', 500, 400, getUiLang('edit-issue', 'Edit issue'), html);
 }

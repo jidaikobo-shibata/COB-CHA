@@ -98,6 +98,8 @@
             }
             $('#apply-issue').after('<input type="hidden" id="issue-id" value="'+ret['vals']['issueId']+'">');
 
+console.log(ret);
+
             // criteria
             for(var i = 0; i < ret['usingCriteria'].length; i++) {
               var level = ret['usingCriteria'][i][0];
