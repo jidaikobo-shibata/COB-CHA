@@ -548,12 +548,8 @@ function resetSheets(isAll) {
   var ss = getSpreadSheet();
   var all = ss.getSheets();
   
-  if (all.length > 1) {
-    deleteFallbacksheet();
-  }
-  if (all.length == 1 && all[0].getName() != gFallbackSheetName) {
-    ss.insertSheet(gFallbackSheetName, 0);
-  }
+  deleteFallbacksheet();
+  ss.insertSheet(gFallbackSheetName, 0);
   
   var count = 0;
   for (var i = 0; i < all.length; i++) {
