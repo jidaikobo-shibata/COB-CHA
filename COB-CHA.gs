@@ -330,17 +330,6 @@ function getAllCriteria(type) {
   // Trusted Tester does not apply additional criteria
   if (set == 'ttCriteria') return allCriteria;
   if (getAllCriteria.vals) return getAllCriteria.vals;
-  
-/*
-  // #del-link
-  // add URL
-  var urlPointer = lang+'-'+type;
-  for (var i = 0; i < allCriteria.length; i++) {
-    var langPointer = type == 'wcag21' ? allCriteria[i][4] : allCriteria[i][3];
-    allCriteria[i].push(gUrlbase['understanding'][urlPointer]+langPointer);
-  }
-  getAllCriteria.vals = allCriteria;
-*/
 
   return allCriteria;
 }
