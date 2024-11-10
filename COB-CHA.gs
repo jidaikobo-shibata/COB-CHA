@@ -1,6 +1,6 @@
 /**
  * COB-CHA: CollaBorative CHeck tool for Accessibility
- * Google Spreadsheet Add-on
+ * Google Spreadsheet Add-on.
  * @Author  shibata@jidaikobo.com
  *          arimatsu@jidaikobo.com
  * @Year    2021 - 
