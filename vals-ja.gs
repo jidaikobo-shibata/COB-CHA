@@ -670,6 +670,7 @@ function getUiJa ()
     'template-caution-updated': '注意！: 対象のシートの値が更新されます',
     'canceled': '中止しました',
     'error-lump-edit': '一括編集の行/列に不正な値がセットされています。範囲を指定し直してください',
+    'preparing': '準備中です',
 
     // words
     'additional-criteria': '追加の達成基準',
@@ -682,7 +683,7 @@ function getUiJa ()
     'result': '結果',
     'criterion': '達成基準',
     'check': '判定',
-    'tech': '達成方法',
+    'tech': 'テクニック',
     'memo': '備考',
     'template': 'テンプレート',
     'tester': 'テスト担当者',
@@ -734,7 +735,7 @@ function getUiJa ()
     'issue-list': '問題点一覧',
     'issue-report': '問題点レポート',
     'test-id': 'テストID',
-    'tech-for': '%s の達成方法',
+    'tech-for': '%s のテクニック',
 
     // config-sheet
     'mark-type-note-ox':'o:合格 x:不合格 -:適用なし ?:未テスト',

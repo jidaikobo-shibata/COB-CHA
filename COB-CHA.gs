@@ -132,17 +132,20 @@ function showCredit() {
  * @return Void
  */
 function showDialog(sheetname, width, height, title, html) {
-  var output = HtmlService.createTemplateFromFile(sheetname);
+  var t = HtmlService.createTemplateFromFile(sheetname);
+
+  t.I18N = getLangSet('ui') || {};        // dictionary
+  t.LANG = getProp('lang') || 'en';       // lang
+
+  var out = t.evaluate()
+    .setWidth(width || 800)
+    .setHeight(height || 600)
+    .setTitle(title || '');
+
+  if (html) out.append(html);
+
   var ss = getSpreadSheet();
-  title = title == null ? '' : title;
-  html  = html == null  ? '' : html;
-  var dialog = output.evaluate()
-//                   .setSandboxMode(HtmlService.SandboxMode.IFRAME)
-                   .setWidth(width)
-                   .setHeight(height)
-                   .setTitle(title)
-                   .append(html);
-  ss.show(dialog);
+  ss.show(out);
 }
 
 /**

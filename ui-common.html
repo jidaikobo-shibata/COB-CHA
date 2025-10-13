@@ -32,6 +32,22 @@ if (typeof CSS.escape !== 'function') {
   };
 }
 
+// フォールバック付き翻訳ヘルパ
+function t(key, fallback) {
+  var dict = (window.I18N || {});
+  return (dict && dict[key]) || (fallback || key);
+}
+
+// data-i18n に指定されたキーを一括適用（textのみ）
+function applyI18n() {
+  var dict = (window.I18N || {});
+  if (!dict || !Object.keys(dict).length) return;
+  document.querySelectorAll('[data-i18n]').forEach(function(el){
+    var key = el.getAttribute('data-i18n');
+    if (dict[key]) el.textContent = dict[key];
+  });
+}
+
 /**
  * HTML escape common function
  * @param {string} s
@@ -128,10 +144,16 @@ button
 
 .skip
 {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  clip: rect(0 0 0 0);
+ position: absolute !important;
+ width: 1px !important;
+ height: 1px !important;
+ margin: -1px !important;
+ padding: 0 !important;
+ border: 0 !important;
+ overflow: hidden !important;
+ clip: rect(0 0 0 0) !important;
+ clip-path: inset(50%) !important;
+ white-space: nowrap !important;
 }
 
 *:focus
