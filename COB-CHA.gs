@@ -136,13 +136,13 @@ function showDialog(sheetname, width, height, title, html) {
   var ss = getSpreadSheet();
   title = title == null ? '' : title;
   html  = html == null  ? '' : html;
-  var html = output.evaluate()
-                   .setSandboxMode(HtmlService.SandboxMode.IFRAME)
+  var dialog = output.evaluate()
+//                   .setSandboxMode(HtmlService.SandboxMode.IFRAME)
                    .setWidth(width)
                    .setHeight(height)
                    .setTitle(title)
                    .append(html);
-  ss.show(html);
+  ss.show(dialog);
 }
 
 /**
@@ -361,7 +361,8 @@ function getUsingCriteria(type) {
     if (
       (type == 'wcag20' && (gCriteria21.indexOf(usingCriteria[i][1]) >= 0 || gCriteria22.indexOf(usingCriteria[i][1]) >= 0)) ||
       (type == 'wcag21' && gCriteria22.indexOf(usingCriteria[i][1]) >= 0) ||
-      (type == 'wcag22' && usingCriteria[i][1] == '4.1.1') ||
+      // If 4.1.1 is excluded from WCAG 2.2, JIS X 8341-3:2016 cannot add the success criteria of WCAG 2.2
+      // (type == 'wcag22' && usingCriteria[i][1] == '4.1.1') ||
       usingCriteria[i][0].length > level.length
     ) {
       if (additionalCriteria.indexOf(usingCriteria[i][1]) >= 0) continue;
@@ -405,7 +406,7 @@ function getUsingTechs() {
       var url = gUrlbase['tech'][urlPointer];
       if (type == 'wcag21' && lang == 'en') {
         var dir = each.charAt(0)+each.charAt(1);
-        if (['M', 'L', 'V', 'C'].indefOf(each.charAt(1)) < 0) {
+        if (['M', 'L', 'V', 'C'].indexOf(each.charAt(1)) < 0) {
           dir = dir.charAt(0);
         }
         url += gTechDirAbbr[dir]+'/'+each;

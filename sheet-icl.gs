@@ -82,10 +82,12 @@ function generateIcl(sheet, type) {
     row++;
     
     // situation
-    //    for (let testId of Object.keys(iclSituation[cCriterion])) { // Chrome V8
-    var eachIclSituation = Object.keys(iclSituation[cCriterion]);
-    for (var key in eachIclSituation) {
-      var testId = eachIclSituation[key]
+    // Rhino
+    // var eachIclSituation = Object.keys(iclSituation[cCriterion]);
+    // for (var key in eachIclSituation) {
+    //  var testId = eachIclSituation[key]
+    // /Rhino
+    for (const testId of Object.keys(iclSituation[cCriterion])) {
       if (iclSituation[cCriterion][testId] != '') {
         sheet.getRange(row, 1).setValue(iclSituation[cCriterion][testId]);
         sheet.getRange(row+":"+row).setBackground(gLabelColor);
