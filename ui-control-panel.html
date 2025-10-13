@@ -6,6 +6,12 @@
   <link href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" rel="stylesheet">
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
   <script>
+    window.I18N = <?!= JSON.stringify(getLangSet('ui')) ?> || {};
+    window.LANG = <?!= JSON.stringify(getProp('lang')) ?> || 'en';
+    document.documentElement.setAttribute('lang', window.LANG);
+  </script>
+
+  <script>
     /**
      * lang
      */
@@ -16,60 +22,8 @@
      */
     $(function() {
       // UI
-      google.script.run
-        .withSuccessHandler(
-          function(ui) {
-            // English
-            if (Object.keys(ui).length == 0) {
-              lang.ui = {};
-              return;
-            }
-
-            // other languages
-            lang.ui = ui;
-            $("#config-title").html(ui['config-title']);
-            $("#generate-config-sheet").html(ui['generate-config-sheet']);
-            $("#set-additional-criteria").html(ui['set-additional-criteria']);
-            
-            $("#target-urls-setting-title").html(ui['target-urls-setting-title']);
-            $("#generate-url-list-sheet").html(ui['generate-url-list-sheet']);
-            $("#generate-each-record-sheets").html(ui['generate-each-record-sheets']);
-            
-            $("#use-template-title").html(ui['use-template-title']);
-            $("#generate-sc-template-sheet").html(ui['generate-sc-template-sheet']);
-            $("#select-icl-template-set").html(ui['select-icl-template-set']);
-            $("#generate-icl-template-sheet").html(ui['generate-icl-template-sheet']);
-            
-            $("#edit-value-title").html(ui['edit-value-title']);
-            $("#current-sheet").html(ui['current-sheet']);
-            $("#apply-conformance-to-all").html(ui['apply-conformance-to-all']);
-            $("#lump-edit").html(ui['lump-edit']);
-            $("#success-criteria").html(ui['criterion']);
-            $("#apply-sc-template").html(ui['apply-sc-template']);
-            $("#apply-icl-template").html(ui['apply-icl-template']);
-            
-            $("#label-lump-val").html(ui['value']);
-            $("#label-lump-pos-row").html(ui['pos-row']);
-            $("#label-lump-pos-col").html(ui['pos-col']);
-            $("#get-current-pos").html(ui['get-current-pos']);
-            $("#label-lump-is_append").html(ui['lump-is_append']);
-            $("#do-lump-edit").html(ui['do-lump-edit']);
-
-            $("#issue-control-title").html(ui['issue-control-title']);
-            $("#add-edit-issue").html(ui['add-edit-issue']);
-            $("#show-issue").html(ui['show-issue']);
-            
-            $("#evaluate-title").html(ui['evaluate-title']);
-            $("#apply-target-icl-to-sc").html(ui['apply-target-icl-to-sc']);
-            $("#evaluate-sc").html(ui['evaluate-sc']);
-            $("#evaluate-icl").html(ui['evaluate-icl']);
-            
-            $("#etc-title").html(ui['etc-title']);
-            $("#generate-report").html(ui['generate-report']);
-            $("#reset-record-sheets").html(ui['reset-record-sheets']);
-            $("#reset-all-sheets").html(ui['reset-all-sheets']);
-          })
-        .getLangSet('ui');
+      lang.ui = window.I18N || {};
+      applyI18n();
 
       // Version
       google.script.run
@@ -127,14 +81,10 @@
      * set default value
      */
     function setDefaultValue() {
-      google.script.run
-        .withSuccessHandler(
-          function(ret) {
-            $("#lang").val(ret);
-            $("html").attr('lang', ret);
-            if (ret != 'ja') $('.icl-tpl').hide();
-          })
-        .getProp('lang');
+      var current = window.LANG || 'en';
+      $("#lang").val(current);
+      $("html").attr('lang', current);
+      if (current !== 'ja') $('.icl-tpl').hide();
 
       google.script.run
         .withSuccessHandler(
@@ -518,7 +468,7 @@
 
 <body>
   <details id="config-details" open>
-    <summary id="config-title">1. Config</summary>
+    <summary id="config-title" data-i18n="config-title">1. Config</summary>
     <p>
       <select id="lang" title="Language" style="width:3.5em;min-width:3.5em;">
         <option value="en">en</option>
@@ -542,108 +492,108 @@
       </select>
     </p>
     <p>
-      <button id="generate-config-sheet">Generate config sheet</button>
+      <button id="generate-config-sheet" data-i18n="generate-config-sheet">Generate config sheet</button>
       <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-generate-config-sheet"></span>
     </p>
-    <p><button id="set-additional-criteria">Set additional criteria</button></p>
+    <p><button id="set-additional-criteria" data-i18n="set-additional-criteria">Set additional criteria</button></p>
   </details>
   
   <details>
-    <summary id="target-urls-setting-title">2. Target URLs Setting</summary>
+    <summary id="target-urls-setting-title" data-i18n="target-urls-setting-title">2. Target URLs Setting</summary>
     <p>
-      <button id="generate-url-list-sheet">Generate url list sheet</button>
+      <button id="generate-url-list-sheet" data-i18n="generate-url-list-sheet">Generate url list sheet</button>
       <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-generate-url-list-sheet"></span>
     </p>
     <p>
-      <button id="generate-each-record-sheets">Generate each record sheets</button>
+      <button id="generate-each-record-sheets" data-i18n="generate-each-record-sheets">Generate each record sheets</button>
       <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-generate-each-record-sheets"></span>
     </p>
   </details>
   
   <details>
-    <summary id="use-template-title">3. Use Template</summary>
+    <summary id="use-template-title" data-i18n="use-template-title">3. Use Template</summary>
     <fieldset>
-      <legend id="success-criteria">Success Criteria</legend>
+      <legend id="success-criteria" data-i18n="criterion">Success Criteria</legend>
       <p style="margin-top:-5px;">
-        <button id="generate-sc-template-sheet">Generate SC template</button>
+        <button id="generate-sc-template-sheet" data-i18n="generate-sc-template-sheet">Generate SC template</button>
         <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-generate-sc-template-sheet"></span>
       </p>
       <p>
-        <button id="apply-sc-template">Apply all</button>
+        <button id="apply-sc-template" data-i18n="apply-sc-template">Apply all</button>
         <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-apply-sc-template"></span>
       </p>
     </fieldset>
     <fieldset class="icl-tpl">
-      <legend><label for="icl-template-set" id="select-icl-template-set">Select ICL template</label></legend>
+      <legend><label for="icl-template-set" id="select-icl-template-set" data-i18n="tech">Select ICL template</label></legend>
       <select id="icl-template-set" style="margin-bottom: 1em;">
       </select>
-      <button id="generate-icl-template-sheet">Generate ICL template</button>
+      <button id="generate-icl-template-sheet" data-i18n="generate-icl-template-sheet">Generate ICL template</button>
       <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-generate-icl-template-sheet"></span>
       <p class="icl-tpl">
-        <button id="apply-icl-template">Apply ICL Sheet</button>
+        <button id="apply-icl-template" data-i18n="apply-icl-template">Apply ICL Sheet</button>
         <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-apply-icl-template"></span>
       </p>
     </fieldset>
   </details>
    
   <details>
-    <summary id="edit-value-title">4. Edit Value</summary>
+    <summary id="edit-value-title" data-i18n="edit-value-title">4. Edit Value</summary>
     <fieldset>
-      <legend id="current-sheet">Current Sheet</legend>
+      <legend id="current-sheet" data-i18n="current-sheet">Current Sheet</legend>
       <p style="margin:0;padding:0;lin-height:1;">
-        <button id="apply-conformance-to-all">Apply conformance to all</button>
+        <button id="apply-conformance-to-all" data-i18n="apply-conformance-to-all">Apply conformance to all</button>
         <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-apply-conformance-to-all"></span>
       </p>
     </fieldset>
     <fieldset>
-      <legend id="lump-edit">Lump Edit</legend>
+      <legend id="lump-edit" data-i18n="lump-edit">Lump Edit</legend>
       <p style="margin-top:-5px;">
-        <label for="lump-pos-row" id="label-lump-pos-row">X</label>: <input type="text" size="2" id="lump-pos-row">
-        <label for="lump-pos-col" id="label-lump-pos-col">Y</label>: <input type="text" size="2" id="lump-pos-col">
-        <label for="lump-val" id="label-lump-val">Val</label>: <input type="text" size="5" id="lump-val">
-        <input type="checkbox" id="lump-is_append" checked="checked"> <label for="lump-is_append" id="label-lump-is_append">Append not overwrite</label>
+        <label for="lump-pos-row" id="label-lump-pos-row" data-i18n="pos-row">X</label>: <input type="text" size="2" id="lump-pos-row">
+        <label for="lump-pos-col" id="label-lump-pos-col" data-i18n="pos-col">Y</label>: <input type="text" size="2" id="lump-pos-col">
+        <label for="lump-val" id="label-lump-val" data-i18n="value">Val</label>: <input type="text" size="5" id="lump-val">
+        <input type="checkbox" id="lump-is_append" checked="checked"> <label for="lump-is_append" id="label-lump-is_append" data-i18n="lump-is_append">Append not overwrite</label>
         <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-get-current-pos"></span>
         <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-do-lump-edit"></span>
       </p>
-      <button id="get-current-pos">Get Current Position</button>
-      <button id="do-lump-edit">Apply</button>
+      <button id="get-current-pos" data-i18n="get-current-pos">Get Current Position</button>
+      <button id="do-lump-edit" data-i18n="do-lump-edit">Apply</button>
     </fieldset>
   </details>
   
   <details>
-    <summary id="issue-control-title">5. Issue Control</summary>
-    <p><button id="add-edit-issue">Add/Edit Issue</button></p>
-    <p><button id="show-issue">Show Issue</button></p>
+    <summary id="issue-control-title" data-i18n="issue-control-title">5. Issue Control</summary>
+    <p><button id="add-edit-issue" data-i18n="add-edit-issue">Add/Edit Issue</button></p>
+    <p><button id="show-issue" data-i18n="show-issue">Show Issue</button></p>
   </details>
     
   <details>
-    <summary id="evaluate-title">6. Evaluate</summary>
+    <summary id="evaluate-title" data-i18n="evaluate-title">6. Evaluate</summary>
     <p class="icl-tpl">
-      <button id="apply-target-icl-to-sc">ICL to SC at Target page</button>
+      <button id="apply-target-icl-to-sc" data-i18n="apply-target-icl-to-sc">ICL to SC at Target page</button>
       <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-apply-target-icl-to-sc"></span>
     </p>
     <p>
-      <button id="evaluate-sc">Evaluate</button>
+      <button id="evaluate-sc" data-i18n="evaluate-sc">Evaluate</button>
       <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-evaluate-sc"></span>
     </p>
     <p class="icl-tpl">
-      <button id="evaluate-icl">Evaluate ICL</button>
+      <button id="evaluate-icl" data-i18n="evaluate-icl">Evaluate ICL</button>
       <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-evaluate-icl"></span>
     </p>
   </details>
   
   <details>
-    <summary id="etc-title">ETC.</summary>
+    <summary id="etc-title" data-i18n="etc-title">ETC.</summary>
     <p>
-      <button id="generate-report">Create Report Sheet</button>
+      <button id="generate-report" data-i18n="generate-report">Create Report Sheet</button>
       <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-generate-report"></span>
     </p>
     <p>
-      <button id="reset-record-sheets">Reset Record Sheet</button>
+      <button id="reset-record-sheets" data-i18n="reset-record-sheets">Reset Record Sheet</button>
       <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-reset-record-sheets"></span>
     </p>
     <p>
-      <button id="reset-all-sheets">Reset All</button>
+      <button id="reset-all-sheets" data-i18n="reset-all-sheets">Reset All</button>
       <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-reset-all-sheets"></span>
     </p>
   </details>
