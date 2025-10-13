@@ -788,9 +788,12 @@ function getUiJa ()
     // icl-sheet
     'pass': '合格',
     'eliminated': '除外',
-    'icl-note': '-:適用なし,　o:合格,　　x:不合格。「除外」は、試験方法として採用しなかったもの',
+    'icl-note': '-:適用なし,　o:合格,　x:不合格。「除外」は、試験方法として採用しなかったもの',
     'error-no-icl-found': '実装チェックリストが見つかりませんでした',
     
+    // obsolete-removed
+    'obsolete-removed': '(廃止・削除)',
+
     // help
     'online-manual-title': 'オンラインマニュアル',
     'online-manual': '詳しい操作説明はオンラインマニュアルをご覧ください（あたらしいタブで開きます）。',

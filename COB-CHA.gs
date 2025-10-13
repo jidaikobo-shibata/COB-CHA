@@ -373,7 +373,18 @@ function getUsingCriteria(type) {
   usingCriteria = usingCriteria.filter(function(x){
 	  return !(x === null || x === undefined || x === ""); 
   });
-  
+
+  // --- annotate labels: WCAG 2.2 section 4.1.1 is marked as "(deprecated/deleted)" ---
+  if (type === 'wcag22') {
+    var suffix = ' ' + getUiLang('obsolete-removed', '(Obsolete and removed)');
+    for (var k = 0; k < usingCriteria.length; k++) {
+      if (!usingCriteria[k]) continue;
+      if (usingCriteria[k][1] === '4.1.1' && usingCriteria[k][2].indexOf(suffix) === -1) {
+        usingCriteria[k][2] += suffix;
+      }
+    }
+  }
+
 //  getUsingCriteria.vals = usingCriteria;
   
   return usingCriteria;

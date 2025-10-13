@@ -1,5 +1,52 @@
 <script>
 /**
+ * Debug mode
+ */
+const DEBUG = false;
+
+if (DEBUG) {
+  window.onerror = function (msg, url, line, col, err) {
+    console.group('%c[window.onerror]', 'color:#b00;font-weight:bold');
+    console.log('message:', msg);
+    console.log('url    :', url);
+    console.log('line   :', line, 'col:', col);
+    console.log('error  :', err && (err.stack || err));
+    console.groupEnd();
+  };
+  window.onunhandledrejection = function (e) {
+    console.group('%c[unhandledrejection]', 'color:#b00;font-weight:bold');
+    console.log('reason:', e.reason);
+    console.groupEnd();
+  };
+}
+
+/**
+ * CSS.escape Polyfill -less environment (simple, safe version)
+ */
+if (typeof CSS === 'undefined') window.CSS = {};
+if (typeof CSS.escape !== 'function') {
+  CSS.escape = function (s) {
+    return String(s).replace(/[\0-\x1F\x7F]|^-?\d|[^a-zA-Z0-9_-]/g, function (ch) {
+      return '\\' + ch.charCodeAt(0).toString(16) + ' ';
+    });
+  };
+}
+
+/**
+ * HTML escape common function
+ * @param {string} s
+ * @returns {string}
+ */
+function esc(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/**
  * Show Status
  * @param String msg
  * @return Void

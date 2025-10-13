@@ -32,10 +32,11 @@ function getIclApplyPulldownMenu() {
 
 /**
  * Generate ICL Sheets
+ * @param String iclType
  * @param String type
  * @return Void
  */
-function generateIclTplSheet(type) {
+function generateIclTplSheet(iclType, type) {
   var defaults = [[
     "ID",
     getUiLang("check", "Check"),
@@ -48,7 +49,7 @@ function generateIclTplSheet(type) {
   ]];
   var msgOrSheetObj = generateSheetIfNotExists(gIclTplSheetName, defaults, "row");
   if (typeof msgOrSheetObj == "string") return msgOrSheetObj;
-  if (generateIcl(msgOrSheetObj, type)){
+  if (generateIcl(msgOrSheetObj, iclType, type)){
     return getUiLang('target-sheet-generated', "Generate Target Sheet (%s).").replace('%s', gIclTplSheetName);
   }
   deleteSheetIfExist(gIclTplSheetName);
@@ -58,14 +59,18 @@ function generateIclTplSheet(type) {
 /**
  * Generate ICL
  * @param Object sheet
+ * @param String iclType
  * @param String type
  * @return Bool
  */
-function generateIcl(sheet, type) {
+function generateIcl(sheet, iclType, type) {
   // value
+  var type          = type || getProp('type');
+  var mark          = getProp('mark'); // ex: ['?', '-', 'o', 'x'] or ['NT','DNA','T','F']
+  var mF            = mark[3]; // 'x' or 'F'
   var usingCriteria = getUsingCriteria();
-  var iclSituation  = getLangSet('iclSituation'+type);
-  var iclTest       = getLangSet('iclTest'+type);
+  var iclSituation  = getLangSet('iclSituation'+iclType);
+  var iclTest       = getLangSet('iclTest'+iclType);
   var techNames     = getLangSet('tech');
   var row           = 2;
   
@@ -100,7 +105,7 @@ function generateIcl(sheet, type) {
         var eachTestId = testId+'-'+eachNum;
         
         var isApply = '';
-        if (type == 'Waic') {
+        if (iclType == 'Waic') {
           // WAIC
           var eachTechId = iclTest[testId][l].join("\n");
           var eachTechNames = [];
@@ -110,15 +115,20 @@ function generateIcl(sheet, type) {
           var eachTechName = eachTechNames.join("\n");
         } else {
           // COB-CHA , Icollabo
-          if (type.indexOf('Cobcha') != -1) {
+          if (iclType.indexOf('Cobcha') != -1) {
             var eachTechId = iclTest[testId][l][0];
           } else {
             var eachTechId = iclTest[testId][l][0].split("/").join("\n");
           }
           var eachTechName = iclTest[testId][l][1];
-          isApply = iclTest[testId][l][2] ? "x" : isApply;
+          isApply = iclTest[testId][l][2] ? mF : isApply;
         }
         
+        // WCAG 2.2 4.1.1 sets the default ICL value to "Not Applicable"
+        if (type === 'wcag22' && cCriterion === '4.1.1') {
+          isApply = mF; // x or F
+        }
+
         eachTest.push([eachTestId, "", isApply, "", cCriterion, clevel, eachTechId, eachTechName]);
         eachNum++;
       }
