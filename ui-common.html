@@ -115,6 +115,44 @@ function progressIndicator(buttonId, indicatorId, on) {
     }
   }
 }
+
+/**
+ * @param {string} buttonId     - The ID of the button element.
+ * @param {string} indicatorId  - The ID of the progress indicator element (optional, '' if none).
+ * @param {function} serverCall - A function that receives the `google.script.run` object.
+ *                                Example: (run) => { run.myServerFunction(); }
+ * @param {number} [timeoutMs=10000] - Failsafe timeout in milliseconds (default: 10 seconds).
+ * @returns {void}
+ */
+function runOnce(buttonId, indicatorId, serverCall, timeoutMs) {
+  const $btn = $('#'+buttonId);
+
+  // Prevent repeated clicks if the button is already busy
+  if ($btn.data('busy')) return;
+
+  $btn.data('busy', true);
+  progressIndicator(buttonId, indicatorId, true);
+
+  // Safety timeout in case the server never responds
+  const TIMER = setTimeout(() => {
+    $btn.data('busy', false);
+    progressIndicator(buttonId, indicatorId, false);
+  }, timeoutMs || 10000);
+
+  // Called when the server responds (success or failure)
+  function done() {
+    clearTimeout(TIMER);
+    $btn.data('busy', false);
+    progressIndicator(buttonId, indicatorId, false);
+  }
+
+  // Execute the server call with success/failure handlers attached
+  serverCall(
+    google.script.run
+      .withSuccessHandler(done)
+      .withFailureHandler(done)
+  );
+}
 </script>
 
 <style>

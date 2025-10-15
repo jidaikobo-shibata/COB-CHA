@@ -232,15 +232,25 @@
         $('#memo').val()
       ];
 
-      google.script.run
-        .withSuccessHandler(function(msg) {
-          google.script.run
-            .withSuccessHandler(function() {
-              google.script.host.close();
+      runOnce(
+        'apply-issue',
+        'progress-loading',
+        function(run){
+          run
+            .withSuccessHandler(function(msg) {
+              run
+                .withSuccessHandler(function(){ google.script.host.close(); })
+                .withFailureHandler(function(){ /* keep dialog if alert fails */ })
+                .showAlert(msg);
             })
-            .showAlert(msg);
-        })
-        .applyIssue(vals);
+            .withFailureHandler(function(err) {
+              var m = (err && err.message) ? err.message : 'Failed to apply.';
+              run.showAlert(m);
+            })
+            .applyIssue(vals);
+        },
+        12000 // optional timeout
+      );
     }
 
     /**

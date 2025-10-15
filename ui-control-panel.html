@@ -376,7 +376,14 @@
      * Add Issue
      */
     function onClickAddEditIssue() {
-      google.script.run.openDialogIssue();
+      runOnce(
+        'add-edit-issue',
+        'progress-add-edit-issue',
+        function(run){
+          run.openDialogIssue();
+        },
+        12000
+      );
     }
 
     /**
@@ -562,7 +569,7 @@
   
   <details>
     <summary id="issue-control-title" data-i18n="issue-control-title">5. Issue Control</summary>
-    <p><button id="add-edit-issue" data-i18n="add-edit-issue">Add/Edit Issue</button></p>
+    <p><button id="add-edit-issue" data-i18n="add-edit-issue">Add/Edit Issue</button> <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-add-edit-issue"></span></p>
     <p><button id="show-issue" data-i18n="show-issue">Show Issue</button></p>
   </details>
     
