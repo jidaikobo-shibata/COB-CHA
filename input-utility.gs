@@ -250,7 +250,7 @@ function doApplyTargetIclToSc() {
     var lastrow = allSheets[i].getLastRow();
     if (row2start >= lastrow) continue;
     var iclResults = allSheets[i].getRange(row2start, 2, lastrow, 4).getValues();
-    
+
     var ScResultsTmp = {};
     var ScApplyTmp = {};
     var ScMemoTmp = {};
@@ -277,6 +277,20 @@ function doApplyTargetIclToSc() {
       } else {
         ScMemos.push([ScMemoTmp[cCriterion].join("\n").trim()]);
 
+        // N/A Only
+        //var arr = ScApplyTmp[cCriterion].join().match(/x/g);
+        var xCount = ScApplyTmp[cCriterion].filter(function(v){ return v === 'x'; }).length;
+        if (ScApplyTmp[cCriterion].length > 0 && xCount === ScResultsTmp[cCriterion].length) {
+          ScResults.push([mD]);
+          continue;
+        }
+
+        // not yet (no check found)
+        if (ScResultsTmp[cCriterion].every(function(v){ return v === ''; })) {
+          ScResults.push(['']);
+          continue;
+        }
+
         // at least one Fail found
         if (ScResultsTmp[cCriterion].indexOf(mF) >= 0) {
           ScResults.push([mF]);
@@ -285,13 +299,6 @@ function doApplyTargetIclToSc() {
         
         // No comformance and N/A
         if (ScResultsTmp[cCriterion].indexOf(mT) == -1 && ScResultsTmp[cCriterion].indexOf(mD) >= 0) {
-          ScResults.push([mD]);
-          continue;
-        }
-
-        // N/A Only
-        var arr = ScApplyTmp[cCriterion].join().match(/x/g);
-        if (arr !== null && arr.length == ScResultsTmp[cCriterion].length) {
           ScResults.push([mD]);
           continue;
         }
