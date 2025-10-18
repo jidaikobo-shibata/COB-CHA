@@ -5,45 +5,29 @@
   <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
   <link href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" rel="stylesheet">
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+
   <script>
-    /**
-     * lang
-     */
-    var lang = {};
-    
+    window.I18N = <?!= JSON.stringify(getLangSet('ui')) ?> || {};
+    window.LANG = <?!= JSON.stringify(getProp('lang')) ?> || 'en';
+    document.documentElement.setAttribute('lang', window.LANG);
+  </script>
+
+  <script>
     /**
      * events
      */
     $(function() {
-      // Language of Page
-      google.script.run
-        .withSuccessHandler(
-          function(ret) {
-            $("html").attr('lang', ret);
-          })
-        .getProp('lang');
-        
-      // UI
-      google.script.run
-        .withSuccessHandler(
-          function(ui) {
-            // English
-            if (Object.keys(ui).length == 0) {
-              lang.ui = {};
-              return;
-            }
-            
-            // other language
-            lang.ui = ui;
-            $("#set-additional-criteria").html(ui['set-additional-criteria']);
-          })
-        .getLangSet('ui');
+      // localize
+      applyI18n();
       
       // on click
       $('#set-additional-criteria').click(onClickSetAdditionalCriteria);
       
       // default value
       setDefaultValue();
+
+      // loading
+      $('#progress-loading').hide();
     });
     
     /**
@@ -95,24 +79,34 @@
      * Set Additional Criteria
      */
     function onClickSetAdditionalCriteria() {
-      var checked = [];
-      $('#criteria').find(':checked').each(function(){
-        checked.push($(this).val());
-      });
-      
-      google.script.run
-        .withSuccessHandler(
-          function() {
-            google.script.host.close();
-          })
-        .setAdditionalCriteria(checked.join(', '));
+      runOnce(
+        'set-additional-criteria',
+        'progress-loading',
+        function(run){
+          var checked = [];
+          $('#criteria').find(':checked').each(function(){
+            checked.push($(this).val());
+          });
+          run
+            .withSuccessHandler(function() {
+              google.script.host.close();
+            })
+            .withFailureHandler(function(err) {
+              var m = (err && err.message) ? err.message : 'Failed to apply.';
+              run.showAlert(m);
+            })
+            .setAdditionalCriteria(checked.join(', '));
+        },
+        12000 // optional timeout
+      );
     }
   </script>
   <?!= HtmlService.createHtmlOutputFromFile('ui-common').getContent(); ?>
 </head>
 <body style="padding-bottom: 4em;">
   <div style="position: fixed; width: 100%; bottom: 0; background: #fff; z-index: 9; padding: 20px;">
-    <button id="set-additional-criteria" class="primary">Set additional criteria</button>
+    <button id="set-additional-criteria" class="primary" data-i18n="set-additional-criteria">Set additional criteria</button>
+    <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-loading"></span>
   </div>
   <table id="criteria" style="width: calc(100% - 50px); margin: 0 0 20px 20px;"></table>
 </body>

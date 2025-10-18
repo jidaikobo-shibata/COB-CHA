@@ -5,6 +5,7 @@
   <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
   <link href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" rel="stylesheet">
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+
   <script>
     window.I18N = <?!= JSON.stringify(getLangSet('ui')) ?> || {};
     window.LANG = <?!= JSON.stringify(getProp('lang')) ?> || 'en';
@@ -13,19 +14,13 @@
 
   <script>
     /**
-     * lang
-     */
-    var lang = {};
-
-    /**
      * events
      */
     $(function() {
-      // UI
-      lang.ui = window.I18N || {};
+      // localize
       applyI18n();
 
-      // Version
+      // version
       google.script.run
         .withSuccessHandler(
           function(version) {
@@ -37,7 +32,7 @@
       $('.fa-spinner').hide();
 
       // on change
-      $('#lang').change(switchLnaguageStatus);
+      $('#lang').change(switchLanguageStatus);
       $('#test-type').change(switchLevelWhenTtOrNot);
       $('#evaluate-level').change(switchAdditionalCriterion);
 
@@ -156,7 +151,7 @@
     /**
      * switch language status
      */
-    function switchLnaguageStatus() {
+    function switchLanguageStatus() {
       google.script.run
         .withSuccessHandler(
           function(lang) {
@@ -184,7 +179,14 @@
      * Set Additional Criteria
      */
     function onClickSetAdditionalCriteria() {
-      google.script.run.openDialogAdditionalCriteria($('#lang').val(), $('#test-type').val(), $('#evaluate-level').val(), $('#mark').val());
+      runOnce(
+        'add-set-additional-criteria',
+        'progress-set-additional-criteria',
+        function(run){
+          run.openDialogAdditionalCriteria($('#lang').val(), $('#test-type').val(), $('#evaluate-level').val(), $('#mark').val());
+        },
+        12000
+      );
     }
 
     /**
@@ -390,8 +392,14 @@
      * Show Issue
      */
     function onClickShowIssue() {
-      var title = Object.keys(lang.ui).length == 0 ? 'Issue List"' : lang.ui['issue-list'];
-      google.script.run.showDialog('ui-issuelist', 500, 400, title);
+      runOnce(
+        'show-issue',
+        'progress-show-issue',
+        function(run){
+          run.showDialog('ui-issuelist', 500, 400, t('issue-list', 'Issue List'));
+        },
+        12000
+      );
     }
 
     /**
@@ -502,7 +510,10 @@
       <button id="generate-config-sheet" data-i18n="generate-config-sheet">Generate config sheet</button>
       <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-generate-config-sheet"></span>
     </p>
-    <p><button id="set-additional-criteria" data-i18n="set-additional-criteria">Set additional criteria</button></p>
+    <p>
+      <button id="set-additional-criteria" data-i18n="set-additional-criteria">Set additional criteria</button>
+      <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-set-additional-criteria"></span>
+    </p>
   </details>
   
   <details>
@@ -569,8 +580,14 @@
   
   <details>
     <summary id="issue-control-title" data-i18n="issue-control-title">5. Issue Control</summary>
-    <p><button id="add-edit-issue" data-i18n="add-edit-issue">Add/Edit Issue</button> <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-add-edit-issue"></span></p>
-    <p><button id="show-issue" data-i18n="show-issue">Show Issue</button></p>
+    <p>
+      <button id="add-edit-issue" data-i18n="add-edit-issue">Add/Edit Issue</button>
+      <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-add-edit-issue"></span>
+    </p>
+    <p>
+      <button id="show-issue" data-i18n="show-issue">Show Issue</button>
+      <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-show-issue"></span>
+    </p>
   </details>
     
   <details>

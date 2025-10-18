@@ -5,6 +5,7 @@
   <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
   <link href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" rel="stylesheet">
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+
   <script>
     window.I18N = <?!= JSON.stringify(getLangSet('ui')) ?> || {};
     window.LANG = <?!= JSON.stringify(getProp('lang')) ?> || 'en';
@@ -13,27 +14,17 @@
 
   <script>
     /**
-     * lang
-     */
-    var lang = {};
-
-    /**
      * events
      */
     $(function() {
       // Version
-      google.script.run
-        .withSuccessHandler(
-          function(version) {
-                $('#cob-cha-version').html(version);
-          })
-        .getLangSet('version');
-      
-      // other localize
-      lang.ui = window.I18N || {};
+      google.script.run.withSuccessHandler(function(version) {
+        $('#cob-cha-version').text(version);
+      }).getLangSet('version');
+
+      // Localize
       applyI18n();
     });
-
   </script>
   <?!= HtmlService.createHtmlOutputFromFile('ui-common').getContent(); ?>
 </head>
@@ -44,7 +35,7 @@
 <p><a href="https://www.jidaikobo.com/archives/38.html" id="online-manual" data-i18n="online-manual" target="_blank">Online Manual (ja, Open new tab)</a></p>
 
 <h2 id="keyboard-operation-title" data-i18n="keyboard-operation-title">Keyboard Operation</h2>
-<p id="keyboard-operation-exp" data-i18n="keyboard-operation-exp">By pressing <kbd>control + alt(option) + N</kbd>, keyboard focus will move to add-on menu to open COB-CHA Control Panel.
+<p id="keyboard-operation-exp" data-i18n-html="keyboard-operation-exp">By pressing <kbd>Alt(option) + Shift + N</kbd>, keyboard focus will move to add-on menu to open COB-CHA Control Panel.
 By pressing <kbd>ESC</kbd> close control panel.</p>
 
 <h2 id="sheet-title" data-i18n="sheet-title">Sheet</h2>
@@ -55,13 +46,13 @@ Start with *, such as "*memo," for a sheet of notes for test records.</p>
 <table>
 <tr>
 	<th id="config-title" data-i18n="config-title" style="width:10em;">1. Config</th>
-	<td id="config-exp" data-i18n="config-exp">Choose test type from WCAG 2.0, 2.1 or Trusted Tester.
+	<td id="config-exp" data-i18n="config-exp">Choose test type from WCAG 2.0, 2.1, 2.2 or Trusted Tester.
     And also choose target level.
     And also you must choose Additional Criteria If you suppose to use (It's a trouble to add later).
     Be sure to generate a settings sheet and save this setting.</td>
 </tr>
 <tr>
-	<th id="set-template-title" data-i18n="set-template-title" rowspan="2">2. Set Template</th>
+	<th id="set-template-title" data-i18n="use-template-title" rowspan="2">2. Set Template</th>
 	<td id="set-template-exp" data-i18n="set-template-exp">You can generate template sheets according to test type, level, and additional success criteria.
     For website exams, record the exams for common areas such as headers and footers in a template.
     In "4. Edit value", it can be reflected in the test results on all pages at once.
@@ -73,7 +64,7 @@ Start with *, such as "*memo," for a sheet of notes for test records.</p>
 </tr>
 <tr>
 	<th id="target-urls-setting-title" data-i18n="target-urls-setting-title">3. Target URLs Setting</th>
-	<td id="target-urls-setting-exp" data-i18n="target-urls-setting-exp">Generate a sheet named "*URLs*".
+	<td id="target-urls-setting-exp" data-i18n="target-urls-setting-exp">Generate a sheet named "*URLs".
     Enter URLs to be tested here and execute "Generate each record sheets" to generate as many record sheets as there are URLs.</td>
 </tr>
 <tr>
@@ -82,7 +73,7 @@ Start with *, such as "*memo," for a sheet of notes for test records.</p>
 </tr>
 <tr>
 	<th id="issue-control-title" data-i18n="issue-control-title">5. Add/Edit Issue</th>
-	<td id="issue-control-exp" data-i18n="issue-control-exp">Generate sheet named "*Issue*" (If not exist), and show up issue dialogue to add row to issue sheet.
+	<td id="issue-control-exp" data-i18n="issue-control-exp">Generate sheet named "*Issue" (If not exist), and show up issue dialogue to add row to issue sheet.
     If your active cell is at existed issue row, edit it.</td>
 </tr>
 <tr>

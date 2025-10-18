@@ -5,22 +5,20 @@
   <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
   <link href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" rel="stylesheet">
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-  <script>
-    /**
-     * lang
-     */
-    var lang = {};
 
+  <script>
+    window.I18N = <?!= JSON.stringify(getLangSet('ui')) ?> || {};
+    window.LANG = <?!= JSON.stringify(getProp('lang')) ?> || 'en';
+    document.documentElement.setAttribute('lang', window.LANG);
+  </script>
+
+  <script>
     /**
      * events
      */
     $(function() {
-      google.script.run
-        .withSuccessHandler(
-          function(ret) {
-            $("html").attr('lang', ret);
-          })
-        .getProp('lang');
+      // localize
+      applyI18n();
 
       // Version
       google.script.run
@@ -29,27 +27,7 @@
                 $('#cob-cha-version').html(version);
           })
         .getLangSet('version');
-
-      google.script.run
-        .withSuccessHandler(
-          function(ui) {
-            // English
-            if (Object.keys(ui).length == 0) {
-              lang.ui = {};
-              return;
-            }
-
-            // other language
-            lang.ui = ui;
-            
-            $("#credit").html(ui['credit']);
-            $("#jidaikobo").html(ui['jidaikobo']);
-            $("#provide-icl").html(ui['provide-icl']);
-            $("#icollabo").html(ui['icollabo']);
-          })
-        .getLangSet('ui');
     });
-
   </script>
   <?!= HtmlService.createHtmlOutputFromFile('ui-common').getContent(); ?>
 </head>
@@ -57,15 +35,10 @@
 <p style="text-align:right;">COB-CHA version: <span id="cob-cha-version">--</span></p>
 
 <h2 id="program">GAS Program</h2>
-<p><a href="https://www.jidaikobo.com" id="jidaikobo">Jidaikobo Inc.</a></p>
+<p><a href="https://www.jidaikobo.com" id="jidaikobo" data-i18n="jidaikobo">Jidaikobo Inc.</a></p>
 
-<h2 id="provide-icl">Provide Implement Check List</h2>
-<p><a href="https://ickobe.jp/" id="icollabo">NPO i-collaboration Kobe</a></p>
-
-<h2>Know Issue</h2>
-<ul>
-	<li>Sometimes, issue dialog cannot finish drawing itself</li>
-</ul>
+<h2 id="provide-icl" data-i18n="provide-icl">Provide Implement Check List</h2>
+<p><a href="https://ickobe.jp/" id="icollabo" data-i18n="icollabo">NPO i-collaboration Kobe</a></p>
 
 <h2 id="thanks">Thanks</h2>
 <ul>

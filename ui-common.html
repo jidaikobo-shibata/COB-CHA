@@ -32,19 +32,47 @@ if (typeof CSS.escape !== 'function') {
   };
 }
 
-// フォールバック付き翻訳ヘルパ
+/**
+ * Translation Helpers with Fallbacks
+ */ 
 function t(key, fallback) {
   var dict = (window.I18N || {});
   return (dict && dict[key]) || (fallback || key);
 }
 
-// data-i18n に指定されたキーを一括適用（textのみ）
-function applyI18n() {
-  var dict = (window.I18N || {});
+/**
+ * Apply all keys specified in data-i18n at once (text only)
+ */
+function applyI18n(dictParam, rootParam) {
+  var dict = dictParam || (window.I18N || {});
+  var root = rootParam || document;
   if (!dict || !Object.keys(dict).length) return;
-  document.querySelectorAll('[data-i18n]').forEach(function(el){
+
+  // textContent
+  root.querySelectorAll('[data-i18n]').forEach(function (el) {
     var key = el.getAttribute('data-i18n');
-    if (dict[key]) el.textContent = dict[key];
+    if (key in dict && dict[key] != null) el.textContent = dict[key];
+  });
+
+  // innerHTML（※自前の信頼できる文言のみ）
+  root.querySelectorAll('[data-i18n-html]').forEach(function (el) {
+    var key = el.getAttribute('data-i18n-html');
+    if (key in dict && dict[key] != null) el.innerHTML = dict[key];
+  });
+
+  // よく使う属性
+  [
+    ['href',        'data-i18n-href'],
+    ['title',       'data-i18n-title'],
+    ['aria-label',  'data-i18n-aria-label'],
+    ['value',       'data-i18n-value'],
+    ['placeholder', 'data-i18n-placeholder']
+  ].forEach(function (pair) {
+    var attr = pair[0], dataAttr = pair[1];
+    root.querySelectorAll('[' + dataAttr + ']').forEach(function (el) {
+      var key = el.getAttribute(dataAttr);
+      if (key in dict && dict[key] != null) el.setAttribute(attr, dict[key]);
+    });
   });
 }
 
@@ -103,7 +131,8 @@ function progressIndicator(buttonId, indicatorId, on) {
   if (on) {
     $('#'+buttonId).prop('disabled', true);
     if (indicatorId) {
-      var msg = Object.keys(lang.ui).length == 0 ? 'in progress' : lang.ui['in-progress'];
+      // var msg = Object.keys(lang.ui).length == 0 ? 'in progress' : lang.ui['in-progress'];
+      var msg = t('in-progress','in progress');
       $('#'+indicatorId).show();
       $('#'+indicatorId).html('<span class="skip">'+msg+'</span>');
     }

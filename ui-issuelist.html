@@ -5,6 +5,14 @@
   <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
   <link href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" rel="stylesheet">
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+
+  <script>
+    // Embedding dictionaries and current languages ​​on the server
+    window.I18N = <?!= JSON.stringify(getLangSet('ui')) ?> || {};
+    window.LANG = <?!= JSON.stringify(getProp('lang')) ?> || 'en';
+    document.documentElement.setAttribute('lang', window.LANG);
+  </script>
+
   <script>
     /**
      * events
@@ -12,20 +20,13 @@
     $(function() {
       google.script.run
         .withSuccessHandler(
-          function(ret) {
-            $("html").attr('lang', ret);
-          })
-        .getProp('lang');
-        
-      google.script.run
-        .withSuccessHandler(
           function(vals) {
             if (vals['url'] == '') {
-              $('h1').html('no target url found.');
+              $('h1').text(t('no-target-url-found','no target url found'));
             } else {
               $('h1').html(vals['url']);
               if (vals['issues'].length == 0) {
-                $('h1').after('<p>no issue found.</p>');
+                $('h1').after('<p>'+t('no-issue-found','no issue found')+'</p>');
               } else {
                 for (var i = 0; i < vals['issues'].length; i++) {
                   var row = parseInt(vals['issues'][i][0]) + 1;
@@ -41,9 +42,8 @@
       });
     });
   </script>
-
-</head>
   <?!= HtmlService.createHtmlOutputFromFile('ui-common').getContent(); ?>
+</head>
 <body>
   <h1><span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-loading"></span></h1>
   <ul id="issues">
