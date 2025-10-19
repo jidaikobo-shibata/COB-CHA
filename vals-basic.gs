@@ -8,7 +8,7 @@
  */
 function getVersion ()
 {
-  return 52;
+  return 53;
 }
 
 /**
