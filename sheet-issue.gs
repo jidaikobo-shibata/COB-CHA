@@ -31,12 +31,11 @@ function isEditIssue() {
 
 /**
  * set dialog Value Issue
- * @param Bool isEdit
- * @return Array
+ * @return {Object}
  */
-function dialogValueIssue(isEdit) {
+function dialogValueIssue() {
   var ret = {};
-  ret['isEdit'] = isEdit;
+  ret['isEdit'] = isEditIssue();
   ret['lang'] = getProp('lang');
   ret['type'] = getProp('type');
   ret['level'] = getProp('level');
@@ -45,7 +44,7 @@ function dialogValueIssue(isEdit) {
 
   ret['allPlaces'] = [];
   var all = getAllSheets();
-  for (i = 0; i < all.length; i++) {
+  for (var i = 0; i < all.length; i++) {
     ret['allPlaces'].push({
       'url' : getUrlFromSheet(all[i]),
       'title' : getTitleFromSheet(all[i])
@@ -66,14 +65,16 @@ function dialogValueIssue(isEdit) {
     'memo': 10
   };
 
-  if (isEdit) {
+  if (ret['isEdit']) {
     // issue sheet must be existed and activated
     var ss = getSpreadSheet();
     var sheet = ss.getSheetByName(gIssueSheetName);
     var activeRow = sheet.getActiveCell().getRow();
+    var row = sheet.getRange(activeRow, 1, 1, 10).getValues()[0];
     for (var key in celposes) {
-      var celpos = celposes[key];
-      ret['vals'][key] = sheet.getRange(activeRow, celpos).getValue().toString();
+      var idx = celposes[key] - 1;
+      var v = row[idx];
+      ret['vals'][key] = (v == null ? '' : String(v));
     }
   }
 
@@ -141,71 +142,91 @@ function applyIssue(vals) {
   var ss = getSpreadSheet();
   var sheet = ss.getSheetByName(gIssueSheetName);
 
-  // issue id - edit
-  if (vals[0] > 0) {
-    var targetRow = sheet.getActiveCell().getRow();
-    sheet.getRange(targetRow, 1).setValue(vals[0]);
+  // vals:
+  // [0]=ID, [1]=Name, [2]=Solved, [3]=Type, [4]=HTML, [5]=Explanation,
+  // [6]=Criteria, [7]=Techniques, [8]=Places(comma), [9]=Memo
+  var isEdit = Number(vals[0]) > 0;
+
+  // write
+  var targetRow;
+  if (isEdit) {
+    targetRow = sheet.getActiveCell().getRow();
   } else {
-    var targetRow = sheet.getLastRow() + 1;
-    sheet.getRange(targetRow, 1).setValue(targetRow - 1);
+    targetRow = sheet.getLastRow() + 1;
   }
 
-  // set values
-  for (var i = 1; i < vals.length; i++) {
-    if (i == 8) {
-      if (vals[i].split(",").length == getAllSheets().length) {
-        vals[i] = "all";
-      }
-    }
-    sheet.getRange(targetRow, i + 1).setValue(vals[i]);
+  // ID
+  var issueId = isEdit ? Number(vals[0]) : (targetRow - 1);
+
+  // Places
+  var totalSheets = getAllSheets().length;
+  var placesNormalized = vals[8];
+  if (placesNormalized && String(placesNormalized).split(",").length === totalSheets) {
+    placesNormalized = "all";
   }
 
-  // set condition - add several rows
-  for (var i = targetRow; i < targetRow + 3; i++) {
-    var range = sheet.getRange(i+":"+i);
-    setRowConditionSolved(sheet, range, i);
-  }
+  // write once
+  var row = [
+    issueId,        // Col 1: ID
+    vals[1],        // Col 2: Name
+    vals[2],        // Col 3: Solved
+    vals[3],        // Col 4: Type
+    vals[4],        // Col 5: HTML
+    vals[5],        // Col 6: Explanation
+    vals[6],        // Col 7: Criteria
+    vals[7],        // Col 8: Techniques
+    placesNormalized, // Col 9: Places
+    vals[9]         // Col10: Memo
+  ];
+  sheet.getRange(targetRow, 1, 1, 10).setValues([row]);
 
-  // return
+  // conditioned rows
+  ensureGlobalIssueRules(sheet);
+
+  // message
   var issue_id = targetRow - 1;
-  if (vals[0] > 0) {
+  if (isEdit) {
     return getUiLang('update-value', 'Edited: %s').replace("%s", 'Issue "' + issue_id + '"');
   }
   return getUiLang('add-value', 'Added: %s').replace("%s", 'Issue "' + issue_id + '"');
 }
 
 /**
- * setRowConditionSolved
- * @param Object sheet
- * @param Object range
- * @param String targetRow
- * @return Object
+ * Ensure the sheet has exactly 3 global conditional-format rules for rows >= 2.
+ * - Uses relative row references ($C2, $D2) so one rule applies to all data rows.
+ * - Replaces older versions of the same rules if they exist.
  */
-function setRowConditionSolved(sheet, range, targetRow) {
-  var NotSolvedAndError = SpreadsheetApp.newConditionalFormatRule()
-      .whenFormulaSatisfied("=AND($C"+targetRow+"=\"off\", $D"+targetRow+"=\"Error\")")
-      .setBold(true)
-      .setBackground(gNotYetIssueBgColor)
-      .setRanges([range])
-      .build();
-  var NotSolvedAndNotError = SpreadsheetApp.newConditionalFormatRule()
-      .whenFormulaSatisfied("=AND($C"+targetRow+"=\"off\", NOT($D"+targetRow+"=\"Error\"))")
-      .setBold(false)
-      .setBackground(gNotYetIssueBgColor)
-      .setRanges([range])
-      .build();
-  var SolvedAndError = SpreadsheetApp.newConditionalFormatRule()
-      .whenFormulaSatisfied("=AND(NOT($C"+targetRow+"=\"off\"), $D"+targetRow+"=\"Error\")")
-      .setBold(true)
-      .setFontColor(null)
-      .setBackground(null)
-      .setRanges([range])
-      .build();
-  var rules = sheet.getConditionalFormatRules();
-  rules.push(NotSolvedAndError);
-  rules.push(NotSolvedAndNotError);
-  rules.push(SolvedAndError);
-  sheet.setConditionalFormatRules(rules);
+/** Add/refresh 3 global conditional-format rules for the issue sheet. */
+function ensureGlobalIssueRules(sheet) {
+  // Apply to full columns A:J from row 2 (covers direct edits & appended rows)
+  // If performance becomes an issue on very large sheets, switch to getLastRow()-based range.
+  var startRow = 2, startCol = 1, numCols = 10;
+  var numRows  = Math.max(1, sheet.getMaxRows() - (startRow - 1)); // includes blank rows
+  var dataRange = sheet.getRange(startRow, startCol, numRows, numCols);
+
+  var f1 = '=AND($C2="off", $D2="Error")';
+  var f2 = '=AND($C2="off", NOT($D2="Error"))';
+  var f3 = '=AND(NOT($C2="off"), $D2="Error")';
+
+  var existing = sheet.getConditionalFormatRules();
+  var keep = [];
+  for (var i = 0; i < existing.length; i++) {
+    var r = existing[i], bc = r.getBooleanCondition && r.getBooleanCondition();
+    if (bc && bc.getCriteriaType() === SpreadsheetApp.BooleanCriteria.CUSTOM_FORMULA) {
+      var formula = String(bc.getCriteriaValues()[0] || '');
+      if (formula === f1 || formula === f2 || formula === f3) continue; // replace ours
+    }
+    keep.push(r);
+  }
+
+  var rule1 = SpreadsheetApp.newConditionalFormatRule()
+    .whenFormulaSatisfied(f1).setBold(true).setBackground(gNotYetIssueBgColor).setRanges([dataRange]).build();
+  var rule2 = SpreadsheetApp.newConditionalFormatRule()
+    .whenFormulaSatisfied(f2).setBold(false).setBackground(gNotYetIssueBgColor).setRanges([dataRange]).build();
+  var rule3 = SpreadsheetApp.newConditionalFormatRule()
+    .whenFormulaSatisfied(f3).setBold(true).setFontColor(null).setBackground(null).setRanges([dataRange]).build();
+
+  sheet.setConditionalFormatRules(keep.concat([rule1, rule2, rule3]));
 }
 
 /**

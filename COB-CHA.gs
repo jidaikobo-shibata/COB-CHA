@@ -67,6 +67,11 @@ function onOpen(e) {
     menu.addToUi();
   } else {
     addShowControlPanel();
+
+    // ensure issue sheet rules
+    var ss = SpreadsheetApp.getActive();
+    var sheet = ss.getSheetByName(gIssueSheetName);
+    if (sheet) ensureGlobalIssueRules(sheet);
   }
 }
 
