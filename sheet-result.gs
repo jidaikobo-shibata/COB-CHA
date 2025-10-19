@@ -299,7 +299,7 @@ function criteriaFormula(maxCol, num, mF) {
 }
 
 /**
- * generate toatal sheet
+ * generate total sheet
  * @return Void
  */
 function generateToatalSheet() {
@@ -309,7 +309,7 @@ function generateToatalSheet() {
   var type = getProp('type');
   var level = getProp('level');
 
-  // activate and reset sheet
+  // Activate and reset the total sheet
   var sheet = generateSheetEvenIfAlreadyExists(gTotalSheetName);
   sheet.activate();
   sheet.clear();
@@ -317,95 +317,197 @@ function generateToatalSheet() {
   sheet.getRange(1, 1).setValue(getUiLang('criterion', 'Criterion'));
   sheet.getRange(1, 2).setValue(getUiLang('name', 'Name'));
   sheet.getRange(1, 3).setValue(getUiLang('level', 'Level'));
-  sheet.getRange(1, 4).setValue(getUiLang('result', 'Result'));
-  sheet.getRange(1, 5).setValue(getUiLang('achievement', 'Achievement'));
-  sheet.getRange(1, 6).setValue(getUiLang('applied', 'Applied'));
+  sheet.getRange(1, 4).setValue(getUiLang('applied', 'Applied'));
+  sheet.getRange(1, 5).setValue(getUiLang('result', 'Result'));
+  sheet.getRange(1, 6).setValue(getUiLang('note', 'Note'));
   sheet.getRange("1:1").setBackground(gLabelColorDark).setFontColor(gLabelColorDarkText).setFontWeight('bold');
   sheet.setColumnWidth(1, 70);
   sheet.setColumnWidth(2, 200);
   sheet.setColumnWidth(3, 50);
-  sheet.setColumnWidth(4, 40);
-  sheet.setColumnWidth(5, 50);
-  sheet.setColumnWidth(6, 40);
-  
+  sheet.setColumnWidth(4, 60); // Applied
+  sheet.setColumnWidth(5, 60); // Result
+  sheet.setColumnWidth(6, 120); // Note
+
   var resultSheet = ss.getSheetByName(gResultSheetName);
-  var criteria = type == 'tt20' ? getUsingCriteria('wcag20') : getUsingCriteria();
+  var criteria = (type == 'tt20') ? getUsingCriteria('wcag20') : getUsingCriteria();
+
+  // chks: matrix where each row is [criterion, level, ...per-target marks...]
   var chks = resultSheet.getRange(1, 3, resultSheet.getLastRow() - 1, criteria.length).getValues();
-  var totalResult = resultSheet.getRange(resultSheet.getLastRow(), 2, resultSheet.getLastRow(), 1).getValue();
-  
+  // totalResult: overall result mark (o/x/-/?) placed at the last row, col B on result sheet
+  var totalResult = resultSheet.getRange(resultSheet.getLastRow(), 2, 1, 1).getValue();
+
+  // transpose rows -> per criterion arrays
   var transpose = function transpose(a) {
     return Object.keys(a[0]).map(function (c) {
-      return a.map(function (r) {
-        return r[c];
-      });
+      return a.map(function (r) { return r[c]; });
     });
-  }
+  };
   var rawrows = transpose(chks);
 
   var criteriaName = {};
-  for(var i = 0; i < criteria.length; i++) {
+  for (var i = 0; i < criteria.length; i++) {
     var key = criteria[i][1];
     criteriaName[key] = criteria[i][2];
   }
-  
+
   var mark = getProp('mark');
-  var mT = mark[2];
-  var mF = mark[3];
-  var mD = mark[1];
+  var mT = mark[2]; // "o"
+  var mF = mark[3]; // "x"
+  var mD = mark[1]; // "-"
 
   var rows = [];
-  for(var i = 0; i < rawrows.length; i++) {
-    rows[i] = [];
-    var eachCriterion = rawrows[i][0];
-    rows[i][0] = eachCriterion; // criterion
-    rows[i][1] = criteriaName[eachCriterion]; // name
-    rows[i][2] = rawrows[i][1]; // level
-    rawrows[i].shift();
-    rawrows[i].shift();
+  for (var r = 0; r < rawrows.length; r++) {
+    rows[r] = [];
 
+    // 1) Header cells per row
+    var eachCriterion = rawrows[r][0];    // criterion key
+    rows[r][0] = eachCriterion;           // Criterion
+    rows[r][1] = criteriaName[eachCriterion]; // Name
+    rows[r][2] = rawrows[r][1];           // Level
+
+    // Strip header columns to get per-target values only
+    rawrows[r].shift(); // criterion
+    rawrows[r].shift(); // level
+
+    var values = rawrows[r];              // marks per target: o/x/-/?/''
+    var totalTargets = values.length;
+
+    // 2) Count marks
     var counts = {};
-    var numOfcriterion = rawrows[i].length;
-    counts[mT] = 0;
-    counts[mD] = 0;
-    counts[mF] = 0;
-    counts['YET'] = 0;
-    for(var j = 0; j < numOfcriterion; j++) {
-      var key = rawrows[i][j];
-      key = key === "" || key === "?" ? 'YET' : key ;
-      counts[key] = (counts[key]) ? counts[key] + 1 : 1 ;
+    counts[mT] = 0;        // conforming
+    counts[mF] = 0;        // non-conforming
+    counts[mD] = 0;        // not applicable
+    counts['?'] = 0;       // unknown
+    counts['BLANK'] = 0;   // empty input
+
+    for (var j = 0; j < totalTargets; j++) {
+      var key = values[j];
+      if (key === '') key = 'BLANK';
+      counts[key] = (counts[key] || 0) + 1;
     }
-    
-    // set value by counting
-    rows[i][4] = numOfcriterion + '/' + numOfcriterion;
-    if (counts[mF] >= 1) {
-      rows[i][3] = mF;
-      rows[i][4] = counts[mT] + '/' + numOfcriterion;
-    } else if (counts[mD] == numOfcriterion) {
-      rows[i][3] = mD;
+
+    // 3) Applied count = total targets excluding N/A ("-")
+    var appliedCount = totalTargets - (counts[mD] || 0);
+
+    // 4) Applied cell (col 4): if appliedCount == 0 -> "-", else "o"
+    rows[r][3] = (appliedCount === 0) ? mD : mT;
+
+    // 5) Result cell (col 5)
+    //    Priority:
+    //      a) If appliedCount == 0 -> treated as "conforming without applicability" => "o"
+    //      b) If any unknown or blank exists among applicable targets -> "?"
+    //      c) If any non-conforming exists -> "x"
+    //      d) Else if any conforming exists -> "o"
+    //      e) Else "?" (safety net)
+    var resultMark;
+    if (appliedCount === 0) {
+      resultMark = mT; // conforming because no applicable targets
     } else {
-      rows[i][3] = mT;
+      var unknownOrBlank = (counts['?'] || 0) + (counts['BLANK'] || 0);
+      if (unknownOrBlank > 0) {
+        resultMark = '?';
+      } else if ((counts[mF] || 0) > 0) {
+        resultMark = mF;
+      } else if ((counts[mT] || 0) > 0) {
+        resultMark = mT;
+      } else {
+        resultMark = '?';
+      }
     }
+    rows[r][4] = resultMark;
 
-    // Overwrite if BLANK or ? Exists
-    if (counts['YET'] >= 1) {
-      rows[i][3] = "?";
-    }
-
-    rows[i][4] = rows[i][4];
-    var dna = (counts[mD]) ? counts[mD] : 0;
-    rows[i][5] = numOfcriterion - dna;
+    // 6) Note cell (col 6): leave blank as requested
+    rows[r][5] = '';
   }
+
+  // Write rows
   sheet.getRange(2, 1, rows.length, rows[0].length).setValues(rows);
+
+  // Footer "Total"
   sheet.getRange(rows.length + 2, 1).setValue('Total');
-  sheet.getRange(rows.length + 2, 4).setValue(totalResult);
+  // Put overall result in the Result column (col 5)
+  sheet.getRange(rows.length + 2, 5).setValue(totalResult);
+
+  // Alignments
   sheet.getRange(2, 1, rows.length + 1, 6).setHorizontalAlignment('center');
   sheet.getRange(2, 2, rows.length + 1, 1).setHorizontalAlignment('left');
 
-  // conditioned cell fot T 0r F
-  var range = sheet.getRange(2, 4, rows.length, 1);
-  setCellConditionTF(sheet, range, mT, mF)
+  // Conditional formatting for Result (o / x)
+  var rangeTF = sheet.getRange(2, 5, rows.length, 1);
+  setCellConditionTF(sheet, rangeTF, mT, mF);
 
-  // conditioned cell for level
-  var range = sheet.getRange(rows.length + 2, 4, 1, 1);
-  setCellConditionLv(sheet, range, level);
+  // Conditional formatting for total level (if needed)
+  var rangeLv = sheet.getRange(rows.length + 2, 5, 1, 1);
+  setCellConditionLv(sheet, rangeLv, level);
+
+  // Center-align headers for Level, Applied, Result
+  sheet.getRange(1, 3, 1, 3).setHorizontalAlignment('center');
+
+  // generate Report Sheet
+  generateReportSheet(level, totalResult);
+}
+
+/**
+ * generate Report Sheet (non-destructive)
+ * @param {String} level
+ * @param {String} totalResult
+ * @return {String}
+ */
+function generateReportSheet(level, totalResult) {
+  // Pre-build multi-line default text for "Way to choose"
+  var wayToChooseText = [
+    getUiLang('report-way-to-choose1', 'Per web page'),
+    getUiLang('report-way-to-choose2', 'All web pages selected'),
+    getUiLang('report-way-to-choose3', 'XX pages selected by random sampling'),
+    getUiLang('report-way-to-choose4', 'XX pages selected as representative of the entire website'),
+    getUiLang('report-way-to-choose5', 'XX pages selected by random sampling and XX pages as representative')
+  ].join('\n');
+
+  // Default rows for a freshly created report sheet
+  var defaults = [
+    [getUiLang("report-declaration-day", "Declaration day"), ""],
+    [getUiLang("report-standard-version", "Standard's version"), ""],
+    [getUiLang("report-target-level", "Target level"), level],
+    [getUiLang("report-gained-level", "Gained level"), totalResult],
+    [getUiLang("report-explanation-pages", "Explanation of pages"), ""],
+    [getUiLang("report-depending-tech", "Technology in depend"), ""],
+    [getUiLang("report-way-to-choose", "Way to choose"), wayToChooseText],
+    [getUiLang("report-urls-pages", "Pages' urls"), getUiLang("report-another-report", "Another sheet")],
+    [getUiLang("report-evaluate-sc", "Success Criteria Check Sheet"), getUiLang("report-another-report", "Another sheet")],
+    [getUiLang("report-test-days", "Test date"), ""]
+  ];
+
+  // Create the sheet only if it does not exist
+  var msgOrSheet = generateSheetIfNotExists(gReportSheetName, defaults /*, header*/);
+
+  // If a string is returned, the target sheet already exists; do nothing further
+  if (typeof msgOrSheet === 'string') {
+    return msgOrSheet; // e.g., "Target sheet (...) is already exists."
+  }
+
+  // Newly created: apply presentation only once here
+  var title = getUiLang('report-jis-title', 'Accessibility Conformance Report');
+  var sheet = msgOrSheet; // prepareTargetSheet(...) returned the created Sheet object
+  sheet.insertRows(1); // shift all rows down
+  sheet.getRange(1, 1, 1, 2).merge();
+  sheet.getRange(1, 1)
+       .setValue(title)
+       .setFontWeight('bold')
+       .setHorizontalAlignment('center')
+       .setVerticalAlignment('middle');
+
+  // Apply presentation styles
+  sheet.setColumnWidth(1, 300);
+  sheet.setColumnWidth(2, 450);
+  sheet.getRange(2, 1, defaults.length, 2)
+       .setFontWeight('bold')
+       .setVerticalAlignment('top')
+       .setWrap(true);
+  sheet.getRange("A2:A" + (defaults.length + 1)).setHorizontalAlignment('left');
+  sheet.getRange("B2:B" + (defaults.length + 1)).setHorizontalAlignment('left');
+
+  return getUiLang(
+    'target-sheet-generated',
+    "Generated new Report Sheet (%s)."
+  ).replace('%s', gReportSheetName);
 }

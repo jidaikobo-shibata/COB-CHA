@@ -725,7 +725,7 @@ function getUiJa ()
     'apply-target-icl-to-sc': '対象ページごとの実装チェックを集計',
     'evaluate-sc': '達成基準チェックを集計する',
     'evaluate-icl': '実装チェックを集計する',
-    'generate-report': '「試験結果の表示」シートを生成',
+    'generate-report': '「試験結果の表示」シートだけを生成',
 
     'etc-title': 'その他',
     'reset-record-sheets': '記録シート削除',
@@ -754,16 +754,24 @@ function getUiJa ()
     'ads': '広告あり',
 
     // report-sheet
+    'report-jis-title': 'JIS X 8341-3:XXXX 附属書JBに基づく試験結果表示',
     'report-declaration-day': '表明日',
     'report-standard-version': '規格の規格番号及び改正年',
     'report-target-level': '目標とする適合レベル',
     'report-gained-level': '満たしている適合レベル',
     'report-explanation-pages': '対象となるウェブページに関する簡潔な説明',
     'report-way-to-choose': '試験対象のウェブページを選択した方法',
+    'report-way-to-choose1': 'ウェブページ単位',
+    'report-way-to-choose2': '全てのウェブページを選択',
+    'report-way-to-choose3': 'ランダムサンプリングによってXXページを選択',
+    'report-way-to-choose4': 'ウェブページ一式を代表するページとしてXXページを選択',
+    'report-way-to-choose5': 'ランダムサンプリングによってXXページ、ウェブページ一式を代表するページとしてXXページを選択',
     'report-depending-tech': '依存したウェブコンテンツ技術のリスト',
-    'report-urls-pages': '試験を行ったウェブページのURL',
+    'report-urls-pages': '試験を行ったウェブページのURI',
+    'report-evaluate-sc': '達成基準チェックリスト',
+    'report-another-report': '別紙',
     'report-test-days': '試験実施期間',
-    
+
     // issue-sheet
     'name': '名称',
     'issue-solved': '解決済み',
@@ -787,6 +795,7 @@ function getUiJa ()
     // result
     'achievement': '達成度',
     'applied': '適用',
+    'note': '注記',
 
     // icl-sheet
     'pass': '合格',
