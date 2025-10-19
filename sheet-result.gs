@@ -5,33 +5,52 @@
  * - evaluateSc
  * - pageResultFormula
  * - criteriaFormula
- * - generateToatalSheet
+ * - generateTotalSheet
  */
 
 /**
  * setCellConditionLv
- * @param Object sheet
- * @param Object range
- * @param String level
- * @return Object
+ * @param {GoogleAppsScript.Spreadsheet.Sheet} sheet
+ * @param {GoogleAppsScript.Spreadsheet.Range} range
+ * @param {string} level - "A" | "AA" | "AAA"
+ * @return {void}
  */
 function setCellConditionLv(sheet, range, level) {
-  var targetText = 'A';
-  var targetText = level.length > 1 ? 'AA' : targetText;
-  var targetText = level.length > 2 ? 'AAA' : targetText;
-  var ruleForResult = SpreadsheetApp.newConditionalFormatRule()
-      .whenTextEqualTo(targetText)
-      .setBackground(gTrueColor)
-      .setRanges([range])
-      .build();
-  var ruleForNI = SpreadsheetApp.newConditionalFormatRule()
-      .whenTextEqualTo('NI')
-      .setBackground(gFalseColor)
-      .setRanges([range])
-      .build();
-  var rules = sheet.getConditionalFormatRules();
-  rules.push(ruleForResult);
-  rules.push(ruleForNI);
+  // Derive the targetText based on level length
+  /** @type {string} */
+  const targetText = (level && level.length >= 3) ? 'AAA' :
+                     (level && level.length === 2) ? 'AA' : 'A';
+
+  const ruleForResult = SpreadsheetApp.newConditionalFormatRule()
+    .whenTextEqualTo(targetText)
+    .setBackground(gTrueColor)
+    .setRanges([range])
+    .build();
+
+  const ruleForNI = SpreadsheetApp.newConditionalFormatRule()
+    .whenTextEqualTo('NI')
+    .setBackground(gFalseColor)
+    .setRanges([range])
+    .build();
+
+  // Replace existing rules that target the same range & same condition (avoid duplication)
+  const a1 = range.getA1Notation();
+  const rules = sheet.getConditionalFormatRules().filter(function (r) {
+    try {
+      // keep rules that are not for this A1 or not equal to our 2 rules' conditions
+      const rs = r.getRanges().map(function (rg) { return rg.getA1Notation(); });
+      const touches = rs.indexOf(a1) !== -1;
+      if (!touches) return true; // different range is kept
+      // drop any rule that sets background for 'NI' or targetText on this range
+      const cond = (r.getBooleanCondition && r.getBooleanCondition()) || null;
+      const txt = (cond && cond.getText()) || '';
+      return !(txt === 'NI' || txt === targetText);
+    } catch (e) {
+      return true;
+    }
+  });
+
+  rules.push(ruleForResult, ruleForNI);
   sheet.setConditionalFormatRules(rules);
 }
 
@@ -152,7 +171,7 @@ function evaluateSc() {
   setCellConditionLv(sheet, range, level);
 
   // total
-  generateToatalSheet();
+  generateTotalSheet();
   
   return getUiLang('evaluated', 'Evaluated.');
 }
@@ -302,7 +321,7 @@ function criteriaFormula(maxCol, num, mF) {
  * generate total sheet
  * @return Void
  */
-function generateToatalSheet() {
+function generateTotalSheet() {
   var ss = getSpreadSheet();
   var allSheets = getAllSheets();
   var lang = getProp('lang');
