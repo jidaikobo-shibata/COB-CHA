@@ -95,7 +95,7 @@ function askEnabled() {
 function addShowControlPanel() {
   var menu = SpreadsheetApp.getUi().createAddonMenu();
   menu.addItem(getUiLang('show-control-panel', 'Show Control Panel'), 'showControlPanel');
-  menu.addItem(getUiLang('help', 'COB-CHA Help'), 'showHelp');
+  menu.addItem(getUiLang('cob-cha-help', 'COB-CHA Help'), 'showHelp');
   menu.addItem(getUiLang('credit', 'COB-CHA credit'), 'showCredit');
   menu.addToUi();
 };

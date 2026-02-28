@@ -639,10 +639,10 @@ function getUiJa ()
 {
   return {
     'lang': 'ja',
-    
+
     // menu
     'show-control-panel': 'コントロールパネルを表示',
-    'help': 'COB-CHA ヘルプ',
+    'cob-cha-help': 'COB-CHA ヘルプ',
     'credit': 'クレジット',
 
     // messages
@@ -691,7 +691,7 @@ function getUiJa ()
     // control-panel
     'in-progress': '処理中',
     'control-panel-title': 'コントロールパネル',
-    
+
     'config-title': '1. 試験の方式を決定',
     'generate-config-sheet': '設定シートを生成',
     'set-additional-criteria': '追加の達成基準を設定',
@@ -699,14 +699,14 @@ function getUiJa ()
     'target-urls-setting-title': '2. 試験対象の設定',
     'generate-url-list-sheet': 'URL一覧のシートを生成',
     'generate-each-record-sheets': 'URLごとの記録シートを生成',
-    
+
     'use-template-title': '3. テンプレート操作',
     'generate-sc-template-sheet': '「達成基準」シートを生成',
     'apply-sc-template': '「達成基準」を対象シートに反映',
     'select-icl-template-set': '実装チェックリストを選択',
     'generate-icl-template-sheet': '「実装」シートを生成',
     'apply-icl-template': '「実装」を対象シートに反映',
-    
+
     'edit-value-title': '4. 値の編集',
     'current-sheet': '現在のシート',
     'apply-conformance-to-all': 'すべて合格にする',
@@ -743,7 +743,7 @@ function getUiJa ()
     'mark-type-note-tf':'T:合格 F:不合格 DNA:適用なし NT:未テスト',
     'force-update-config' : '設定シートが既に存在します。設定を上書きしてもいいですか？',
     'confirm-control-panel-update' : '言語を変更するとコントロールパネルを再読み込みしますがよろしいですか？',
-    
+
     // url-list-sheet
     'target-lump-edit': '一括処理の対象（o）',
     'error-sheetname-must-be-numeric': 'シート名（1列目）はすべて数値にしてください',
@@ -803,7 +803,7 @@ function getUiJa ()
     'eliminated': '除外',
     'icl-note': '-:適用なし,　o:合格,　x:不合格。「除外」は、試験方法として採用しなかったもの',
     'error-no-icl-found': '実装チェックリストが見つかりませんでした',
-    
+
     // obsolete-removed
     'obsolete-removed': '(廃止・削除)',
 
@@ -822,7 +822,7 @@ function getUiJa ()
     'edit-value-exp': 'テンプレートの反映や一括編集を行うことができます。',
     'issue-control-exp': '「*Issue」という名前のシートを生成し、ダイアログで入力した課題を*Issueシートに追加します。アクティブセルが既存の問題点にある場合は、編集します',
     'evaluate-exp': 'URLのシートの記録に従ってテスト結果を評価します。',
-    
+
     // credit
     'provide-icl': '実装チェックリスト提供',
     'icollabo': 'NPO法人 アイ・コラボレーション神戸',
