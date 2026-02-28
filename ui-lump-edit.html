@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base target="_top">
+  <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
+  <link href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" rel="stylesheet">
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+
+  <script>
+    /**
+     * Inject dictionaries from server-side
+     */
+    window.I18N = <?!= JSON.stringify(getLangSet('ui')) ?> || {};
+    window.LANG = <?!= JSON.stringify(getProp('lang')) ?> || 'en';
+    document.documentElement.setAttribute('lang', window.LANG);
+
+    /**
+     * On load: localize and load header list for select
+     */
+    $(function () {
+      $('.fa-spinner').hide();
+      $('#progress-loading').show();
+
+      // Apply i18n
+      applyI18n();
+
+      // Load header list from URL sheet
+      google.script.run
+        .withSuccessHandler(function(list) {
+          var $sel = $('#lump-filter');
+          list.forEach(function(item) {
+            var text = item.header + " (" + item.count + ")";
+            $('<option>').val(item.header).text(text).appendTo($sel);
+          });
+          $('#progress-loading').hide();
+        })
+        .getUrlSheetHeadersWithCount();
+    });
+
+    /**
+     * Execute Lump Edit
+     * Reads hidden fields passed from GAS openLumpEditDialog()
+     */
+    function runLumpEdit() {
+      progressIndicator('do-lump-edit', 'progress-do-lump-edit', true);
+
+      var filterKey = $('#lump-filter').val();
+
+      var row       = $('#lump-pos-row').val();
+      var col       = $('#lump-pos-col').val();
+      var vals      = $('#lump-val').val();
+      var is_append = $('#lump-is_append').val() == '1';
+
+      google.script.run
+        .withSuccessHandler(function(msg) {
+          google.script.run
+            .withSuccessHandler(function() {
+              google.script.host.close();
+            })
+            .withFailureHandler(function() {
+              google.script.host.close();
+            })
+            .showAlert(msg, 'do-lump-edit');
+        })
+        .withFailureHandler(function() {
+          showStatusAndFin('Failed', 'do-lump-edit');
+        })
+        .doLumpEditWithFilter(row, col, vals, is_append, filterKey);
+    }
+  </script>
+
+  <!-- Common UI parts -->
+  <?!= HtmlService.createHtmlOutputFromFile('ui-common').getContent(); ?>
+
+</head>
+
+<body>
+
+<h2><label for="lump-filter" data-i18n="choose-target-condition">Choose target condition:</label>  <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-loading"></span></h2>
+
+<div>
+<select id="lump-filter" style="width: 100%; text-align: left;">
+  <!-- Options will be inserted dynamically -->
+</select>
+</div>
+
+<div style="margin-top: 20px;">
+  <button class="action" onclick="runLumpEdit()" data-i18n="do-lump-edit">Do lump edit</button> <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-do-lump-edit"></span>
+</div>
+
+</body>
+</html>

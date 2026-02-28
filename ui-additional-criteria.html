@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base target="_top">
+  <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
+  <link href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" rel="stylesheet">
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+
+  <script>
+    window.I18N = <?!= JSON.stringify(getLangSet('ui')) ?> || {};
+    window.LANG = <?!= JSON.stringify(getProp('lang')) ?> || 'en';
+    document.documentElement.setAttribute('lang', window.LANG);
+  </script>
+
+  <script>
+    /**
+     * events
+     */
+    $(function() {
+      // localize
+      applyI18n();
+      
+      // on click
+      $('#set-additional-criteria').click(onClickSetAdditionalCriteria);
+      
+      // default value
+      setDefaultValue();
+
+      // loading
+      $('#progress-loading').hide();
+    });
+    
+    /**
+     * set default value
+     * @param bool isEdit
+     */
+    function setDefaultValue() {
+      google.script.run
+        .withSuccessHandler(
+          function(ret) {
+            // generate table
+            for(var i = 0; i < ret['criteria'].length; i++) {
+              if (ret['type'] == 'wcag20' && (ret['criteria21'].indexOf(ret['criteria'][i][1]) >= 0 || ret['criteria22'].indexOf(ret['criteria'][i][1]) >= 0)) continue;
+              if (ret['type'] == 'wcag21' && ret['criteria22'].indexOf(ret['criteria'][i][1]) >= 0) continue;
+              if (ret['criteria'][i][0].length <= ret['level'].length) continue;
+
+              var criterion = ret['criteria'][i][1];
+              var exp = ret['criteria'][i][2];
+//              var url = ret['criteria'][i][5]; // #del-link
+              var idname = criterion.replace(/\./g, '_')+'-criterion';
+              
+              var inputstr = '<input type="checkbox" class="criteria-chk" id="'+idname+'" value="'+criterion+'">';
+              /*
+              // #del-link
+              var linkstr = '<a target="_blank" href="'+url+'.html">'
+                            +'<i class="fas fa-external-link-alt"></i>'
+                            +'<span class="skip">Open '+criterion+'</span></a>';
+              */
+              $('#criteria').append($('<tr>')
+                            .append($('<td>').html(inputstr))
+                            .append($('<td>').html('<label for="'+idname+'">'+criterion+': '+exp+'</label>'))
+//                            .append($('<td>').append(linkstr)) // #del-link
+              );
+            }
+            
+            // revert value
+            var checked = ret['checked'].split(/,/);
+            for (var j = 0; j < checked.length; j++) {
+              var thisvalue = checked[j].trim();
+              if ( ! $("input[value='"+thisvalue+"']")[0]) continue;                
+              if ($("input[value='"+thisvalue+"']").val().length < 0) continue;
+              $("input[value='"+thisvalue+"']").prop('checked', 'checked');
+            }
+          })
+        .dialogValueAdditionalCriteria();
+    }
+
+    /**
+     * Set Additional Criteria
+     */
+    function onClickSetAdditionalCriteria() {
+      runOnce(
+        'set-additional-criteria',
+        'progress-loading',
+        function(run){
+          var checked = [];
+          $('#criteria').find(':checked').each(function(){
+            checked.push($(this).val());
+          });
+          run
+            .withSuccessHandler(function() {
+              google.script.host.close();
+            })
+            .withFailureHandler(function(err) {
+              var m = (err && err.message) ? err.message : 'Failed to apply.';
+              run.showAlert(m);
+            })
+            .setAdditionalCriteria(checked.join(', '));
+        },
+        12000 // optional timeout
+      );
+    }
+  </script>
+  <?!= HtmlService.createHtmlOutputFromFile('ui-common').getContent(); ?>
+</head>
+<body style="padding-bottom: 4em;">
+  <div style="position: fixed; width: 100%; bottom: 0; background: #fff; z-index: 9; padding: 20px;">
+    <button id="set-additional-criteria" class="primary" data-i18n="set-additional-criteria">Set additional criteria</button>
+    <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-loading"></span>
+  </div>
+  <table id="criteria" style="width: calc(100% - 50px); margin: 0 0 20px 20px;"></table>
+</body>
+</html>

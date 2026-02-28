@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base target="_top">
+  <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
+  <link href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" rel="stylesheet">
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+
+  <script>
+    window.I18N = <?!= JSON.stringify(getLangSet('ui')) ?> || {};
+    window.LANG = <?!= JSON.stringify(getProp('lang')) ?> || 'en';
+    document.documentElement.setAttribute('lang', window.LANG);
+  </script>
+
+  <script>
+    /**
+     * events
+     */
+    $(function() {
+      // Version
+      google.script.run.withSuccessHandler(function(version) {
+        $('#cob-cha-version').text(version);
+      }).getLangSet('version');
+
+      // Localize
+      applyI18n();
+    });
+  </script>
+  <?!= HtmlService.createHtmlOutputFromFile('ui-common').getContent(); ?>
+</head>
+<body>
+<p style="text-align:right;">COB-CHA version: <span id="cob-cha-version">--</span></p>
+
+<h2 id="online-manual-title" data-i18n="online-manual-title">Online Manual</h2>
+<p><a href="https://www.jidaikobo.com/archives/38.html" id="online-manual" data-i18n="online-manual" target="_blank">Online Manual (ja, Open new tab)</a></p>
+
+<h2 id="keyboard-operation-title" data-i18n="keyboard-operation-title">Keyboard Operation</h2>
+<p id="keyboard-operation-exp" data-i18n-html="keyboard-operation-exp">By pressing <kbd>Alt(option) + Shift + N</kbd>, keyboard focus will move to add-on menu to open COB-CHA Control Panel.
+By pressing <kbd>ESC</kbd> close control panel.</p>
+
+<h2 id="sheet-title" data-i18n="sheet-title">Sheet</h2>
+<p id="sheet-exp" data-i18n="sheet-exp">Sheets with names beginning with * are the sheets that are not subject to operation by COB-CHA.
+Start with *, such as "*memo," for a sheet of notes for test records.</p>
+
+<h2 id="operation-title" data-i18n="operation-title">Operation</h2>
+<table>
+<tr>
+	<th id="config-title" data-i18n="config-title" style="width:10em;">1. Config</th>
+	<td id="config-exp" data-i18n="config-exp">Choose test type from WCAG 2.0, 2.1, 2.2 or Trusted Tester.
+    And also choose target level.
+    And also you must choose Additional Criteria If you suppose to use (It's a trouble to add later).
+    Be sure to generate a settings sheet and save this setting.</td>
+</tr>
+<tr>
+	<th id="set-template-title" data-i18n="use-template-title" rowspan="2">2. Set Template</th>
+	<td id="set-template-exp" data-i18n="set-template-exp">You can generate template sheets according to test type, level, and additional success criteria.
+    For website exams, record the exams for common areas such as headers and footers in a template.
+    In "4. Edit value", it can be reflected in the test results on all pages at once.
+    Reflecting the template will overwrite the existing result, so please do it first.</td>
+</tr>
+<tr>
+	<td id="generate-icl-template-sheet-exp" data-i18n="generate-icl-template-sheet-exp">(Japanese environment only) You can customize the implementation checklist template.
+    When customizing, you can also handle aggregation by matching columns B and C to the original template.</td>
+</tr>
+<tr>
+	<th id="target-urls-setting-title" data-i18n="target-urls-setting-title">3. Target URLs Setting</th>
+	<td id="target-urls-setting-exp" data-i18n="target-urls-setting-exp">Generate a sheet named "*URLs".
+    Enter URLs to be tested here and execute "Generate each record sheets" to generate as many record sheets as there are URLs.</td>
+</tr>
+<tr>
+	<th id="edit-value-title" data-i18n="edit-value-title">4. Edit value</th>
+	<td id="edit-value-exp" data-i18n="edit-value-exp">Templates can be reflected and Lump editing can be performed.</td>
+</tr>
+<tr>
+	<th id="issue-control-title" data-i18n="issue-control-title">5. Add/Edit Issue</th>
+	<td id="issue-control-exp" data-i18n="issue-control-exp">Generate sheet named "*Issue" (If not exist), and show up issue dialogue to add row to issue sheet.
+    If your active cell is at existed issue row, edit it.</td>
+</tr>
+<tr>
+	<th id="evaluate-title" data-i18n="evaluate-title" style="width:10em;">6. Evaluate</th>
+	<td id="evaluate-exp" data-i18n="evaluate-exp">Evaluate test results according to URLs' sheet records.</td>
+</tr>
+</table>
+</body>
+</html>

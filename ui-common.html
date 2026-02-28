@@ -1,0 +1,243 @@
+<script>
+/**
+ * Debug mode
+ */
+const DEBUG = false;
+
+if (DEBUG) {
+  window.onerror = function (msg, url, line, col, err) {
+    console.group('%c[window.onerror]', 'color:#b00;font-weight:bold');
+    console.log('message:', msg);
+    console.log('url    :', url);
+    console.log('line   :', line, 'col:', col);
+    console.log('error  :', err && (err.stack || err));
+    console.groupEnd();
+  };
+  window.onunhandledrejection = function (e) {
+    console.group('%c[unhandledrejection]', 'color:#b00;font-weight:bold');
+    console.log('reason:', e.reason);
+    console.groupEnd();
+  };
+}
+
+/**
+ * CSS.escape Polyfill -less environment (simple, safe version)
+ */
+if (typeof CSS === 'undefined') window.CSS = {};
+if (typeof CSS.escape !== 'function') {
+  CSS.escape = function (s) {
+    return String(s).replace(/[\0-\x1F\x7F]|^-?\d|[^a-zA-Z0-9_-]/g, function (ch) {
+      return '\\' + ch.charCodeAt(0).toString(16) + ' ';
+    });
+  };
+}
+
+/**
+ * Translation Helpers with Fallbacks
+ */ 
+function t(key, fallback) {
+  var dict = (window.I18N || {});
+  return (dict && dict[key]) || (fallback || key);
+}
+
+/**
+ * Apply all keys specified in data-i18n at once (text only)
+ */
+function applyI18n(dictParam, rootParam) {
+  var dict = dictParam || (window.I18N || {});
+  var root = rootParam || document;
+  if (!dict || !Object.keys(dict).length) return;
+
+  // textContent
+  root.querySelectorAll('[data-i18n]').forEach(function (el) {
+    var key = el.getAttribute('data-i18n');
+    if (key in dict && dict[key] != null) el.textContent = dict[key];
+  });
+
+  // innerHTML（※自前の信頼できる文言のみ）
+  root.querySelectorAll('[data-i18n-html]').forEach(function (el) {
+    var key = el.getAttribute('data-i18n-html');
+    if (key in dict && dict[key] != null) el.innerHTML = dict[key];
+  });
+
+  // よく使う属性
+  [
+    ['href',        'data-i18n-href'],
+    ['title',       'data-i18n-title'],
+    ['aria-label',  'data-i18n-aria-label'],
+    ['value',       'data-i18n-value'],
+    ['placeholder', 'data-i18n-placeholder']
+  ].forEach(function (pair) {
+    var attr = pair[0], dataAttr = pair[1];
+    root.querySelectorAll('[' + dataAttr + ']').forEach(function (el) {
+      var key = el.getAttribute(dataAttr);
+      if (key in dict && dict[key] != null) el.setAttribute(attr, dict[key]);
+    });
+  });
+}
+
+/**
+ * HTML escape common function
+ * @param {string} s
+ * @returns {string}
+ */
+function esc(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/**
+ * Show Status
+ * @param String msg
+ * @return Void
+ */
+function showStatus(msg) {
+  if (msg == "") return;
+  google.script.run.showAlert(msg);
+}
+
+/**
+ * Show Status and turn off its progress
+ * @param String msg
+ * @param String buttonId
+ * @return Void
+ */
+function showStatusAndFin(msg, buttonId) {
+  if (msg == "") return;
+  google.script.run
+    .withSuccessHandler(
+      function(ret) {
+        progressIndicator(ret['buttonId'], 'progress-'+ret['buttonId'], false);
+      })
+    .withFailureHandler(
+      function(ret) {
+        progressIndicator(ret['buttonId'], 'progress-'+ret['buttonId'], false);
+      })
+    .showAlert(msg, buttonId);
+}
+
+/**
+ * progress indicator
+ * @param String buttonId
+ * @param String indicatorId
+ * @param Bool on
+ * @return Void
+ */
+function progressIndicator(buttonId, indicatorId, on) {
+  if (on) {
+    $('#'+buttonId).prop('disabled', true);
+    if (indicatorId) {
+      // var msg = Object.keys(lang.ui).length == 0 ? 'in progress' : lang.ui['in-progress'];
+      var msg = t('in-progress','in progress');
+      $('#'+indicatorId).show();
+      $('#'+indicatorId).html('<span class="skip">'+msg+'</span>');
+    }
+  } else {
+    $('#'+buttonId).prop('disabled', false);
+    if (indicatorId) {
+      $('#'+indicatorId).hide();
+      $('#'+indicatorId).html('');
+    }
+  }
+}
+
+/**
+ * @param {string} buttonId     - The ID of the button element.
+ * @param {string} indicatorId  - The ID of the progress indicator element (optional, '' if none).
+ * @param {function} serverCall - A function that receives the `google.script.run` object.
+ *                                Example: (run) => { run.myServerFunction(); }
+ * @param {number} [timeoutMs=10000] - Failsafe timeout in milliseconds (default: 10 seconds).
+ * @returns {void}
+ */
+function runOnce(buttonId, indicatorId, serverCall, timeoutMs) {
+  const $btn = $('#'+buttonId);
+
+  // Prevent repeated clicks if the button is already busy
+  if ($btn.data('busy')) return;
+
+  $btn.data('busy', true);
+  progressIndicator(buttonId, indicatorId, true);
+
+  // Safety timeout in case the server never responds
+  const TIMER = setTimeout(() => {
+    $btn.data('busy', false);
+    progressIndicator(buttonId, indicatorId, false);
+  }, timeoutMs || 10000);
+
+  // Called when the server responds (success or failure)
+  function done() {
+    clearTimeout(TIMER);
+    $btn.data('busy', false);
+    progressIndicator(buttonId, indicatorId, false);
+  }
+
+  // Execute the server call with success/failure handlers attached
+  serverCall(
+    google.script.run
+      .withSuccessHandler(done)
+      .withFailureHandler(done)
+  );
+}
+</script>
+
+<style>
+body
+{
+  padding: 10px;
+}
+
+details
+{
+  padding: 10px;
+  border:1px #eee solid;
+  margin-bottom: 10px;
+}
+
+summary
+{
+  font-weight: bold;
+}
+
+summary:hover,
+input[type=button],
+button
+{
+  cursor: pointer;
+}
+
+.skip
+{
+ position: absolute !important;
+ width: 1px !important;
+ height: 1px !important;
+ margin: -1px !important;
+ padding: 0 !important;
+ border: 0 !important;
+ overflow: hidden !important;
+ clip: rect(0 0 0 0) !important;
+ clip-path: inset(50%) !important;
+ white-space: nowrap !important;
+}
+
+*:focus
+{
+  outline: solid !important;
+}
+
+kbd
+{
+  display: inline-block;
+  padding: 3px;
+  border: 1px #aaa solid;
+}
+
+#control-icl,
+#evaluate-icl
+{
+  display: none;
+}
+</style>
