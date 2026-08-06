@@ -3,7 +3,6 @@
 <head>
   <base target="_top">
   <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
-  <link href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" rel="stylesheet">
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 
   <script>
@@ -36,7 +35,7 @@
       
       // on load
       $('#message-area').hide();
-      $('.fa-spinner').hide();
+      $('.progress-indicator').hide();
       $('#progress-loading').show();
 
       // Judge Edit or Add before set default value
@@ -129,7 +128,7 @@
           '<tr>' +
             '<td><input type="checkbox" id="'+idname+'" class="places" value="'+esc(place)+'"></td>' +
             '<td><label for="'+idname+'">'+esc(title)+'</label></td>' +
-            '<td><a target="_blank" href="'+esc(place)+'"><i class="fas fa-external-link-alt"></i><span style="position:absolute;width:1px;height:1px;clip:rect(0 0 0 0);">Open '+esc(place)+'</span></a></td>' +
+            '<td><a target="_blank" href="'+esc(place)+'"><span class="external-link-icon" aria-hidden="true">↗</span><span class="skip">Open '+esc(place)+'</span></a></td>' +
           '</tr>'
         );
       }
@@ -314,7 +313,7 @@
   </table>
   <div style="position: fixed; width: 100%; bottom: 0; background: #fff; z-index: 9; padding: 10px 0 10px;">
     <button id="apply-issue" class="primary" data-i18n="preparing">Preparing</button>
-    <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-loading"></span>
+    <span role="status" aria-live="polite" class="progress-indicator" id="progress-loading"></span>
   </div>
 </body>
 </html>

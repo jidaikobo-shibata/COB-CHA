@@ -3,7 +3,6 @@
 <head>
   <base target="_top">
   <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
-  <link href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" rel="stylesheet">
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 
   <script>
@@ -18,7 +17,7 @@
      * On load: localize and load header list for select
      */
     $(function () {
-      $('.fa-spinner').hide();
+      $('.progress-indicator').hide();
       $('#progress-loading').show();
 
       // Apply i18n
@@ -76,7 +75,7 @@
 
 <body>
 
-<h2><label for="lump-filter" data-i18n="choose-target-condition">Choose target condition:</label>  <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-loading"></span></h2>
+<h2><label for="lump-filter" data-i18n="choose-target-condition">Choose target condition:</label>  <span role="status" aria-live="polite" class="progress-indicator" id="progress-loading"></span></h2>
 
 <div>
 <select id="lump-filter" style="width: 100%; text-align: left;">
@@ -85,7 +84,7 @@
 </div>
 
 <div style="margin-top: 20px;">
-  <button class="action" onclick="runLumpEdit()" data-i18n="do-lump-edit">Do lump edit</button> <span role="region" aria-live="polite" class="fa fa-spinner fa-spin" id="progress-do-lump-edit"></span>
+  <button class="action" onclick="runLumpEdit()" data-i18n="do-lump-edit">Do lump edit</button> <span role="status" aria-live="polite" class="progress-indicator" id="progress-do-lump-edit"></span>
 </div>
 
 </body>

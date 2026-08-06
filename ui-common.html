@@ -235,6 +235,41 @@ kbd
   border: 1px #aaa solid;
 }
 
+.progress-indicator::before
+{
+  display: inline-block;
+  width: 0.8em;
+  height: 0.8em;
+  border: 0.15em solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  content: '';
+  animation: progress-indicator-spin 0.8s linear infinite;
+  vertical-align: -0.1em;
+}
+
+.external-link-icon
+{
+  display: inline-block;
+  margin-inline-end: 0.2em;
+}
+
+@keyframes progress-indicator-spin
+{
+  to
+  {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce)
+{
+  .progress-indicator::before
+  {
+    animation: none;
+  }
+}
+
 #control-icl,
 #evaluate-icl
 {
