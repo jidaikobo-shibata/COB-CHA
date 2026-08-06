@@ -46,20 +46,12 @@
 
               var criterion = ret['criteria'][i][1];
               var exp = ret['criteria'][i][2];
-//              var url = ret['criteria'][i][5]; // #del-link
               var idname = criterion.replace(/\./g, '_')+'-criterion';
               
               var inputstr = '<input type="checkbox" class="criteria-chk" id="'+idname+'" value="'+criterion+'">';
-              /*
-              // #del-link
-              var linkstr = '<a target="_blank" href="'+url+'.html">'
-                            +'<i class="fas fa-external-link-alt"></i>'
-                            +'<span class="skip">Open '+criterion+'</span></a>';
-              */
               $('#criteria').append($('<tr>')
                             .append($('<td>').html(inputstr))
                             .append($('<td>').html('<label for="'+idname+'">'+criterion+': '+exp+'</label>'))
-//                            .append($('<td>').append(linkstr)) // #del-link
               );
             }
             

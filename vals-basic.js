@@ -122,42 +122,6 @@ var gNonInterferenceTt = [
   '2.A', '2.B', '2.C', '3.A', '4.C'
 ];
 
-/**
- * URL
- */
-/*
-// #del-link
-var gUrlbase = {
-  'understanding': {
-    'en-wcag20': 'https://www.w3.org/TR/UNDERSTANDING-WCAG20/',
-    'en-wcag21': 'https://www.w3.org/WAI/WCAG21/Understanding/', // and directory
-    'ja-wcag20': 'https://waic.jp/docs/UNDERSTANDING-WCAG20/',
-    'ja-wcag21': 'https://waic.jp/docs/WCAG21/Understanding/'
-  },
-  'tech': {
-    'en-wcag20': 'https://www.w3.org/TR/WCAG20-TECHS/',
-    'en-wcag21': 'https://www.w3.org/WAI/WCAG21/Techniques/',
-    'ja-wcag20': 'https://waic.jp/docs/WCAG-TECHS/',
-    'ja-wcag21': 'https://waic.jp/docs/WCAG-TECHS/'
-  }
-};
-
-var gTechDirAbbr = {
-  'G': 'general',
-  'H': 'html',
-  'C': 'css',
-  'A': 'aria',
-  'T': 'text',
-  'P': 'pdf',
-  'F': 'failures',
-  'FL': 'flash',
-  'SM': 'smil',
-  'SL': 'silverlight',
-  'SV': 'server-side-script',
-  'SC': 'client-side-script'
-};
-*/
-
 /*
  * Techs
  */

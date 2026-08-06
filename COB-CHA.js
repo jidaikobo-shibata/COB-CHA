@@ -6,10 +6,6 @@
  * @Year    2021 -
  * @Licence MIT
  *
- * TODO:
- * - 解説書、達成基準へのリンクは削除予定（#del-link）
- * - showConfirm()において、キャンセルボタンでキャンセルしたら問題がないが、エスケープキーではエラーになる。try-catchで捉えようとしたが、捉えられていない（#cannot-esc）
- *
  * functions:
  * - onInstall
  * - onOpen
@@ -160,7 +156,6 @@ function showDialog(sheetname, width, height, title, html) {
  * @return String
  */
 function showAlert(msg, buttonId) {
-  // #cannot-esc
   try {
     var ui = SpreadsheetApp.getUi();
     var ret = ui.alert(
@@ -180,7 +175,6 @@ function showAlert(msg, buttonId) {
  * @return String
  */
 function showConfirm(msg) {
-  // #cannot-esc
   try {
     var ui = SpreadsheetApp.getUi();
     var ret = ui.alert(
@@ -405,11 +399,9 @@ function getUsingCriteria(type) {
 function getUsingTechs() {
   if (getUsingTechs.vals) return getUsingTechs.vals;
 
-  var lang = getProp('lang');
   var type = getProp('type');
 
   var techNames = getLangSet('tech');
-  var urlPointer = lang+'-'+type;
   var usingCriteria = getUsingCriteria();
   var usingTechs = [];
 
@@ -419,21 +411,6 @@ function getUsingTechs() {
     for (j = 0; j < gRelTechsAndCriteria[criteria].length; j++) {
       var each = gRelTechsAndCriteria[criteria][j];
 
-/*
-      // #del-link
-      // Techniques for WCAG 2.1 has directory
-      var url = gUrlbase['tech'][urlPointer];
-      if (type == 'wcag21' && lang == 'en') {
-        var dir = each.charAt(0)+each.charAt(1);
-        if (['M', 'L', 'V', 'C'].indexOf(each.charAt(1)) < 0) {
-          dir = dir.charAt(0);
-        }
-        url += gTechDirAbbr[dir]+'/'+each;
-      } else {
-        url += each+'.html';
-      }
-      usingTechs.push([criteria, gRelTechsAndCriteria[criteria][j], techNames[each], url]);
-*/
       usingTechs.push([criteria, gRelTechsAndCriteria[criteria][j], techNames[each]]);
     }
   }
@@ -511,40 +488,6 @@ function getAllSheets() {
   getAllSheets.ss = ret;
   return getAllSheets.ss;
 };
-
-/**
- * Get Selected sheets
- * @return Array
- */
-/*
-function getSelectedSheets() {
-  if (getSelectedSheets.ss) return getSelectedSheets.ss;
-
-  var ss = getSpreadSheet();
-  var urlsheet = ss.getSheetByName(gUrlListSheetName);
-  if (urlsheet == null) return [];
-  var rownum = urlsheet.getLastRow() - 1;
-  if (rownum <= 1) return [];
-
-  var urls = urlsheet.getRange(2, 1, rownum, 4).getValues();
-  var targets = []
-  for (var i = 0; i < urls.length; i++) {
-    if (urls[i][3] != "o") continue;
-//    if (urls[i][3] == "x") continue;
-    targets.push(urls[i][0]);
-  }
-
-  var all = getAllSheets();
-  var ret = [];
-  for (var i = 0; i < all.length; i++) {
-    if (targets.indexOf(String(all[i].getName())) == -1) continue;
-    ret.push(all[i]);
-  }
-
-  getSelectedSheets.ss = ret;
-  return getSelectedSheets.ss;
-};
-*/
 
 /**
  * Get selected sheets.
