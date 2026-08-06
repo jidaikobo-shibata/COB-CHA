@@ -3,7 +3,6 @@
 <head>
   <base target="_top">
   <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
-  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 
   <script>
     window.I18N = <?!= JSON.stringify(getLangSet('ui')) ?> || {};
@@ -15,18 +14,19 @@
     /**
      * events
      */
-    $(function() {
+    document.addEventListener('DOMContentLoaded', function() {
       // localize
       applyI18n();
-      
+
       // on click
-      $('#set-additional-criteria').click(onClickSetAdditionalCriteria);
-      
+      document.getElementById('set-additional-criteria')
+        .addEventListener('click', onClickSetAdditionalCriteria);
+
       // default value
       setDefaultValue();
 
       // loading
-      $('#progress-loading').hide();
+      document.getElementById('progress-loading').style.display = 'none';
     });
     
     /**
@@ -37,6 +37,9 @@
       google.script.run
         .withSuccessHandler(
           function(ret) {
+            var criteriaTable = document.getElementById('criteria');
+            var fragment = document.createDocumentFragment();
+
             // generate table
             for(var i = 0; i < ret['criteria'].length; i++) {
               if (ret['type'] == 'wcag20' && (ret['criteria21'].indexOf(ret['criteria'][i][1]) >= 0 || ret['criteria22'].indexOf(ret['criteria'][i][1]) >= 0)) continue;
@@ -47,21 +50,34 @@
               var exp = ret['criteria'][i][2];
               var idname = criterion.replace(/\./g, '_')+'-criterion';
               
-              var inputstr = '<input type="checkbox" class="criteria-chk" id="'+idname+'" value="'+criterion+'">';
-              $('#criteria').append($('<tr>')
-                            .append($('<td>').html(inputstr))
-                            .append($('<td>').html('<label for="'+idname+'">'+criterion+': '+exp+'</label>'))
-              );
+              var row = document.createElement('tr');
+              var inputCell = document.createElement('td');
+              var labelCell = document.createElement('td');
+              var input = document.createElement('input');
+              var label = document.createElement('label');
+
+              input.type = 'checkbox';
+              input.className = 'criteria-chk';
+              input.id = idname;
+              input.value = criterion;
+              label.htmlFor = idname;
+              label.textContent = criterion+': '+exp;
+
+              inputCell.append(input);
+              labelCell.append(label);
+              row.append(inputCell, labelCell);
+              fragment.append(row);
             }
-            
+
+            criteriaTable.append(fragment);
+
             // revert value
-            var checked = ret['checked'].split(/,/);
-            for (var j = 0; j < checked.length; j++) {
-              var thisvalue = checked[j].trim();
-              if ( ! $("input[value='"+thisvalue+"']")[0]) continue;                
-              if ($("input[value='"+thisvalue+"']").val().length < 0) continue;
-              $("input[value='"+thisvalue+"']").prop('checked', 'checked');
-            }
+            var checked = ret['checked'].split(/,/).map(function(value) {
+              return value.trim();
+            });
+            criteriaTable.querySelectorAll('input[type="checkbox"]').forEach(function(input) {
+              input.checked = checked.indexOf(input.value) !== -1;
+            });
           })
         .dialogValueAdditionalCriteria();
     }
@@ -74,9 +90,10 @@
         'set-additional-criteria',
         'progress-loading',
         function(run){
-          var checked = [];
-          $('#criteria').find(':checked').each(function(){
-            checked.push($(this).val());
+          var checked = Array.from(
+            document.querySelectorAll('#criteria input:checked')
+          ).map(function(input) {
+            return input.value;
           });
           run
             .withSuccessHandler(function() {

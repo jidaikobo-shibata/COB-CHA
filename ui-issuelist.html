@@ -3,7 +3,6 @@
 <head>
   <base target="_top">
   <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
-  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 
   <script>
     // Embedding dictionaries and current languages ​​on the server
@@ -16,28 +15,41 @@
     /**
      * events
      */
-    $(function() {
+    document.addEventListener('DOMContentLoaded', function() {
       google.script.run
         .withSuccessHandler(
           function(vals) {
+            var heading = document.querySelector('h1');
             if (vals['url'] == '') {
-              $('h1').text(t('no-target-url-found','no target url found'));
+              heading.textContent = t('no-target-url-found','no target url found');
             } else {
-              $('h1').html(vals['url']);
+              heading.textContent = vals['url'];
               if (vals['issues'].length == 0) {
-                $('h1').after('<p>'+t('no-issue-found','no issue found')+'</p>');
+                var message = document.createElement('p');
+                message.textContent = t('no-issue-found','no issue found');
+                heading.after(message);
               } else {
+                var issues = document.getElementById('issues');
                 for (var i = 0; i < vals['issues'].length; i++) {
                   var row = parseInt(vals['issues'][i][0]) + 1;
-                  $('#issues').append($('<li></li>').html('<a href="#" data-issuerow="'+row+'">'+vals['issues'][i][0]+': '+vals['issues'][i][1]+'</a>'));
+                  var item = document.createElement('li');
+                  var link = document.createElement('a');
+                  link.href = '#';
+                  link.dataset.issueRow = row;
+                  link.textContent = vals['issues'][i][0]+': '+vals['issues'][i][1];
+                  item.append(link);
+                  issues.append(item);
                 }
               }
             }
           })
         .setIssueList();
-        
-      $(document).on('click','#issues a',function(){
-        google.script.run.showEachIssue($(this).data('issuerow'));
+
+      document.getElementById('issues').addEventListener('click', function(event) {
+        var link = event.target.closest('a[data-issue-row]');
+        if (!link) return;
+        event.preventDefault();
+        google.script.run.showEachIssue(link.dataset.issueRow);
       });
     });
   </script>

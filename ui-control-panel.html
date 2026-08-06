@@ -3,7 +3,6 @@
 <head>
   <base target="_top">
   <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
-  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 
   <script>
     window.I18N = <?!= JSON.stringify(getLangSet('ui')) ?> || {};
@@ -15,7 +14,7 @@
     /**
      * events
      */
-    $(function() {
+    document.addEventListener('DOMContentLoaded', function() {
       // localize
       applyI18n();
 
@@ -23,46 +22,56 @@
       google.script.run
         .withSuccessHandler(
           function(version) {
-                $('#cob-cha-version').html(version);
+            document.getElementById('cob-cha-version').textContent = version;
           })
         .getLangSet('version');
 
       // on load
-      $('.progress-indicator').hide();
+      document.querySelectorAll('.progress-indicator').forEach(function(indicator) {
+        indicator.style.display = 'none';
+      });
 
       // on change
-      $('#lang').change(switchLanguageStatus);
-      $('#test-type').change(switchLevelWhenTtOrNot);
-      $('#evaluate-level').change(switchAdditionalCriterion);
+      document.getElementById('lang').addEventListener('change', switchLanguageStatus);
+      document.getElementById('test-type').addEventListener('change', switchLevelWhenTtOrNot);
+      document.getElementById('evaluate-level').addEventListener('change', switchAdditionalCriterion);
 
       // on click
-      $('#generate-config-sheet').click(onClickGenerateConfig);
-      $('#set-additional-criteria').click(onClickSetAdditionalCriteria);
-      $('#generate-report').click(onClickCreateReport);
-      $('#generate-sc-template-sheet').bind('click', {sheets:"*SC Template", targetId:'generate-sc-template-sheet'}, onClickGenerateSheet);
-      $('#generate-icl-template-sheet').click(onClickGenarateIclTpl);
-      $('#generate-each-record-sheets').bind('click', {sheets:"*URLs", targetId:'generate-each-record-sheets'}, onClickGenerateSheet);
-      $('#generate-url-list-sheet').click(onClickGenarateUrlList);
-      $('#apply-sc-template').click(onClickApplyScTemplate);
-      $('#apply-icl-template').click(onClickApplyIclTemplate);
-      $('#apply-conformance-to-all').click(onClickApplyConformanceToAll);
-      $('#get-current-pos').click(onClickGetCurrentPos);
-      $('#do-lump-edit').click(onClickDoLumpEdit);
-      $('#add-edit-issue').click(onClickAddEditIssue);
-      $('#show-issue').click(onClickShowIssue);
-      $('#apply-target-icl-to-sc').click(onClickApplyTargetIclToSc);
-      $('#evaluate-sc').click(onClickEvaluateSc);
-      $('#evaluate-icl').click(onClickEvaluateIcl);
-      $('#reset-all-sheets').bind('click', {isAll:true}, onClickResetSheets);
-      $('#reset-record-sheets').bind('click', {isAll:false}, onClickResetSheets);
+      document.getElementById('generate-config-sheet').addEventListener('click', onClickGenerateConfig);
+      document.getElementById('set-additional-criteria').addEventListener('click', onClickSetAdditionalCriteria);
+      document.getElementById('generate-report').addEventListener('click', onClickCreateReport);
+      document.getElementById('generate-sc-template-sheet').addEventListener('click', function() {
+        onClickGenerateSheet('*SC Template', 'generate-sc-template-sheet');
+      });
+      document.getElementById('generate-icl-template-sheet').addEventListener('click', onClickGenarateIclTpl);
+      document.getElementById('generate-each-record-sheets').addEventListener('click', function() {
+        onClickGenerateSheet('*URLs', 'generate-each-record-sheets');
+      });
+      document.getElementById('generate-url-list-sheet').addEventListener('click', onClickGenarateUrlList);
+      document.getElementById('apply-sc-template').addEventListener('click', onClickApplyScTemplate);
+      document.getElementById('apply-icl-template').addEventListener('click', onClickApplyIclTemplate);
+      document.getElementById('apply-conformance-to-all').addEventListener('click', onClickApplyConformanceToAll);
+      document.getElementById('get-current-pos').addEventListener('click', onClickGetCurrentPos);
+      document.getElementById('do-lump-edit').addEventListener('click', onClickDoLumpEdit);
+      document.getElementById('add-edit-issue').addEventListener('click', onClickAddEditIssue);
+      document.getElementById('show-issue').addEventListener('click', onClickShowIssue);
+      document.getElementById('apply-target-icl-to-sc').addEventListener('click', onClickApplyTargetIclToSc);
+      document.getElementById('evaluate-sc').addEventListener('click', onClickEvaluateSc);
+      document.getElementById('evaluate-icl').addEventListener('click', onClickEvaluateIcl);
+      document.getElementById('reset-all-sheets').addEventListener('click', function() {
+        onClickResetSheets(true);
+      });
+      document.getElementById('reset-record-sheets').addEventListener('click', function() {
+        onClickResetSheets(false);
+      });
 
       // ICL (Japanese Only)
       google.script.run
         .withSuccessHandler(
           function(ret) {
             if (ret == 'ja') {
-              $('#evaluate-icl').show();
-              $('.icl-tpl').show();
+              document.getElementById('evaluate-icl').style.display = '';
+              setIclTemplateVisibility(true);
             }
           })
         .getProp('lang');
@@ -76,28 +85,28 @@
      */
     function setDefaultValue() {
       var current = window.LANG || 'en';
-      $("#lang").val(current);
-      $("html").attr('lang', current);
-      if (current !== 'ja') $('.icl-tpl').hide();
+      document.getElementById('lang').value = current;
+      document.documentElement.setAttribute('lang', current);
+      if (current !== 'ja') setIclTemplateVisibility(false);
 
       google.script.run
         .withSuccessHandler(
           function(ret) {
-            $("#test-type").val(ret);
+            document.getElementById('test-type').value = ret;
 
             // select level depend on test-type
             if (ret.indexOf('wcag') >= 0) {
               google.script.run
                 .withSuccessHandler(
                   function(innerRet) {
-                    $("#evaluate-level").val(innerRet);
+                    document.getElementById('evaluate-level').value = innerRet;
                   })
                 .getProp('level');
             } else {
-              $("#evaluate-level").val('AA');
-              $("#evaluate-level").prop('disabled', true);
-              $("#set-additional-criteria").prop('disabled', true);
-              $('.icl-tpl').hide();
+              document.getElementById('evaluate-level').value = 'AA';
+              document.getElementById('evaluate-level').disabled = true;
+              document.getElementById('set-additional-criteria').disabled = true;
+              setIclTemplateVisibility(false);
             }
           })
         .getProp('type');
@@ -106,9 +115,9 @@
         .withSuccessHandler(
           function(ret) {
             if (ret[0] == 'NT') {
-              $("#mark").val('tf');
+              document.getElementById('mark').value = 'tf';
             } else {
-              $("#mark").val('ox');
+              document.getElementById('mark').value = 'ox';
             }
           })
         .getProp('mark');
@@ -124,7 +133,10 @@
 
             for (var key in ordered) {
               var label = ordered[key]['label'];
-              $('#icl-template-set').append($('<option>').html(label).val(key));
+              var option = document.createElement('option');
+              option.value = key;
+              option.textContent = label;
+              document.getElementById('icl-template-set').append(option);
             }
           })
         .getLangSet('iclList');
@@ -135,16 +147,22 @@
      * Trusted Tester is fixed with AA
      */
     function switchLevelWhenTtOrNot() {
-      if ($('#test-type').val().indexOf('tt') != -1) {
-        $('.icl-tpl').hide();
-        $('#evaluate-level').val('AA');
-        $('#evaluate-level').prop('disabled', true);
-        $("#set-additional-criteria").prop('disabled', true);
+      if (document.getElementById('test-type').value.indexOf('tt') != -1) {
+        setIclTemplateVisibility(false);
+        document.getElementById('evaluate-level').value = 'AA';
+        document.getElementById('evaluate-level').disabled = true;
+        document.getElementById('set-additional-criteria').disabled = true;
       } else {
-        $('.icl-tpl').show();
-        $('#evaluate-level').prop('disabled', false);
-        $("#set-additional-criteria").prop('disabled', false);
+        setIclTemplateVisibility(true);
+        document.getElementById('evaluate-level').disabled = false;
+        document.getElementById('set-additional-criteria').disabled = false;
       }
+    }
+
+    function setIclTemplateVisibility(visible) {
+      document.querySelectorAll('.icl-tpl').forEach(function(element) {
+        element.style.display = visible ? '' : 'none';
+      });
     }
 
     /**
@@ -154,24 +172,21 @@
       google.script.run
         .withSuccessHandler(
           function(lang) {
-            $('#lang').val(lang);
+            document.getElementById('lang').value = lang;
           })
         .withFailureHandler(
           function(lang) {
-            $('#lang').val(lang);
+            document.getElementById('lang').value = lang;
           })
-        .forceUpdateLang($('#lang').val());
+        .forceUpdateLang(document.getElementById('lang').value);
     }
 
     /**
      * switch Additional Criterion status
      */
     function switchAdditionalCriterion() {
-      if ($('#evaluate-level').val().indexOf('AAA') >= 0) {
-        $('#set-additional-criterion').prop('disabled', true);
-      } else {
-        $('#set-additional-criterion').prop('disabled', false);
-      }
+      document.getElementById('set-additional-criteria').disabled =
+        document.getElementById('evaluate-level').value.indexOf('AAA') >= 0;
     }
     
     /**
@@ -179,10 +194,15 @@
      */
     function onClickSetAdditionalCriteria() {
       runOnce(
-        'add-set-additional-criteria',
+        'set-additional-criteria',
         'progress-set-additional-criteria',
         function(run){
-          run.openDialogAdditionalCriteria($('#lang').val(), $('#test-type').val(), $('#evaluate-level').val(), $('#mark').val());
+          run.openDialogAdditionalCriteria(
+            document.getElementById('lang').value,
+            document.getElementById('test-type').value,
+            document.getElementById('evaluate-level').value,
+            document.getElementById('mark').value
+          );
         },
         12000
       );
@@ -203,7 +223,12 @@
           function(msg) {
             showStatusAndFin(msg, 'generate-config-sheet');
           })
-        .generateConfigSheet($('#lang').val(), $('#test-type').val(), $('#evaluate-level').val(), $('#mark').val());
+        .generateConfigSheet(
+          document.getElementById('lang').value,
+          document.getElementById('test-type').value,
+          document.getElementById('evaluate-level').value,
+          document.getElementById('mark').value
+        );
     }
 
     /**
@@ -237,7 +262,10 @@
           function(msg) {
             showStatusAndFin(msg, 'generate-icl-template-sheet');
           })
-        .generateIclTplSheet($('#icl-template-set').val(), $('#test-type').val());
+        .generateIclTplSheet(
+          document.getElementById('icl-template-set').value,
+          document.getElementById('test-type').value
+        );
     }
     
     /**
@@ -278,11 +306,10 @@
 
     /**
      * Generate Sheets
-     * @param Object sheetsObj
+     * @param String sheets
+     * @param String targetId
      */
-    function onClickGenerateSheet(sheetsObj) {
-      var sheets = sheetsObj.data.sheets;
-      var targetId = sheetsObj.data.targetId;
+    function onClickGenerateSheet(sheets, targetId) {
       progressIndicator(targetId, 'progress-'+targetId, true);
 
       google.script.run
@@ -294,7 +321,13 @@
           function(rets) {
             showStatusAndFin(rets['msg'], rets['targetId']);
           })
-        .generateSheets(sheets, $('#lang').val(), $('#test-type').val(), $('#evaluate-level').val(), targetId);
+        .generateSheets(
+          sheets,
+          document.getElementById('lang').value,
+          document.getElementById('test-type').value,
+          document.getElementById('evaluate-level').value,
+          targetId
+        );
     }
     
     /**
@@ -342,9 +375,9 @@
       google.script.run
         .withSuccessHandler(
           function(pos) {
-            $('#lump-pos-row').val(pos[0]);
-            $('#lump-pos-col').val(pos[1]);
-            $('#lump-val').val(pos[2]);
+            document.getElementById('lump-pos-row').value = pos[0];
+            document.getElementById('lump-pos-col').value = pos[1];
+            document.getElementById('lump-val').value = pos[2];
             progressIndicator('get-current-pos', 'progress-get-current-pos', false);
           })
         .withFailureHandler(
@@ -357,35 +390,19 @@
     /**
      * Do Lump Edit
      */
-    /*
     function onClickDoLumpEdit() {
-      progressIndicator('do-lump-edit', 'progress-do-lump-edit', true);
-      var is_append = $('#lump-is_append').prop('checked');
-
-      google.script.run
-        .withSuccessHandler(
-          function(msg) {
-            showStatusAndFin(msg, 'do-lump-edit');
-          })
-        .withFailureHandler(
-          function() {
-            showStatusAndFin('failed', 'do-lump-edit');
-          })
-        .doLumpEdit($('#lump-pos-row').val(), $('#lump-pos-col').val(), $('#lump-val').val(), is_append);
-    }
-    */
-
-    /**
-     * Do Lump Edit
-     */
-    function onClickDoLumpEdit() {
-      var is_append = $('#lump-is_append').prop('checked');
+      var is_append = document.getElementById('lump-is_append').checked;
 
       runOnce(
         'do-lump-edit',
         'progress-do-lump-edit',
         function(run){
-          run.openLumpEditDialog($('#lump-pos-row').val(), $('#lump-pos-col').val(), $('#lump-val').val(), is_append);
+          run.openLumpEditDialog(
+            document.getElementById('lump-pos-row').value,
+            document.getElementById('lump-pos-col').value,
+            document.getElementById('lump-val').value,
+            is_append
+          );
         },
         12000
       );
@@ -434,7 +451,7 @@
           function(msg) {
             showStatusAndFin(msg, 'generate-report');
           })
-        .generateReportSheet($('#evaluate-level').val(), '');
+        .generateReportSheet(document.getElementById('evaluate-level').value, '');
     }
     
     /**
@@ -470,15 +487,18 @@
           function(msg) {
             showStatusAndFin(msg, 'evaluate-icl');
           })
-        .evaluateIcl($('#lang').val(), $('#test-type').val(), $('#evaluate-level').val());
+        .evaluateIcl(
+          document.getElementById('lang').value,
+          document.getElementById('test-type').value,
+          document.getElementById('evaluate-level').value
+        );
     }
 
     /**
      * Reset sheets
-     * @param Object obj
+     * @param Bool isAll
      */
-    function onClickResetSheets(obj) {
-      var isAll = obj.data.isAll;
+    function onClickResetSheets(isAll) {
       var id = isAll ? 'reset-all-sheets' : 'reset-record-sheets';
       progressIndicator(id, 'progress-'+id, true);
 

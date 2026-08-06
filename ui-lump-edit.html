@@ -3,7 +3,6 @@
 <head>
   <base target="_top">
   <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
-  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 
   <script>
     /**
@@ -16,9 +15,11 @@
     /**
      * On load: localize and load header list for select
      */
-    $(function () {
-      $('.progress-indicator').hide();
-      $('#progress-loading').show();
+    document.addEventListener('DOMContentLoaded', function () {
+      document.querySelectorAll('.progress-indicator').forEach(function(indicator) {
+        indicator.style.display = 'none';
+      });
+      document.getElementById('progress-loading').style.display = '';
 
       // Apply i18n
       applyI18n();
@@ -26,12 +27,15 @@
       // Load header list from URL sheet
       google.script.run
         .withSuccessHandler(function(list) {
-          var $sel = $('#lump-filter');
+          var select = document.getElementById('lump-filter');
           list.forEach(function(item) {
             var text = item.header + " (" + item.count + ")";
-            $('<option>').val(item.header).text(text).appendTo($sel);
+            var option = document.createElement('option');
+            option.value = item.header;
+            option.textContent = text;
+            select.append(option);
           });
-          $('#progress-loading').hide();
+          document.getElementById('progress-loading').style.display = 'none';
         })
         .getUrlSheetHeadersWithCount();
     });
@@ -43,12 +47,12 @@
     function runLumpEdit() {
       progressIndicator('do-lump-edit', 'progress-do-lump-edit', true);
 
-      var filterKey = $('#lump-filter').val();
+      var filterKey = document.getElementById('lump-filter').value;
 
-      var row       = $('#lump-pos-row').val();
-      var col       = $('#lump-pos-col').val();
-      var vals      = $('#lump-val').val();
-      var is_append = $('#lump-is_append').val() == '1';
+      var row       = document.getElementById('lump-pos-row').value;
+      var col       = document.getElementById('lump-pos-col').value;
+      var vals      = document.getElementById('lump-val').value;
+      var is_append = document.getElementById('lump-is_append').value == '1';
 
       google.script.run
         .withSuccessHandler(function(msg) {

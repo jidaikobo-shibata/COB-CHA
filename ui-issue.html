@@ -3,7 +3,6 @@
 <head>
   <base target="_top">
   <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
-  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 
   <script>
     // Embedding dictionaries and current languages ​​on the server
@@ -29,14 +28,15 @@
     /**
      * events
      */
-    $(function() {
+    document.addEventListener('DOMContentLoaded', function() {
       // Localize
       applyI18n();
-      
+
       // on load
-      $('#message-area').hide();
-      $('.progress-indicator').hide();
-      $('#progress-loading').show();
+      document.querySelectorAll('.progress-indicator').forEach(function(indicator) {
+        indicator.style.display = 'none';
+      });
+      document.getElementById('progress-loading').style.display = '';
 
       // Judge Edit or Add before set default value
       requestAnimationFrame(function(){
@@ -49,11 +49,16 @@
       });
 
       // on click
-      $('#apply-issue').click(onApplyIssueClick);
+      document.getElementById('apply-issue').addEventListener('click', onApplyIssueClick);
+      document.getElementById('all-page').addEventListener('click', function() {
+        document.querySelectorAll('.places').forEach(function(place) {
+          place.checked = true;
+        });
+      });
 
       // on change
-      $(document).on('change','.criteria-chk',function(){
-        changeCriteria();
+      document.addEventListener('change', function(event) {
+        if (event.target.matches('.criteria-chk')) changeCriteria();
       });
     });
     
@@ -63,17 +68,19 @@
      */
     function setDefaultValue(ret) {
       // dialog title and button
-      if ( ! ret['isEdit']) {
-        var msg = t('add-new-issue', 'Add New Issue');
-        $('#apply-issue').text(msg);
-      } else {
-        var msg = t('update-issue', 'Update Issue');
-        $('#apply-issue').text(msg);
-      }
-      $('#apply-issue').after('<input type="hidden" id="issue-id" value="'+(ret.vals && ret.vals.issueId ? ret.vals.issueId : '')+'">');
+      var applyButton = document.getElementById('apply-issue');
+      var msg = ret['isEdit']
+        ? t('update-issue', 'Update Issue')
+        : t('add-new-issue', 'Add New Issue');
+      applyButton.textContent = msg;
+
+      var issueId = document.createElement('input');
+      issueId.type = 'hidden';
+      issueId.id = 'issue-id';
+      issueId.value = ret.vals && ret.vals.issueId ? ret.vals.issueId : '';
+      applyButton.after(issueId);
 
       // criteria
-      console.time('[build] criteria');
       var criteriaRows = [];
       for (var i = 0; i < ret['usingCriteria'].length; i++) {
         var criterion = ret['usingCriteria'][i][1];
@@ -87,10 +94,8 @@
         );
       }
       document.getElementById('criteria').innerHTML = criteriaRows.join(''); // faster than append()
-      console.timeEnd('[build] criteria');
 
       // techniques
-      console.time('[build] techs-html');
       var techMap = Object.create(null);
       for (var j = 0; j < ret['usingTechs'].length; j++) {
         var c = ret['usingTechs'][j][0];
@@ -115,10 +120,8 @@
         }
       }
       document.getElementById('techs').innerHTML = techRows.join('');
-      console.timeEnd('[build] techs-html');
 
       // places
-      console.time('[build] places');
       var placeRows = [];
       for (var i = 0; i < ret['allPlaces'].length; i++) {
         var place = ret['allPlaces'][i].url;
@@ -133,27 +136,21 @@
         );
       }
       document.getElementById('places').innerHTML = placeRows.join('');
-      console.timeEnd('[build] places');
-
-      /*
-      console.log('counts:', {
-        usingCriteria: (ret['usingCriteria']||[]).length,
-        usingTechs   : (ret['usingTechs']||[]).length,
-        allPlaces    : (ret['allPlaces']||[]).length
-      });
-      */
 
       // place: default
-      var activeUrl = ($('#target-url').val() || '').toString().trim();
+      var targetUrl = document.getElementById('target-url');
+      var activeUrl = targetUrl ? targetUrl.value.toString().trim() : '';
       if (activeUrl) {
-        var escaped = CSS.escape(activeUrl);
-        var el = document.querySelector('input.places[value="' + escaped + '"]');
-        if (el) el.checked = true;
+        document.querySelectorAll('input.places').forEach(function(place) {
+          if (place.value === activeUrl) place.checked = true;
+        });
       }
 
       // place: all
       if (typeof ret['vals']['places'] !== "undefined" && ret['vals']['places'] == 'all') {
-        $('.places').prop('checked', 'checked');
+        document.querySelectorAll('.places').forEach(function(place) {
+          place.checked = true;
+        });
       }
       
       // checkboxes
@@ -172,63 +169,68 @@
                   
       if ( ! ret['isEdit']) {
         // loading end
-        $('#progress-loading').hide();
+        document.getElementById('progress-loading').style.display = 'none';
         return;
       }
-      
-      $("#issue-name").val(ret['vals']['issueName']);
-      
+
+      document.getElementById('issue-name').value = ret['vals']['issueName'];
+
       var textarea = ['html', 'memo', 'explanation'];
       for (var i = 0; i < textarea.length; i++) {
-        $("#"+textarea[i]).val(ret['vals'][textarea[i]]);
+        document.getElementById(textarea[i]).value = ret['vals'][textarea[i]];
       }
-      
+
       // select
       if (ret['vals']['errorNotice'] == 'Notice') {
-        $("#error-notice").val('Notice');
+        document.getElementById('error-notice').value = 'Notice';
       }
-      
+
       // issue-solved
       if (ret['vals']['issueVisibility'] == 'on') {
-        $("input#issue-solved").prop('checked', 'checked');
+        document.getElementById('issue-solved').checked = true;
       }
-      
+
       // loading end
-      requestAnimationFrame(function(){ $('#progress-loading').hide(); });
+      requestAnimationFrame(function(){
+        document.getElementById('progress-loading').style.display = 'none';
+      });
     }
 
     /**
      * Apply Issue
      */
     function onApplyIssueClick() {
-      var checked = [];
-      $('#criteria').find(':checked').each(function(){
-        checked.push($(this).val());
-      });
-      
-      var techs = [];
-      $('#techs').find(':checked').each(function(){
-        techs.push($(this).val());
-      });
-      
-      var places = [];
-      $('#places').find(':checked').each(function(){
-        places.push($(this).val());
+      var checked = Array.from(
+        document.querySelectorAll('#criteria input:checked')
+      ).map(function(input) {
+        return input.value;
       });
 
-      var issueVisibility = $('#issue-solved').prop('checked') ? 'on' : 'off' ;
-      
+      var techs = Array.from(
+        document.querySelectorAll('#techs input:checked')
+      ).map(function(input) {
+        return input.value;
+      });
+
+      var places = Array.from(
+        document.querySelectorAll('#places input:checked')
+      ).map(function(input) {
+        return input.value;
+      });
+
+      var issueVisibility = document.getElementById('issue-solved').checked ? 'on' : 'off';
+
       var vals = [
-        $('#issue-id').val(),
-        $('#issue-name').val(),
+        document.getElementById('issue-id').value,
+        document.getElementById('issue-name').value,
         issueVisibility,
-        $('#error-notice').val(),
-        $('#html').val(),
-        $('#explanation').val(),
+        document.getElementById('error-notice').value,
+        document.getElementById('html').value,
+        document.getElementById('explanation').value,
         checked.join(','),
         techs.join(','),
         places.join(','),
-        $('#memo').val()
+        document.getElementById('memo').value
       ];
 
       runOnce(
@@ -256,23 +258,27 @@
      * Change Criteria
      */
     function changeCriteria() {
-      $('#techs .tech-row').hide();
-      var checked = [];
-      $('.criteria-chk:checked').each(function() {
-        var classname = $(this).val().replace(/\./g, '_');
-        checked.push(classname);
+      var techniqueRows = document.querySelectorAll('#techs .tech-row');
+      var checked = Array.from(
+        document.querySelectorAll('.criteria-chk:checked')
+      ).map(function(input) {
+        return input.value.replace(/\./g, '_');
       });
+
       if (checked.length == 0) {
-        $('#techs .tech-row').show();
+        techniqueRows.forEach(function(row) {
+          row.style.display = '';
+        });
       } else {
-        for (var i = 0; i < checked.length; i++) {
-          $('#techs .'+checked[i]).show();
-        }
+        techniqueRows.forEach(function(row) {
+          row.style.display = checked.some(function(classname) {
+            return row.classList.contains(classname);
+          }) ? '' : 'none';
+        });
       }
     }
   </script>
   <?!= HtmlService.createHtmlOutputFromFile('ui-common').getContent(); ?>
-</head>
 <body style="padding-bottom: 4em;">
   <table style="width:95%;">
   <tr>
@@ -303,7 +309,7 @@
     <td style="position:relative;height:150px;"><div style="position:absolute;top:0;height:160px;overflow:auto;overflow-x:hidden;padding:5px;width:100%;"><table id="techs" style="width: 100%"></table></div></td>
   </tr>
   <tr>
-    <th><span id="places-title" data-i18n="places">Places</span><p><label><button onclick="$('.places').prop('checked', true)" id="all-page">Check All</button></label></p></th>
+    <th><span id="places-title" data-i18n="places">Places</span><p><button type="button" id="all-page">Check All</button></p></th>
     <td style="position:relative;height:150px;"><div style="position:absolute;top:0;height:160px;overflow:auto;overflow-x:hidden;padding:5px;width:100%;"><table id="places" style="width: 100%"></table></div></td>
   </tr>
   <tr>

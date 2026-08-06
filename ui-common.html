@@ -128,19 +128,24 @@ function showStatusAndFin(msg, buttonId) {
  * @return Void
  */
 function progressIndicator(buttonId, indicatorId, on) {
+  var button = document.getElementById(buttonId);
+  var indicator = indicatorId ? document.getElementById(indicatorId) : null;
+
   if (on) {
-    $('#'+buttonId).prop('disabled', true);
-    if (indicatorId) {
-      // var msg = Object.keys(lang.ui).length == 0 ? 'in progress' : lang.ui['in-progress'];
+    if (button) button.disabled = true;
+    if (indicator) {
       var msg = t('in-progress','in progress');
-      $('#'+indicatorId).show();
-      $('#'+indicatorId).html('<span class="skip">'+msg+'</span>');
+      var statusText = document.createElement('span');
+      statusText.className = 'skip';
+      statusText.textContent = msg;
+      indicator.replaceChildren(statusText);
+      indicator.style.display = '';
     }
   } else {
-    $('#'+buttonId).prop('disabled', false);
-    if (indicatorId) {
-      $('#'+indicatorId).hide();
-      $('#'+indicatorId).html('');
+    if (button) button.disabled = false;
+    if (indicator) {
+      indicator.style.display = 'none';
+      indicator.replaceChildren();
     }
   }
 }
@@ -154,24 +159,25 @@ function progressIndicator(buttonId, indicatorId, on) {
  * @returns {void}
  */
 function runOnce(buttonId, indicatorId, serverCall, timeoutMs) {
-  const $btn = $('#'+buttonId);
+  const button = document.getElementById(buttonId);
+  if (!button) return;
 
   // Prevent repeated clicks if the button is already busy
-  if ($btn.data('busy')) return;
+  if (button.dataset.busy === 'true') return;
 
-  $btn.data('busy', true);
+  button.dataset.busy = 'true';
   progressIndicator(buttonId, indicatorId, true);
 
   // Safety timeout in case the server never responds
   const TIMER = setTimeout(() => {
-    $btn.data('busy', false);
+    button.dataset.busy = 'false';
     progressIndicator(buttonId, indicatorId, false);
   }, timeoutMs || 10000);
 
   // Called when the server responds (success or failure)
   function done() {
     clearTimeout(TIMER);
-    $btn.data('busy', false);
+    button.dataset.busy = 'false';
     progressIndicator(buttonId, indicatorId, false);
   }
 

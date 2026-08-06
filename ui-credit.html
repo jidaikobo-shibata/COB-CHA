@@ -3,7 +3,6 @@
 <head>
   <base target="_top">
   <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
-  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 
   <script>
     window.I18N = <?!= JSON.stringify(getLangSet('ui')) ?> || {};
@@ -15,7 +14,7 @@
     /**
      * events
      */
-    $(function() {
+    document.addEventListener('DOMContentLoaded', function() {
       // localize
       applyI18n();
 
@@ -23,7 +22,7 @@
       google.script.run
         .withSuccessHandler(
           function(version) {
-                $('#cob-cha-version').html(version);
+            document.getElementById('cob-cha-version').textContent = version;
           })
         .getLangSet('version');
     });
