@@ -240,6 +240,24 @@ runCheck('Deprecated client dependencies', () => {
   }
 });
 
+runCheck('Unsafe dynamic HTML sinks', () => {
+  const sinkPattern = /(?:\.innerHTML\s*=|\.outerHTML\s*=|insertAdjacentHTML\s*\(|document\.write\s*\()/g;
+
+  for (const file of htmlFiles) {
+    let source = read(file);
+
+    // This one sink is intentional: only trusted, repository-owned translations
+    // referenced through data-i18n-html may contain markup.
+    if (file === 'ui-common.html') {
+      source = source.replace('el.innerHTML = dict[key];', '');
+    }
+
+    if (sinkPattern.test(source)) {
+      reportError('Unsafe dynamic HTML sinks', `${file}: dynamic HTML sink found`);
+    }
+  }
+});
+
 runCheck('clasp excludes maintenance tools', () => {
   const claspIgnore = read('.claspignore');
 

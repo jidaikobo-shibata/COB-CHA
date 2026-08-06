@@ -81,19 +81,31 @@
       applyButton.after(issueId);
 
       // criteria
-      var criteriaRows = [];
+      var criteriaFragment = document.createDocumentFragment();
       for (var i = 0; i < ret['usingCriteria'].length; i++) {
         var criterion = ret['usingCriteria'][i][1];
         var exp = ret['usingCriteria'][i][2];
         var idname = criterion.replace(/\./g, '_') + '-criterion';
-        criteriaRows.push(
-          '<tr>' +
-            '<td><input type="checkbox" class="criteria-chk" id="'+idname+'" value="'+criterion+'"></td>' +
-            '<td><label for="'+idname+'">'+criterion+': '+esc(exp)+'</label></td>' +
-          '</tr>'
-        );
+
+        var criteriaRow = document.createElement('tr');
+        var criteriaInputCell = document.createElement('td');
+        var criteriaLabelCell = document.createElement('td');
+        var criteriaInput = document.createElement('input');
+        var criteriaLabel = document.createElement('label');
+
+        criteriaInput.type = 'checkbox';
+        criteriaInput.className = 'criteria-chk';
+        criteriaInput.id = idname;
+        criteriaInput.value = criterion;
+        criteriaLabel.htmlFor = idname;
+        criteriaLabel.textContent = criterion+': '+exp;
+
+        criteriaInputCell.append(criteriaInput);
+        criteriaLabelCell.append(criteriaLabel);
+        criteriaRow.append(criteriaInputCell, criteriaLabelCell);
+        criteriaFragment.append(criteriaRow);
       }
-      document.getElementById('criteria').innerHTML = criteriaRows.join(''); // faster than append()
+      document.getElementById('criteria').replaceChildren(criteriaFragment);
 
       // techniques
       var techMap = Object.create(null);
@@ -101,41 +113,92 @@
         var c = ret['usingTechs'][j][0];
         (techMap[c] = techMap[c] || []).push(ret['usingTechs'][j]);
       }
-      var techRows = [];
+      var techFragment = document.createDocumentFragment();
       for (var i = 0; i < ret['usingCriteria'].length; i++) {
         var criteria  = ret['usingCriteria'][i][1];
         var classname = criteria.replace(/\./g, '_');
-        techRows.push('<tr class="'+classname+' tech-row"><th colspan="3">'+criteria+'</th></tr>');
+        var techHeadingRow = document.createElement('tr');
+        var techHeading = document.createElement('th');
+
+        techHeadingRow.classList.add(classname, 'tech-row');
+        techHeading.colSpan = 3;
+        techHeading.textContent = criteria;
+        techHeadingRow.append(techHeading);
+        techFragment.append(techHeadingRow);
+
         var list = techMap[criteria] || [];
         for (var k = 0; k < list.length; k++) {
           var each   = list[k][1];
           var for_id = classname + '-' + list[k][1] + '-' + k; // ensure uniqueness across criteria
           var label  = list[k][2];
-          techRows.push(
-            '<tr class="'+classname+' tech-row">' +
-              '<td><input type="checkbox" id="'+for_id+'" value="'+each+'"></td>' +
-              '<td><label for="'+for_id+'">'+each+': '+esc(label)+'</label></td>' +
-            '</tr>'
-          );
+
+          var techRow = document.createElement('tr');
+          var techInputCell = document.createElement('td');
+          var techLabelCell = document.createElement('td');
+          var techInput = document.createElement('input');
+          var techLabel = document.createElement('label');
+
+          techRow.classList.add(classname, 'tech-row');
+          techInput.type = 'checkbox';
+          techInput.id = for_id;
+          techInput.value = each;
+          techLabel.htmlFor = for_id;
+          techLabel.textContent = each+': '+label;
+
+          techInputCell.append(techInput);
+          techLabelCell.append(techLabel);
+          techRow.append(techInputCell, techLabelCell);
+          techFragment.append(techRow);
         }
       }
-      document.getElementById('techs').innerHTML = techRows.join('');
+      document.getElementById('techs').replaceChildren(techFragment);
 
       // places
-      var placeRows = [];
+      var placesFragment = document.createDocumentFragment();
       for (var i = 0; i < ret['allPlaces'].length; i++) {
         var place = ret['allPlaces'][i].url;
         var title = ret['allPlaces'][i].title;
         var idname = 'target-place-' + i;
-        placeRows.push(
-          '<tr>' +
-            '<td><input type="checkbox" id="'+idname+'" class="places" value="'+esc(place)+'"></td>' +
-            '<td><label for="'+idname+'">'+esc(title)+'</label></td>' +
-            '<td><a target="_blank" href="'+esc(place)+'"><span class="external-link-icon" aria-hidden="true">↗</span><span class="skip">Open '+esc(place)+'</span></a></td>' +
-          '</tr>'
-        );
+
+        var placeRow = document.createElement('tr');
+        var placeInputCell = document.createElement('td');
+        var placeLabelCell = document.createElement('td');
+        var placeLinkCell = document.createElement('td');
+        var placeInput = document.createElement('input');
+        var placeLabel = document.createElement('label');
+
+        placeInput.type = 'checkbox';
+        placeInput.id = idname;
+        placeInput.className = 'places';
+        placeInput.value = place;
+        placeLabel.htmlFor = idname;
+        placeLabel.textContent = title;
+
+        placeInputCell.append(placeInput);
+        placeLabelCell.append(placeLabel);
+
+        if (/^https?:\/\/[^\s]+$/i.test(place)) {
+          var placeLink = document.createElement('a');
+          var placeLinkIcon = document.createElement('span');
+          var placeLinkText = document.createElement('span');
+
+          placeLink.href = place;
+          placeLink.target = '_blank';
+          placeLink.rel = 'noopener noreferrer';
+          placeLinkIcon.className = 'external-link-icon';
+          placeLinkIcon.setAttribute('aria-hidden', 'true');
+          placeLinkIcon.textContent = '↗';
+          placeLinkText.className = 'skip';
+          placeLinkText.textContent = 'Open '+place;
+
+          placeLink.append(placeLinkIcon, placeLinkText);
+          placeLinkCell.append(placeLink);
+        }
+
+        placeRow.append(placeInputCell, placeLabelCell, placeLinkCell);
+        placesFragment.append(placeRow);
       }
-      document.getElementById('places').innerHTML = placeRows.join('');
+      document.getElementById('places').replaceChildren(placesFragment);
 
       // place: default
       var targetUrl = document.getElementById('target-url');
@@ -166,6 +229,9 @@
           if (vset.has(el.value)) el.checked = true;
         });
       })();
+
+      // Match the initial technique list to the restored criteria selection.
+      changeCriteria();
                   
       if ( ! ret['isEdit']) {
         // loading end
