@@ -4,6 +4,12 @@
   <base target="_top">
   <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
 
+  <style>
+    details[open] > :last-child {
+      margin-bottom: 0;
+    }
+  </style>
+
   <script>
     window.I18N = <?!= JSON.stringify(getLangSet('ui')) ?> || {};
     window.LANG = <?!= JSON.stringify(getProp('lang')) ?> || 'en';
