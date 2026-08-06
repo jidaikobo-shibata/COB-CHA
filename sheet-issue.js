@@ -230,6 +230,23 @@ function ensureGlobalIssueRules(sheet) {
 }
 
 /**
+ * Check whether an issue applies to a URL.
+ * @param {*} places
+ * @param {*} url
+ * @return {Bool}
+ */
+function issueAppliesToUrl(places, url) {
+  var normalizedPlaces = String(places || '').trim();
+  var normalizedUrl = String(url || '').trim();
+  if (normalizedPlaces == '' || normalizedUrl == '') return false;
+  if (normalizedPlaces.toLowerCase() == 'all') return true;
+
+  return normalizedPlaces.split(',').some(function(issueUrl) {
+    return issueUrl.trim() == normalizedUrl;
+  });
+}
+
+/**
  * set Issue list
  * @return Object
  */
@@ -254,10 +271,7 @@ function setIssueList() {
   var dataObj = issueSheet.getDataRange().getValues();
   var issues = [];
   for (var i = 1; i < dataObj.length; i++) {
-    var urls = dataObj[i][8].toString().split(',');
-    for (var j = 0; j < urls.length; j++) {
-      var issueurl = urls[j].trim();
-      if (issueurl != url) continue;
+    if (issueAppliesToUrl(dataObj[i][8], url)) {
       issues.push(dataObj[i]);
     }
   }

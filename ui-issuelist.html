@@ -4,6 +4,19 @@
   <base target="_top">
   <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
 
+  <style>
+    #issues li {
+      margin-bottom: 0.75em;
+    }
+
+    .issue-criteria {
+      color: #666;
+      display: block;
+      font-size: 0.9em;
+      margin-top: 0.15em;
+    }
+  </style>
+
   <script>
     // Embedding dictionaries and current languages ​​on the server
     window.I18N = <?!= JSON.stringify(getLangSet('ui')) ?> || {};
@@ -38,6 +51,23 @@
                   link.dataset.issueRow = row;
                   link.textContent = vals['issues'][i][0]+': '+vals['issues'][i][1];
                   item.append(link);
+
+                  var criteria = String(vals['issues'][i][6] || '')
+                    .split(',')
+                    .map(function(criterion) {
+                      return criterion.trim();
+                    })
+                    .filter(function(criterion) {
+                      return criterion != '';
+                    });
+                  if (criteria.length > 0) {
+                    var criteriaText = document.createElement('span');
+                    criteriaText.className = 'issue-criteria';
+                    criteriaText.textContent =
+                      t('criterion', 'Criteria')+': '+criteria.join(', ');
+                    item.append(criteriaText);
+                  }
+
                   issues.append(item);
                 }
               }

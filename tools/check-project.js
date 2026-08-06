@@ -138,6 +138,34 @@ runCheck('URL fetch helper behavior', () => {
   });
 });
 
+runCheck('Issue page matching behavior', () => {
+  const context = {};
+  vm.createContext(context);
+  vm.runInContext(read('sheet-issue.js'), context, {filename: 'sheet-issue.js'});
+
+  const targetUrl = 'https://example.com/page';
+  const cases = [
+    ['all', targetUrl, true],
+    [' ALL ', targetUrl, true],
+    [targetUrl, targetUrl, true],
+    [`https://example.com/other, ${targetUrl}`, targetUrl, true],
+    [`${targetUrl}, ${targetUrl}`, targetUrl, true],
+    ['https://example.com/other', targetUrl, false],
+    ['', targetUrl, false],
+    ['all', '', false]
+  ];
+
+  cases.forEach(([places, url, expected]) => {
+    const actual = context.issueAppliesToUrl(places, url);
+    if (actual !== expected) {
+      reportError(
+        'Issue page matching behavior',
+        `places="${places}", url="${url}": expected ${expected}, received ${actual}`
+      );
+    }
+  });
+});
+
 runCheck('UI inline JavaScript syntax', () => {
   for (const file of htmlFiles) {
     const scripts = extractInlineScripts(read(file));
