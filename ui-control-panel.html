@@ -8,6 +8,11 @@
     details[open] > :last-child {
       margin-bottom: 0;
     }
+
+    .lump-append-option {
+      margin: 0.5em 0 1em;
+      white-space: nowrap;
+    }
   </style>
 
   <script>
@@ -608,10 +613,12 @@
     </fieldset>
     <fieldset>
       <legend id="lump-edit" data-i18n="lump-edit">Lump Edit</legend>
-      <p style="margin-top:-5px;">
+      <p style="margin: -5px 0 0;">
         <label for="lump-pos-row" id="label-lump-pos-row" data-i18n="pos-row">X</label>: <input type="text" size="2" id="lump-pos-row">
         <label for="lump-pos-col" id="label-lump-pos-col" data-i18n="pos-col">Y</label>: <input type="text" size="2" id="lump-pos-col">
         <label for="lump-val" id="label-lump-val" data-i18n="value">Val</label>: <input type="text" size="5" id="lump-val">
+      </p>
+      <p class="lump-append-option">
         <input type="checkbox" id="lump-is_append" checked="checked"> <label for="lump-is_append" id="label-lump-is_append" data-i18n="lump-is_append">Append not overwrite</label>
         <span role="status" aria-live="polite" class="progress-indicator" id="progress-get-current-pos"></span>
         <span role="status" aria-live="polite" class="progress-indicator" id="progress-do-lump-edit"></span>
