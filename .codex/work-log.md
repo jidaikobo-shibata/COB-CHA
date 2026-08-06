@@ -327,3 +327,23 @@ node tools/check-project.js
 ### 次にやるとよいこと
 
 - 必要に応じてGitHubへpushする。
+
+## 2026-08-06 Marketplace版バージョン55公開
+
+### 何をしたか
+
+- `getVersion()` を55に更新したApps Script版をGoogle Workspace Marketplaceへ公開した。
+- 公開前に主要機能、Issue関連の修正、コントロールパネルの表示を実環境で確認した。
+- 公開対象のソースをApps ScriptとGitHubの `main` へ反映し、ローカル・GitHub間の同期とcleanな作業ツリーを確認した。
+
+### なぜそうしたか
+
+- Marketplaceで配布する安定版と、Apps Script・GitHub上のソース状態を一致させるため。
+
+### 未完了の事項
+
+- なし。
+
+### 次にやるとよいこと
+
+- 次回の変更時はバージョン55を公開済みの基準点として扱う。
