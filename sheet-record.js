@@ -240,7 +240,7 @@ function generateUrlsSheetValues(urlsVals, sheet, sheetname, isNew) {
 function getSheets() {
   var allSheets = getAllSheets()
   var str = '';
-  for (i = 0; i < allSheets.length; i++) {
+  for (var i = 0; i < allSheets.length; i++) {
     var sheetname = String(allSheets[i].getName());
     str = str+sheetname+"\n";
   }

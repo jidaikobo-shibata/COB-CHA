@@ -405,10 +405,10 @@ function getUsingTechs() {
   var usingCriteria = getUsingCriteria();
   var usingTechs = [];
 
-  for (i = 0; i < usingCriteria.length; i++) {
+  for (var i = 0; i < usingCriteria.length; i++) {
     var criteria = usingCriteria[i][1];
     if (gRelTechsAndCriteria[criteria] == null) continue;
-    for (j = 0; j < gRelTechsAndCriteria[criteria].length; j++) {
+    for (var j = 0; j < gRelTechsAndCriteria[criteria].length; j++) {
       var each = gRelTechsAndCriteria[criteria][j];
 
       usingTechs.push([criteria, gRelTechsAndCriteria[criteria][j], techNames[each]]);
@@ -693,7 +693,8 @@ function generateSheetIfNotExists(sheetName, defaults, header) {
  */
 function generateSheetEvenIfAlreadyExists(sheetName) {
   var ss = getSpreadSheet();
-  if (targetSheet = getSheetIfExists(sheetName)) {
+  var targetSheet = getSheetIfExists(sheetName);
+  if (targetSheet) {
     ss.deleteSheet(targetSheet);
   }
   var sheet = ss.insertSheet(sheetName, 0);

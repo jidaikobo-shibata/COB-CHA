@@ -66,6 +66,31 @@ runCheck('GAS JavaScript syntax', () => {
   }
 });
 
+runCheck('No implicit loop globals or condition assignments', () => {
+  const implicitLoopPattern = /\bfor\s*\(\s*[A-Za-z_$][\w$]*\s*=/;
+  const conditionAssignmentPattern = /\b(?:if|while)\s*\([^)]*[^=!<>]=[^=]/;
+
+  for (const file of jsFiles) {
+    const lines = read(file).split(/\r?\n/);
+
+    lines.forEach((line, index) => {
+      if (implicitLoopPattern.test(line)) {
+        reportError(
+          'No implicit loop globals or condition assignments',
+          `${file}:${index + 1}: loop counter must be declared`
+        );
+      }
+
+      if (conditionAssignmentPattern.test(line)) {
+        reportError(
+          'No implicit loop globals or condition assignments',
+          `${file}:${index + 1}: assignment inside condition`
+        );
+      }
+    });
+  }
+});
+
 runCheck('URL fetch helper behavior', () => {
   const context = {};
   vm.createContext(context);

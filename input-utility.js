@@ -67,7 +67,7 @@ function applyScTemplate() {
   var msg = getUiLang('caution-using-template', 'CAUTION: All result will be overwritten.');
   if(showConfirm(msg) != "OK") return getUiLang('canceled', 'canceled');
 
-  for (i = 0; i < allSheets.length; i++) {
+  for (var i = 0; i < allSheets.length; i++) {
     if (String(allSheets[i].getName()).charAt(0) == '*') continue;
     tpl.getRange(5, 1, tpl.getLastRow() - 4, 6).copyTo(allSheets[i].getRange(5, 1));
     n++;
@@ -75,6 +75,7 @@ function applyScTemplate() {
 
   return getUiLang('sheet-edited', '%s sheet(s) edited.').replace("%s", n);
 }
+
 
 /**
  * Find first empty row
@@ -401,4 +402,3 @@ function doApplyTargetIclToSc() {
 
   return getUiLang('sheet-edited', '%s sheet(s) edited.').replace("%s", n);
 }
-
