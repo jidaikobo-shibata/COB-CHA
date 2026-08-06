@@ -179,15 +179,25 @@
 
         if (/^https?:\/\/[^\s]+$/i.test(place)) {
           var placeLink = document.createElement('a');
-          var placeLinkIcon = document.createElement('span');
+          var svgNamespace = 'http://www.w3.org/2000/svg';
+          var placeLinkIcon = document.createElementNS(svgNamespace, 'svg');
+          var placeLinkBox = document.createElementNS(svgNamespace, 'path');
+          var placeLinkArrow = document.createElementNS(svgNamespace, 'path');
           var placeLinkText = document.createElement('span');
 
           placeLink.href = place;
           placeLink.target = '_blank';
           placeLink.rel = 'noopener noreferrer';
-          placeLinkIcon.className = 'external-link-icon';
+          placeLinkIcon.setAttribute('class', 'external-link-icon');
+          placeLinkIcon.setAttribute('viewBox', '0 0 24 24');
+          placeLinkIcon.setAttribute('focusable', 'false');
           placeLinkIcon.setAttribute('aria-hidden', 'true');
-          placeLinkIcon.textContent = '↗';
+          placeLinkBox.setAttribute(
+            'd',
+            'M19 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h6'
+          );
+          placeLinkArrow.setAttribute('d', 'M14 3h7v7M10 14 21 3');
+          placeLinkIcon.append(placeLinkBox, placeLinkArrow);
           placeLinkText.className = 'skip';
           placeLinkText.textContent = 'Open '+place;
 
