@@ -1,5 +1,6 @@
 **/.serena/**
 **/.codex/**
+**/tools/**
 AGENTS.md
 **/.git/**
 **/node_modules/**

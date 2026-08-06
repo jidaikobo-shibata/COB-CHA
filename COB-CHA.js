@@ -421,29 +421,58 @@ function getUsingTechs() {
 }
 
 /**
+ * Normalize a URL for UrlFetchApp.
+ * @param {*} url
+ * @return {String}
+ */
+function normalizeFetchUrl(url) {
+  var normalized = String(url || '').trim();
+  if (normalized.length > 2082) return '';
+  if ( ! /^https?:\/\/[^\s]+$/i.test(normalized)) return '';
+  return normalized;
+}
+
+/**
+ * Extract a normalized title from HTML.
+ * @param {*} html
+ * @return {String}
+ */
+function extractHtmlTitle(html) {
+  var match = String(html || '').match(/<title\b[^>]*>([\s\S]*?)<\/title>/i);
+  if ( ! match) return '';
+  return match[1].replace(/\s+/g, ' ').trim();
+}
+
+/**
  * Get HTML and its title
  * @param String url
  * @return Object
  */
 function getHtmlAndTitle(url) {
   var ret = {'title': '', 'html': ''};
-  if (url.indexOf('http') < 0) {
-    return ret;
-  }
+  var targetUrl = normalizeFetchUrl(url);
+  if (targetUrl == '') return ret;
 
   var options = {
     "muteHttpExceptions" : true,
-    "validateHttpsCertificates" : false,
-    "followRedirects" : false,
+    "validateHttpsCertificates" : true,
+    "followRedirects" : true,
   }
 
   try {
-    var res = UrlFetchApp.fetch(url, options).getContentText();
-    res = res == '' ? UrlFetchApp.fetch(url+'/', options).getContentText() : res;
-    var title = res.match(/<title>.+?<\/title>/ig);
-    title = String(title).replace(/<\/*title>/ig, '');
-    title = title == null ? '' : title;
-    return {'title': title, 'html': res};
+    var response = UrlFetchApp.fetch(targetUrl, options);
+    var status = response.getResponseCode();
+    if (status < 200 || status >= 300) return ret;
+
+    var html = response.getContentText();
+    if (html == '' && targetUrl.charAt(targetUrl.length - 1) != '/') {
+      response = UrlFetchApp.fetch(targetUrl+'/', options);
+      status = response.getResponseCode();
+      if (status < 200 || status >= 300) return ret;
+      html = response.getContentText();
+    }
+
+    return {'title': extractHtmlTitle(html), 'html': html};
   } catch(e) {
     return ret;
   }
