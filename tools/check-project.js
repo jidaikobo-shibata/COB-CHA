@@ -164,6 +164,56 @@ runCheck('Spreadsheet formula injection protection', () => {
   });
 });
 
+runCheck('Record sheet duplication behavior', () => {
+  const context = {};
+  const written = {};
+  const fakeSheet = {
+    getRange(row, col) {
+      return {
+        setValue(value) {
+          written[`${row},${col}`] = value;
+        }
+      };
+    }
+  };
+
+  vm.createContext(context);
+  vm.runInContext(read('COB-CHA.js'), context, {filename: 'COB-CHA.js'});
+  vm.runInContext(read('sheet-record.js'), context, {filename: 'sheet-record.js'});
+  context.setRecordSheetPageData(fakeSheet, 'https://example.com/', {
+    title: '=unsafe title',
+    html: '<html>Example</html>'
+  });
+
+  const expected = {
+    '1,2': 'https://example.com/',
+    '1,6': "'=unsafe title",
+    '3,2': '<html>Example</html>'
+  };
+  Object.entries(expected).forEach(([cell, value]) => {
+    if (written[cell] !== value) {
+      reportError(
+        'Record sheet duplication behavior',
+        `cell ${cell}: expected "${value}", received "${written[cell]}"`
+      );
+    }
+  });
+
+  const source = read('sheet-record.js');
+  if (!source.includes('addSheet(targetSheetname, templateSheet);')) {
+    reportError(
+      'Record sheet duplication behavior',
+      'new record sheets must be created from the reusable template sheet'
+    );
+  }
+  if (source.includes('lastSheetKey')) {
+    reportError(
+      'Record sheet duplication behavior',
+      'unreachable lastSheetKey loop must not be restored'
+    );
+  }
+});
+
 runCheck('Issue page matching behavior', () => {
   const context = {};
   vm.createContext(context);

@@ -28,6 +28,7 @@ function getPulldownMenu() {
  */
 function generateSheets(urlstr, lang, testType, level, targetId) {
   var ss = getSpreadSheet();
+  var returnSheet = ss.getActiveSheet();
 
   // Generate "SC template sheet" or "Webpage sheet"
   // SC template sheet
@@ -47,7 +48,16 @@ function generateSheets(urlstr, lang, testType, level, targetId) {
     };
     var urlListSheet = ss.getSheetByName(gUrlListSheetName);
     var lastRow = urlListSheet.getLastRow();
+    if (lastRow < 2) return {
+      'msg': getUiLang('no-target-page-exists', "No target Page Exists"),
+      'targetId': targetId
+    };
     var urls = urlListSheet.getRange(2, 1, lastRow - 1, 3).getValues();
+
+    // Ignore unused rows in the URL list.
+    urls = urls.filter(function(row) {
+      return row[1].toString().trim() != '';
+    });
     
     // sheetname check - check not a number
     var nanFound = false;
@@ -64,7 +74,7 @@ function generateSheets(urlstr, lang, testType, level, targetId) {
   }
 
   // Error: No URLs exist
-  if (urls.length == 1 && urls[0][0] == '') return {
+  if (urls.length == 0) return {
     'msg': getUiLang('no-target-page-exists', "No target Page Exists"),
     'targetId': targetId
   };
@@ -73,63 +83,63 @@ function generateSheets(urlstr, lang, testType, level, targetId) {
   var alreadyExists = [];
   var added = 0;
   var urlsVals = [];
-  
-  // generate a originalsheet
-  for(var i = 0; i < urls.length; i++) {
+  var templateSheet = null;
+
+  for (var i = 0; i < urls.length; i++) {
     var targetSheetname = urls[i][0].toString().trim();
     var targetUrl = urls[i][1].toString().trim();
-    if (targetUrl == "") continue;
-    
+
     // check already exists. just add values for update URL Sheet and continue
-    if (addSheet(targetSheetname) == false) {
+    if (ss.getSheetByName(targetSheetname)) {
       alreadyExists.push(targetUrl.toString());
-      urlsVals = generateUrlsSheetValues(urlsVals, ss.getSheetByName(targetSheetname), targetSheetname, false)
+      urlsVals = generateUrlsSheetValues(
+        urlsVals,
+        ss.getSheetByName(targetSheetname),
+        targetSheetname,
+        false
+      );
       continue;
     }
-    
-    // generate a originalsheet
+
+    // Build the first new sheet normally, then duplicate it for remaining pages.
+    addSheet(targetSheetname, templateSheet);
+    var targetSheet = ss.getSheetByName(targetSheetname);
     var isEvaluateTarget = targetSheetname.charAt(0) != '*';
-    var originalSheet = ss.getActiveSheet();
     var res = isEvaluateTarget ? getHtmlAndTitle(targetUrl) : {'title':targetUrl, 'html':''};
-    
-    originalSheet = generateASheet(testType, originalSheet, targetUrl, res, targetSheetname, isEvaluateTarget);
-    urlsVals = generateUrlsSheetValues(urlsVals, originalSheet, targetSheetname, true);
-    added++;
-  }
-  var lastSheetKey = i;
-  
-  // copy sheets from originalsheet - copying seems faster than generate
-  if (urlstr !== gScTplSheetName && urls.length > 1) {
-    for(var i = lastSheetKey; i < urls.length; i++) {
-      var eachSheet = urls[i][1].toString().trim(); 
-      if (eachSheet == '') continue;
-      if (addSheet(urls[i][0], originalSheet) == false) {
-        alreadyExists.push(eachSheet);
-        urlsVals = generateUrlsSheetValues(urlsVals, ss.getSheetByName(urls[i][0]), urls[i][0], false);
-        continue;
-      }
-      res = getHtmlAndTitle(eachSheet);
-      var activeSheet = ss.getActiveSheet();
-      activeSheet.getRange(2, 2).setValue(eachSheet);
-      activeSheet.getRange(3, 2).setValue(toPlainTextCellValue(res['title']));
-      activeSheet.getRange(3, 2).setValue(
-        toPlainTextCellValue(res['html'].substring(0, 45000))
+
+    if (templateSheet == null) {
+      generateASheet(
+        testType,
+        targetSheet,
+        targetUrl,
+        res,
+        targetSheetname,
+        isEvaluateTarget
       );
-      urlsVals = generateUrlsSheetValues(urlsVals, activeSheet, urls[i][0], true);
-      added++;
+      templateSheet = targetSheet;
+    } else {
+      setRecordSheetPageData(targetSheet, targetUrl, res);
     }
+
+    urlsVals = generateUrlsSheetValues(
+      urlsVals,
+      targetSheet,
+      targetSheetname,
+      true
+    );
+    added++;
   }
 
   // update url list sheet
-  if (urlstr !== gScTplSheetName) {
+  if (urlstr !== gScTplSheetName && urlsVals.length > 0) {
     urlListSheet.getRange(2, 1, urlsVals.length, urlsVals[0].length).setValues(urlsVals);
   }
   
   // clean up
   deleteFallbacksheet();
   
-  // return to original sheet
-  originalSheet.activate();
+  // return to the sheet that was active before generation
+  returnSheet.activate();
   
   var msg = [];
   msg.push(getUiLang('sheet-generated', "%s sheet(s) generated").replace('%s', added));
@@ -153,18 +163,13 @@ function generateSheets(urlstr, lang, testType, level, targetId) {
 function generateASheet(testType, sheet, targetUrl, res, sheetname, isEvaluateTarget) {
   var today = new Date();
   sheet.getRange(1, 1).setValue('URL').setBackground(gLabelColor);
-  sheet.getRange(1, 2).setValue(targetUrl);
   sheet.getRange(1, 5).setValue('Title').setBackground(gLabelColor);
-  sheet.getRange(1, 6).setValue(toPlainTextCellValue(res['title']));
   sheet.getRange(2, 1).setValue(getUiLang('date', 'Date')).setBackground(gLabelColor);
   sheet.getRange(2, 2).setValue(Utilities.formatDate(today, "JST", "yyyy/MM/dd"));
   sheet.getRange(2, 3).setValue(getUiLang('tester', 'Tester')).setBackground(gLabelColor);
   sheet.getRange(2, 5).setValue(getUiLang('memo', 'Memo')).setBackground(gLabelColor);
   sheet.getRange(3, 1).setValue('HTML').setBackground(gLabelColor);
-  // Google Spreadsheet allows 50000 characters per cell.
-  sheet.getRange(3, 2).setValue(
-    toPlainTextCellValue(res['html'].substring(0, 45000))
-  );
+  setRecordSheetPageData(sheet, targetUrl, res);
   sheet.hideRow(sheet.getRange(3, 1));
   sheet.setFrozenRows(2);
   
@@ -219,6 +224,22 @@ function generateASheet(testType, sheet, targetUrl, res, sheetname, isEvaluateTa
   setRowConditionNotYet(sheet, range, "=$B5=\"\"");
   
   return sheet;
+}
+
+/**
+ * Set values that differ between duplicated record sheets.
+ * @param Object sheet
+ * @param String targetUrl
+ * @param Object res
+ * @return Void
+ */
+function setRecordSheetPageData(sheet, targetUrl, res) {
+  sheet.getRange(1, 2).setValue(targetUrl);
+  sheet.getRange(1, 6).setValue(toPlainTextCellValue(res['title']));
+  // Google Spreadsheet allows 50000 characters per cell.
+  sheet.getRange(3, 2).setValue(
+    toPlainTextCellValue(res['html'].substring(0, 45000))
+  );
 }
 
 /**
