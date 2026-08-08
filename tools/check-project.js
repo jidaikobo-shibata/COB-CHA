@@ -324,6 +324,62 @@ runCheck('Record criteria batch write behavior', () => {
   }
 });
 
+runCheck('ICL evaluation batch behavior', () => {
+  const context = {};
+  vm.createContext(context);
+  vm.runInContext(read('sheet-icl.js'), context, {filename: 'sheet-icl.js'});
+
+  const firstRow = context.findIclFirstResultRow([
+    ['URL'],
+    ['Date'],
+    ['HTML'],
+    ['Criterion'],
+    [''],
+    ['ICL-1']
+  ]);
+  if (firstRow !== 6) {
+    reportError(
+      'ICL evaluation batch behavior',
+      `expected first ICL result row 6, received ${firstRow}`
+    );
+  }
+  if (context.findIclFirstResultRow([['A'], ['B']]) !== 0) {
+    reportError(
+      'ICL evaluation batch behavior',
+      'missing ICL separator must return 0'
+    );
+  }
+
+  const rows = Array.from(
+    context.transposeIclResultColumns([
+      [['o'], ['x'], ['-']],
+      [['x'], ['o'], ['']]
+    ]),
+    (row) => Array.from(row)
+  );
+  const expected = [['o', 'x'], ['x', 'o'], ['-', '']];
+  if (JSON.stringify(rows) !== JSON.stringify(expected)) {
+    reportError(
+      'ICL evaluation batch behavior',
+      `expected ${JSON.stringify(expected)}, received ${JSON.stringify(rows)}`
+    );
+  }
+
+  const source = read('sheet-icl.js');
+  if (!source.includes('.setValues(resultRows);')) {
+    reportError(
+      'ICL evaluation batch behavior',
+      'ICL result matrix must be written with one setValues call'
+    );
+  }
+  if (source.includes('.copyTo(iclSheet.getRange(2, col)')) {
+    reportError(
+      'ICL evaluation batch behavior',
+      'per-page destination copy must not be restored'
+    );
+  }
+});
+
 runCheck('Issue page matching behavior', () => {
   const context = {};
   vm.createContext(context);

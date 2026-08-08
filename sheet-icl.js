@@ -31,6 +31,37 @@ function getIclApplyPulldownMenu() {
 }
 
 /**
+ * Find the first ICL result row after the blank separator in column A.
+ * @param Array firstColumnValues
+ * @return Number
+ */
+function findIclFirstResultRow(firstColumnValues) {
+  for (var i = 0; i < firstColumnValues.length; i++) {
+    if (firstColumnValues[i][0] == '') return i + 2;
+  }
+  return 0;
+}
+
+/**
+ * Convert per-page result columns into rows for one setValues call.
+ * @param Array resultColumns
+ * @return Array
+ */
+function transposeIclResultColumns(resultColumns) {
+  if (resultColumns.length == 0) return [];
+  var rowCount = resultColumns[0].length;
+  var rows = [];
+  for (var row = 0; row < rowCount; row++) {
+    var values = [];
+    for (var col = 0; col < resultColumns.length; col++) {
+      values.push(resultColumns[col][row][0]);
+    }
+    rows.push(values);
+  }
+  return rows;
+}
+
+/**
  * Generate ICL Sheets
  * @param String iclType
  * @param String type
@@ -200,35 +231,56 @@ function evaluateIcl(lang, testType, level) {
   if (allSheets.length == 0) {
      throw new Error(getUiLang('no-target-page-exists', "No Target Page Exists."));
   }
-  allSheets[0].activate();
-  var iclFirstRow = 1;
-  while (allSheets[0].getRange(iclFirstRow, 1).getValue() != '') {
-    iclFirstRow++;
-  }
-  iclFirstRow++;
   var iclLastRow = allSheets[0].getLastRow();
-  var rows = iclLastRow - iclFirstRow;
+  var firstColumnValues = allSheets[0]
+    .getRange(1, 1, iclLastRow, 1)
+    .getValues();
+  var iclFirstRow = findIclFirstResultRow(firstColumnValues);
+  if (iclFirstRow == 0 || iclFirstRow > iclLastRow) {
+    throw new Error(getUiLang('error-no-icl-found', "Error: ICL template was not found."));
+  }
+  var resultRowCount = iclLastRow - iclFirstRow + 1;
   iclSheet.activate();
 
-  // copy value
-  var col = 6;
-
+  // Read one result column from each page, then write the matrix once.
+  var headers = [];
+  var targetUrls = [];
+  var resultColumns = [];
   for (var i = 0; i < allSheets.length; i++) {
     var eachSheetName = allSheets[i].getName();
-    if (eachSheetName.charAt(0) == '*') continue;
-    var targetUrl = getUrlFromSheet(allSheets[i]);
-    iclSheet.getRange(1, col).setValue('=HYPERLINK("#gid='+allSheets[i].getSheetId()+'","'+eachSheetName+'")');
-    iclSheet.getRange(1, col).setComment(targetUrl);
-    iclSheet.setColumnWidth(col, 40)
-    allSheets[i].getRange(iclFirstRow, 2, rows + 1, 1).copyTo(iclSheet.getRange(2, col), {contentsOnly:true});
-    iclSheet.getRange(1, col, iclSheet.getLastRow(), 1).setHorizontalAlignment('center');
-    col++;
+    headers.push(
+      '=HYPERLINK("#gid=' + allSheets[i].getSheetId() + '","' +
+      eachSheetName + '")'
+    );
+    targetUrls.push(getUrlFromSheet(allSheets[i]));
+    resultColumns.push(
+      allSheets[i]
+        .getRange(iclFirstRow, 2, resultRowCount, 1)
+        .getValues()
+    );
   }
+
+  var firstResultCol = 6;
+  var pageCount = allSheets.length;
+  var headerRange = iclSheet.getRange(1, firstResultCol, 1, pageCount);
+  headerRange.setValues([headers]);
+  for (var i = 0; i < pageCount; i++) {
+    headerRange.getCell(1, i + 1).setComment(targetUrls[i]);
+  }
+  iclSheet.setColumnWidths(firstResultCol, pageCount, 40);
+
+  var resultRows = transposeIclResultColumns(resultColumns);
+  iclSheet
+    .getRange(2, firstResultCol, resultRowCount, pageCount)
+    .setValues(resultRows);
+  iclSheet
+    .getRange(1, firstResultCol, iclSheet.getLastRow(), pageCount)
+    .setHorizontalAlignment('center');
 
   var mark = getProp('mark');
   var mT = mark[2];
   var mF = mark[3];
-  var range = iclSheet.getRange(5, 6, rows + 1, allSheets.length);
+  var range = iclSheet.getRange(5, firstResultCol, resultRowCount, pageCount);
   setCellConditionTF(iclSheet, range, mT, mF)
  
   return getUiLang('target-sheet-generated', "Generate Target Sheet (%s).").replace('%s', gIclSheetName);
