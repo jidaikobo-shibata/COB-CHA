@@ -18,6 +18,17 @@ function getPulldownMenu() {
 }
 
 /**
+ * Build record-sheet rows for a single batch write.
+ * @param Array usingCriteria
+ * @return Array
+ */
+function getRecordCriteriaRows(usingCriteria) {
+  return usingCriteria.map(function(criterion) {
+    return [criterion[1], '', criterion[0]];
+  });
+}
+
+/**
  * Generate Sheets
  * @param String urlstr
  * @param String lang
@@ -174,14 +185,15 @@ function generateASheet(testType, sheet, targetUrl, res, sheetname, isEvaluateTa
   sheet.setFrozenRows(2);
   
   // header
-  if (testType == 'tt20') {
-    sheet.getRange(4, 1).setValue(getUiLang('test-id', 'Test ID')).setBackground(gLabelColor);
-  } else {
-    sheet.getRange(4, 1).setValue(getUiLang('criterion', 'Criterion')).setBackground(gLabelColor);
-  }
-  sheet.getRange(4, 2).setValue(getUiLang('check', 'Check'));
-  sheet.getRange(4, 3).setValue(getUiLang('level', 'Level'));
-  sheet.getRange(4, 4).setValue(getUiLang('memo', 'Memo'));
+  var firstHeader = testType == 'tt20'
+    ? getUiLang('test-id', 'Test ID')
+    : getUiLang('criterion', 'Criterion');
+  sheet.getRange(4, 1, 1, 4).setValues([[
+    firstHeader,
+    getUiLang('check', 'Check'),
+    getUiLang('level', 'Level'),
+    getUiLang('memo', 'Memo')
+  ]]);
   sheet.getRange("4:4").setBackground(gLabelColorDark).setFontColor(gLabelColorDarkText).setFontWeight('bold');
   
   // appearance
@@ -195,33 +207,26 @@ function generateASheet(testType, sheet, targetUrl, res, sheetname, isEvaluateTa
   
   // test type
   var usingCriteria = getUsingCriteria();
-  
-  // each row
-  var row = 5;
+  var criteriaRows = getRecordCriteriaRows(usingCriteria);
+  var criteriaRange = sheet.getRange(5, 1, criteriaRows.length, 3);
+  criteriaRange.setValues(criteriaRows).setHorizontalAlignment('center');
+
+  var checkRange = sheet.getRange(5, 2, criteriaRows.length, 1);
+  checkRange.setDataValidation(getPulldownMenu());
   for (var j = 0; j < usingCriteria.length; j++) {
-    if (testType == 'tt20') {
-      sheet.getRange(row, 1).setValue(usingCriteria[j][1]).setHorizontalAlignment('center');
-    } else {
-//      sheet.getRange(row, 1).setValue('=HYPERLINK("'+usingCriteria[j][5]+'", "'+usingCriteria[j][1]+'")').setHorizontalAlignment('center');
-      sheet.getRange(row, 1).setValue(usingCriteria[j][1]).setHorizontalAlignment('center');
-    }
-    sheet.getRange(row, 2).setDataValidation(getPulldownMenu()).setHorizontalAlignment('center').setComment(usingCriteria[j][2]);
-    sheet.getRange(row, 3).setValue(usingCriteria[j][0]).setHorizontalAlignment('center');
-    row++;
+    checkRange.getCell(j + 1, 1).setComment(usingCriteria[j][2]);
   }
   
   // mark
   var mark = getProp('mark');
   var mT = mark[2];
   var mF = mark[3];
-  var mD = mark[1];
 
   // conditioned cell
   var range = sheet.getRange("B:B");
   setCellConditionTF(sheet, range, mT, mF); // see sheet-result.gs
   
-  var range = sheet.getRange(5, 1, sheet.getLastRow() - 4, 3);
-  setRowConditionNotYet(sheet, range, "=$B5=\"\"");
+  setRowConditionNotYet(sheet, criteriaRange, "=$B5=\"\"");
   
   return sheet;
 }

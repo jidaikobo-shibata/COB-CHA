@@ -214,6 +214,44 @@ runCheck('Record sheet duplication behavior', () => {
   }
 });
 
+runCheck('Record criteria batch write behavior', () => {
+  const context = {};
+  vm.createContext(context);
+  vm.runInContext(read('sheet-record.js'), context, {filename: 'sheet-record.js'});
+
+  const rows = Array.from(
+    context.getRecordCriteriaRows([
+      ['A', '1.1.1', 'Criterion one'],
+      ['AA', '1.2.1', 'Criterion two']
+    ]),
+    (row) => Array.from(row)
+  );
+  const expected = [
+    ['1.1.1', '', 'A'],
+    ['1.2.1', '', 'AA']
+  ];
+  if (JSON.stringify(rows) !== JSON.stringify(expected)) {
+    reportError(
+      'Record criteria batch write behavior',
+      `expected ${JSON.stringify(expected)}, received ${JSON.stringify(rows)}`
+    );
+  }
+
+  const source = read('sheet-record.js');
+  if (!source.includes('criteriaRange.setValues(criteriaRows)')) {
+    reportError(
+      'Record criteria batch write behavior',
+      'record criteria must be written with one setValues call'
+    );
+  }
+  if (source.includes('sheet.getRange(row, 1).setValue')) {
+    reportError(
+      'Record criteria batch write behavior',
+      'per-row criterion value writes must not be restored'
+    );
+  }
+});
+
 runCheck('Issue page matching behavior', () => {
   const context = {};
   vm.createContext(context);
