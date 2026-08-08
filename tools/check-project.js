@@ -98,6 +98,8 @@ runCheck('URL fetch helper behavior', () => {
 
   const validUrls = [
     'https://example.com/',
+    'https://example.com:443/',
+    'https://8.8.8.8/',
     'http://example.com/path?key=value',
     '  https://example.com/trimmed  '
   ];
@@ -106,7 +108,19 @@ runCheck('URL fetch helper behavior', () => {
     'javascript:http://example.com',
     'data:text/html,http://example.com',
     'ftp://example.com/',
-    'https://example.com/has space'
+    'https://example.com/has space',
+    'http://localhost/',
+    'http://127.0.0.1/',
+    'http://10.0.0.1/',
+    'http://169.254.169.254/',
+    'http://192.168.1.1/',
+    'http://2130706433/',
+    'http://0177.0.0.1/',
+    'http://0x7f.0.0.1/',
+    'http://999.1.1.1/',
+    'http://[::1]/',
+    'http://intranet/',
+    'http://user:password@example.com/'
   ];
 
   validUrls.forEach((url) => {
@@ -136,6 +150,64 @@ runCheck('URL fetch helper behavior', () => {
       );
     }
   });
+
+  const redirectCases = [
+    ['https://example.com/a/page', '/next', 'https://example.com/next'],
+    ['https://example.com/a/page', '../next', 'https://example.com/next'],
+    ['https://example.com/a/page', '?next=1', 'https://example.com/a/page?next=1'],
+    ['https://example.com/a/page', '//other.example/path', 'https://other.example/path'],
+    ['https://example.com/a/page', 'http://127.0.0.1/', '']
+  ];
+  redirectCases.forEach(([base, location, expected]) => {
+    const actual = context.resolveFetchRedirectUrl(base, location);
+    if (actual !== expected) {
+      reportError(
+        'URL fetch helper behavior',
+        `redirect "${location}": expected "${expected}", received "${actual}"`
+      );
+    }
+  });
+
+  function fakeResponse(status, headers, content) {
+    return {
+      getResponseCode: () => status,
+      getHeaders: () => headers,
+      getContentText: () => content
+    };
+  }
+
+  const responses = [
+    fakeResponse(302, {Location: '/final'}, ''),
+    fakeResponse(200, {'Content-Type': 'text/html; charset=UTF-8'}, '<title>Final</title>')
+  ];
+  const requests = [];
+  context.UrlFetchApp = {
+    fetch(url, options) {
+      requests.push({url, options});
+      return responses.shift();
+    }
+  };
+  const fetched = context.getHtmlAndTitle('https://example.com/start');
+  if (fetched.title !== 'Final' || requests.length !== 2) {
+    reportError(
+      'URL fetch helper behavior',
+      'validated redirect was not fetched successfully'
+    );
+  }
+  if (
+    requests[0].options.followRedirects !== false ||
+    requests[0].options.timeoutSeconds !== 30
+  ) {
+    reportError(
+      'URL fetch helper behavior',
+      'fetch must disable automatic redirects and use a bounded timeout'
+    );
+  }
+
+  const nonHtml = fakeResponse(200, {'Content-Type': 'application/pdf'}, '%PDF');
+  if (context.isHtmlFetchResponse(nonHtml)) {
+    reportError('URL fetch helper behavior', 'non-HTML response was accepted');
+  }
 });
 
 runCheck('Spreadsheet formula injection protection', () => {

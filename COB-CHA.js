@@ -431,7 +431,149 @@ function normalizeFetchUrl(url) {
   var normalized = String(url || '').trim();
   if (normalized.length > 2082) return '';
   if ( ! /^https?:\/\/[^\s]+$/i.test(normalized)) return '';
+  var parts = getHttpUrlParts(normalized);
+  if (!parts || !isAllowedFetchHostname(parts.hostname)) return '';
   return normalized;
+}
+
+/**
+ * Parse the parts needed to validate and resolve an HTTP(S) URL.
+ * @param String url
+ * @return Object|null
+ */
+function getHttpUrlParts(url) {
+  var match = String(url || '').match(
+    /^(https?):\/\/([^\/?#]+)([^?#]*)(\?[^#]*)?(?:#.*)?$/i
+  );
+  if (!match || match[2].indexOf('@') >= 0 || match[2].indexOf('%') >= 0) {
+    return null;
+  }
+
+  var authority = match[2];
+  var hostname = authority;
+  if (authority.charAt(0) == '[') {
+    var bracketEnd = authority.indexOf(']');
+    if (bracketEnd < 0) return null;
+    hostname = authority.substring(1, bracketEnd);
+    var ipv6Port = authority.substring(bracketEnd + 1);
+    if (ipv6Port != '' && !/^:\d+$/.test(ipv6Port)) return null;
+  } else {
+    var portMatch = authority.match(/^(.*?):(\d+)$/);
+    if (portMatch) {
+      hostname = portMatch[1];
+    } else if (authority.indexOf(':') >= 0) {
+      return null;
+    }
+  }
+
+  if (hostname == '') return null;
+  return {
+    'scheme': match[1].toLowerCase(),
+    'authority': authority,
+    'hostname': hostname.toLowerCase().replace(/\.$/, ''),
+    'path': match[3] || '/',
+    'query': match[4] || ''
+  };
+}
+
+/**
+ * Reject local, private, reserved, and ambiguous hostnames.
+ * @param String hostname
+ * @return Bool
+ */
+function isAllowedFetchHostname(hostname) {
+  var host = String(hostname || '').toLowerCase();
+  if (host == '' || host == 'localhost' || /\.(?:localhost|local|internal)$/.test(host)) {
+    return false;
+  }
+
+  // Domain names may resolve to IPv6, but direct IPv6 literals are ambiguous
+  // to validate safely in Apps Script and are therefore rejected.
+  if (host.indexOf(':') >= 0) return false;
+
+  // Reject single-label and ambiguous numeric hosts such as 2130706433,
+  // 0177.0.0.1, and 0x7f.0.0.1.
+  if (host.indexOf('.') < 0) return false;
+  var numericHost = /^(?:0x[0-9a-f]+|\d+)(?:\.(?:0x[0-9a-f]+|\d+)){0,3}$/i;
+  var canonicalIpv4 = /^(?:0|[1-9]\d{0,2})(?:\.(?:0|[1-9]\d{0,2})){3}$/;
+  if (numericHost.test(host) && !canonicalIpv4.test(host)) return false;
+
+  if (!canonicalIpv4.test(host)) return true;
+  var octets = host.split('.').map(Number);
+  if (octets.some(function(octet) { return octet > 255; })) return false;
+
+  var first = octets[0];
+  var second = octets[1];
+  if (first == 0 || first == 10 || first == 127 || first >= 224) return false;
+  if (first == 100 && second >= 64 && second <= 127) return false;
+  if (first == 169 && second == 254) return false;
+  if (first == 172 && second >= 16 && second <= 31) return false;
+  if (first == 192 && (second == 0 || second == 168)) return false;
+  if (first == 198 && (second == 18 || second == 19)) return false;
+  return true;
+}
+
+/**
+ * Resolve an HTTP redirect and validate the resulting URL.
+ * @param String baseUrl
+ * @param String location
+ * @return String
+ */
+function resolveFetchRedirectUrl(baseUrl, location) {
+  var next = String(location || '').trim();
+  if (next == '') return '';
+  if (/^https?:\/\//i.test(next)) return normalizeFetchUrl(next);
+
+  var base = getHttpUrlParts(baseUrl);
+  if (!base) return '';
+  var origin = base.scheme + '://' + base.authority;
+  if (next.indexOf('//') == 0) {
+    return normalizeFetchUrl(base.scheme + ':' + next);
+  }
+  if (next.charAt(0) == '/') return normalizeFetchUrl(origin + next);
+  if (next.charAt(0) == '?') return normalizeFetchUrl(origin + base.path + next);
+
+  var directory = base.path.replace(/[^\/]*$/, '');
+  var segments = (directory + next).split('/');
+  var resolved = [];
+  for (var i = 0; i < segments.length; i++) {
+    if (segments[i] == '' || segments[i] == '.') continue;
+    if (segments[i] == '..') {
+      resolved.pop();
+    } else {
+      resolved.push(segments[i]);
+    }
+  }
+  return normalizeFetchUrl(origin + '/' + resolved.join('/'));
+}
+
+/**
+ * Get an HTTP response header without depending on header-name casing.
+ * @param Object response
+ * @param String targetName
+ * @return String
+ */
+function getResponseHeader(response, targetName) {
+  var headers = response.getHeaders();
+  var normalizedTarget = targetName.toLowerCase();
+  for (var name in headers) {
+    if (name.toLowerCase() == normalizedTarget) return String(headers[name]);
+  }
+  return '';
+}
+
+/**
+ * Whether a response represents HTML that COB-CHA can inspect.
+ * @param Object response
+ * @return Bool
+ */
+function isHtmlFetchResponse(response) {
+  var contentType = getResponseHeader(response, 'Content-Type')
+    .toLowerCase()
+    .split(';')[0]
+    .trim();
+  return contentType == '' || contentType == 'text/html' ||
+    contentType == 'application/xhtml+xml';
 }
 
 /**
@@ -462,7 +604,7 @@ function toPlainTextCellValue(value) {
  * @param String url
  * @return Object
  */
-function getHtmlAndTitle(url) {
+function getHtmlAndTitle(url, skipSlashFallback) {
   var ret = {'title': '', 'html': ''};
   var targetUrl = normalizeFetchUrl(url);
   if (targetUrl == '') return ret;
@@ -470,20 +612,36 @@ function getHtmlAndTitle(url) {
   var options = {
     "muteHttpExceptions" : true,
     "validateHttpsCertificates" : true,
-    "followRedirects" : true,
+    "followRedirects" : false,
+    "timeoutSeconds" : 30,
   }
 
   try {
-    var response = UrlFetchApp.fetch(targetUrl, options);
-    var status = response.getResponseCode();
-    if (status < 200 || status >= 300) return ret;
-
-    var html = response.getContentText();
-    if (html == '' && targetUrl.charAt(targetUrl.length - 1) != '/') {
-      response = UrlFetchApp.fetch(targetUrl+'/', options);
+    var response;
+    var status;
+    var redirectCodes = [301, 302, 303, 307, 308];
+    for (var i = 0; i <= 5; i++) {
+      response = UrlFetchApp.fetch(targetUrl, options);
       status = response.getResponseCode();
-      if (status < 200 || status >= 300) return ret;
-      html = response.getContentText();
+      if (redirectCodes.indexOf(status) < 0) break;
+      if (i == 5) return ret;
+      targetUrl = resolveFetchRedirectUrl(
+        targetUrl,
+        getResponseHeader(response, 'Location')
+      );
+      if (targetUrl == '') return ret;
+    }
+
+    if (status < 200 || status >= 300 || !isHtmlFetchResponse(response)) return ret;
+    var contentLength = Number(getResponseHeader(response, 'Content-Length'));
+    if (contentLength > 5000000) return ret;
+    var html = response.getContentText();
+    if (html.length > 5000000) return ret;
+    if (
+      html == '' && !skipSlashFallback &&
+      targetUrl.charAt(targetUrl.length - 1) != '/'
+    ) {
+      return getHtmlAndTitle(targetUrl + '/', true);
     }
 
     return {'title': extractHtmlTitle(html), 'html': html};
