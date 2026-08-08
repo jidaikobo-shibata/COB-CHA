@@ -121,16 +121,16 @@ function generateIssueSheet() {
 function openDialogIssue() {
   // to tell current page
   var activeSheet = getActiveSheet();
-  var html = '<input type="hidden" id="target-url" value="">';
+  var targetUrl = '';
   if (activeSheet.getName().charAt(0) != '*') {
-    html = '<input type="hidden" id="target-url" value="'+getUrlFromSheet(activeSheet)+'">';
+    targetUrl = getUrlFromSheet(activeSheet);
   }
 
   // generate
   generateIssueSheet()  
   
   var title = isEditIssue() ? getUiLang('edit-issue', 'Edit issue') : getUiLang('add-new-issue', 'Add new issue');
-  showDialog('ui-issue', 500, 400, title, html);
+  showDialog('ui-issue', 500, 400, title, '', {'targetUrl': targetUrl});
 }
 
 /**
@@ -287,6 +287,12 @@ function showEachIssue(row) {
   var ss = getSpreadSheet();
   var issueSheet = ss.getSheetByName(gIssueSheetName);
   issueSheet.getRange(row, 1).activate();
-  var html = '<input type="hidden" id="target-url" value="">';
-  showDialog('ui-issue', 500, 400, getUiLang('edit-issue', 'Edit issue'), html);
+  showDialog(
+    'ui-issue',
+    500,
+    400,
+    getUiLang('edit-issue', 'Edit issue'),
+    '',
+    {'targetUrl': ''}
+  );
 }

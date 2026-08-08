@@ -130,13 +130,15 @@ function showCredit() {
  * @param Integer height
  * @param String title
  * @param String html
+ * @param Object templateVars
  * @return Void
  */
-function showDialog(sheetname, width, height, title, html) {
+function showDialog(sheetname, width, height, title, html, templateVars) {
   var t = HtmlService.createTemplateFromFile(sheetname);
 
   t.I18N = getLangSet('ui') || {};        // dictionary
   t.LANG = getProp('lang') || 'en';       // lang
+  t.TEMPLATE_VARS = templateVars || {};
 
   var out = t.evaluate()
     .setWidth(width || 800)

@@ -356,6 +356,11 @@
   </script>
   <?!= HtmlService.createHtmlOutputFromFile('ui-common').getContent(); ?>
 <body style="padding-bottom: 4em;">
+  <input
+    type="hidden"
+    id="target-url"
+    value="<?= TEMPLATE_VARS.targetUrl || '' ?>"
+  >
   <table style="width:95%;">
   <tr>
     <th><label for="issue-name" id="issue-name-title" data-i18n="name">Name</label></th>

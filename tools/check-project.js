@@ -311,6 +311,25 @@ runCheck('Unsafe dynamic HTML sinks', () => {
   }
 });
 
+runCheck('Issue dialog template escaping', () => {
+  const issueServer = read('sheet-issue.js');
+  const issueTemplate = read('ui-issue.html');
+
+  if (/id=["']target-url["'][^\n]*\+/.test(issueServer)) {
+    reportError(
+      'Issue dialog template escaping',
+      'target URL must not be concatenated into HTML'
+    );
+  }
+
+  if (!/value=["']<\?=\s*TEMPLATE_VARS\.targetUrl\s*\|\|\s*["']["']\s*\?>["']/.test(issueTemplate)) {
+    reportError(
+      'Issue dialog template escaping',
+      'target URL must use an escaped template expression'
+    );
+  }
+});
+
 runCheck('clasp excludes maintenance tools', () => {
   const claspIgnore = read('.claspignore');
 
