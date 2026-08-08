@@ -242,6 +242,48 @@ runCheck('Issue page matching behavior', () => {
   });
 });
 
+runCheck('Issue ID allocation and edit targeting', () => {
+  const context = {};
+  vm.createContext(context);
+  vm.runInContext(read('sheet-issue.js'), context, {filename: 'sheet-issue.js'});
+
+  const data = [
+    ['ID', 'Name'],
+    [1, 'First'],
+    [5, 'Fifth'],
+    [5, 'Duplicate fifth'],
+    ['', 'No ID'],
+    ['invalid', 'Invalid ID']
+  ];
+  const matchedRows = Array.from(context.getIssueRowsById(data, 5));
+  if (JSON.stringify(matchedRows) !== JSON.stringify([3, 4])) {
+    reportError(
+      'Issue ID allocation and edit targeting',
+      `expected duplicate ID rows [3,4], received ${JSON.stringify(matchedRows)}`
+    );
+  }
+  if (context.getNextIssueId(data) !== 6) {
+    reportError(
+      'Issue ID allocation and edit targeting',
+      `expected next Issue ID 6, received ${context.getNextIssueId(data)}`
+    );
+  }
+
+  const source = read('sheet-issue.js');
+  if (!source.includes('LockService.getDocumentLock()')) {
+    reportError(
+      'Issue ID allocation and edit targeting',
+      'Issue writes must use a document lock'
+    );
+  }
+  if (source.includes('targetRow = sheet.getActiveCell().getRow();')) {
+    reportError(
+      'Issue ID allocation and edit targeting',
+      'Issue edits must not target the active row'
+    );
+  }
+});
+
 runCheck('UI inline JavaScript syntax', () => {
   for (const file of htmlFiles) {
     const scripts = extractInlineScripts(read(file));

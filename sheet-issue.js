@@ -134,29 +134,58 @@ function openDialogIssue() {
 }
 
 /**
+ * Find spreadsheet rows that have the specified Issue ID.
+ * @param Array dataObj
+ * @param Number issueId
+ * @return Array
+ */
+function getIssueRowsById(dataObj, issueId) {
+  var rows = [];
+  for (var i = 1; i < dataObj.length; i++) {
+    if (Number(dataObj[i][0]) === issueId) rows.push(i + 1);
+  }
+  return rows;
+}
+
+/**
+ * Get the next Issue ID without reusing IDs from deleted rows.
+ * @param Array dataObj
+ * @return Number
+ */
+function getNextIssueId(dataObj) {
+  var maxId = 0;
+  for (var i = 1; i < dataObj.length; i++) {
+    var issueId = Number(dataObj[i][0]);
+    if (Number.isInteger(issueId) && issueId > maxId) maxId = issueId;
+  }
+  return maxId + 1;
+}
+
+/**
  * apply Issue
  * @param Array vals
  * @return String
  */
 function applyIssue(vals) {
+  if (!Array.isArray(vals) || vals.length < 10) {
+    return getUiLang('invalid-input', 'Invalid input.');
+  }
+
   var ss = getSpreadSheet();
   var sheet = ss.getSheetByName(gIssueSheetName);
+  if (!sheet) {
+    return getUiLang('issue-sheet-not-exists', 'Issue sheet does not exist.');
+  }
 
   // vals:
   // [0]=ID, [1]=Name, [2]=Solved, [3]=Type, [4]=HTML, [5]=Explanation,
   // [6]=Criteria, [7]=Techniques, [8]=Places(comma), [9]=Memo
-  var isEdit = Number(vals[0]) > 0;
-
-  // write
-  var targetRow;
-  if (isEdit) {
-    targetRow = sheet.getActiveCell().getRow();
-  } else {
-    targetRow = sheet.getLastRow() + 1;
+  var rawIssueId = String(vals[0] || '').trim();
+  var isEdit = rawIssueId != '';
+  var requestedIssueId = Number(rawIssueId);
+  if (isEdit && (!Number.isInteger(requestedIssueId) || requestedIssueId < 1)) {
+    return getUiLang('invalid-issue-id', 'Invalid Issue ID.');
   }
-
-  // ID
-  var issueId = isEdit ? Number(vals[0]) : (targetRow - 1);
 
   // Places
   var totalSheets = getAllSheets().length;
@@ -165,33 +194,64 @@ function applyIssue(vals) {
     placesNormalized = "all";
   }
 
-  // write once
-  var row = [
-    issueId,        // Col 1: ID
-    vals[1],        // Col 2: Name
-    vals[2],        // Col 3: Solved
-    vals[3],        // Col 4: Type
-    vals[4],        // Col 5: HTML
-    vals[5],        // Col 6: Explanation
-    vals[6],        // Col 7: Criteria
-    vals[7],        // Col 8: Techniques
-    placesNormalized, // Col 9: Places
-    vals[9]         // Col10: Memo
-  ];
-  for (var i = 1; i < row.length; i++) {
-    row[i] = toPlainTextCellValue(row[i]);
+  var lock = LockService.getDocumentLock();
+  if (!lock.tryLock(10000)) {
+    return getUiLang(
+      'operation-busy',
+      'Another operation is in progress. Please try again.'
+    );
   }
-  sheet.getRange(targetRow, 1, 1, 10).setValues([row]);
 
-  // conditioned rows
-  ensureGlobalIssueRules(sheet);
+  try {
+    var dataObj = sheet.getDataRange().getValues();
+    var targetRow;
+    var issueId;
 
-  // message
-  var issue_id = targetRow - 1;
-  if (isEdit) {
-    return getUiLang('update-value', 'Edited: %s').replace("%s", 'Issue "' + issue_id + '"');
+    if (isEdit) {
+      var matchedRows = getIssueRowsById(dataObj, requestedIssueId);
+      if (matchedRows.length == 0) {
+        return getUiLang('issue-not-found', 'Issue was not found.');
+      }
+      if (matchedRows.length > 1) {
+        return getUiLang('duplicate-issue-id', 'Duplicate Issue IDs were found.');
+      }
+      targetRow = matchedRows[0];
+      issueId = requestedIssueId;
+    } else {
+      targetRow = sheet.getLastRow() + 1;
+      issueId = getNextIssueId(dataObj);
+    }
+
+    // write once
+    var row = [
+      issueId,        // Col 1: ID
+      vals[1],        // Col 2: Name
+      vals[2],        // Col 3: Solved
+      vals[3],        // Col 4: Type
+      vals[4],        // Col 5: HTML
+      vals[5],        // Col 6: Explanation
+      vals[6],        // Col 7: Criteria
+      vals[7],        // Col 8: Techniques
+      placesNormalized, // Col 9: Places
+      vals[9]         // Col10: Memo
+    ];
+    for (var i = 1; i < row.length; i++) {
+      row[i] = toPlainTextCellValue(row[i]);
+    }
+    sheet.getRange(targetRow, 1, 1, 10).setValues([row]);
+
+    // conditioned rows
+    ensureGlobalIssueRules(sheet);
+
+    if (isEdit) {
+      return getUiLang('update-value', 'Edited: %s')
+        .replace("%s", 'Issue "' + issueId + '"');
+    }
+    return getUiLang('add-value', 'Added: %s')
+      .replace("%s", 'Issue "' + issueId + '"');
+  } finally {
+    lock.releaseLock();
   }
-  return getUiLang('add-value', 'Added: %s').replace("%s", 'Issue "' + issue_id + '"');
 }
 
 /**
