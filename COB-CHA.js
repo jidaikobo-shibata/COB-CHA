@@ -446,6 +446,18 @@ function extractHtmlTitle(html) {
 }
 
 /**
+ * Preserve an untrusted string as text when writing it to a spreadsheet cell.
+ * @param {*} value
+ * @return {*}
+ */
+function toPlainTextCellValue(value) {
+  if (typeof value != 'string') return value;
+  var formulaPrefixes = ['=', '+', '-', '@'];
+  if (formulaPrefixes.indexOf(value.charAt(0)) >= 0) return "'" + value;
+  return value;
+}
+
+/**
  * Get HTML and its title
  * @param String url
  * @return Object

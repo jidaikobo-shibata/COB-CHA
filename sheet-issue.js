@@ -178,6 +178,9 @@ function applyIssue(vals) {
     placesNormalized, // Col 9: Places
     vals[9]         // Col10: Memo
   ];
+  for (var i = 1; i < row.length; i++) {
+    row[i] = toPlainTextCellValue(row[i]);
+  }
   sheet.getRange(targetRow, 1, 1, 10).setValues([row]);
 
   // conditioned rows

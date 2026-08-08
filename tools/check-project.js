@@ -138,6 +138,32 @@ runCheck('URL fetch helper behavior', () => {
   });
 });
 
+runCheck('Spreadsheet formula injection protection', () => {
+  const context = {};
+  vm.createContext(context);
+  vm.runInContext(read('COB-CHA.js'), context, {filename: 'COB-CHA.js'});
+
+  const unsafeValues = ['=1+1', '+1+1', '-1+1', '@SUM(A1:A2)'];
+  unsafeValues.forEach((value) => {
+    if (context.toPlainTextCellValue(value) !== `'${value}`) {
+      reportError(
+        'Spreadsheet formula injection protection',
+        `unsafe prefix was not escaped: ${value}`
+      );
+    }
+  });
+
+  const safeValues = ['', 'Example', ' https://example.com', 123, false];
+  safeValues.forEach((value) => {
+    if (context.toPlainTextCellValue(value) !== value) {
+      reportError(
+        'Spreadsheet formula injection protection',
+        `safe value was changed: ${value}`
+      );
+    }
+  });
+});
+
 runCheck('Issue page matching behavior', () => {
   const context = {};
   vm.createContext(context);

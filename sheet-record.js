@@ -111,8 +111,10 @@ function generateSheets(urlstr, lang, testType, level, targetId) {
       res = getHtmlAndTitle(eachSheet);
       var activeSheet = ss.getActiveSheet();
       activeSheet.getRange(2, 2).setValue(eachSheet);
-      activeSheet.getRange(3, 2).setValue(res['title']);
-      activeSheet.getRange(3, 2).setValue(res['html'].substring(0, 45000));
+      activeSheet.getRange(3, 2).setValue(toPlainTextCellValue(res['title']));
+      activeSheet.getRange(3, 2).setValue(
+        toPlainTextCellValue(res['html'].substring(0, 45000))
+      );
       urlsVals = generateUrlsSheetValues(urlsVals, activeSheet, urls[i][0], true);
       added++;
     }
@@ -153,13 +155,16 @@ function generateASheet(testType, sheet, targetUrl, res, sheetname, isEvaluateTa
   sheet.getRange(1, 1).setValue('URL').setBackground(gLabelColor);
   sheet.getRange(1, 2).setValue(targetUrl);
   sheet.getRange(1, 5).setValue('Title').setBackground(gLabelColor);
-  sheet.getRange(1, 6).setValue(res['title']);
+  sheet.getRange(1, 6).setValue(toPlainTextCellValue(res['title']));
   sheet.getRange(2, 1).setValue(getUiLang('date', 'Date')).setBackground(gLabelColor);
   sheet.getRange(2, 2).setValue(Utilities.formatDate(today, "JST", "yyyy/MM/dd"));
   sheet.getRange(2, 3).setValue(getUiLang('tester', 'Tester')).setBackground(gLabelColor);
   sheet.getRange(2, 5).setValue(getUiLang('memo', 'Memo')).setBackground(gLabelColor);
   sheet.getRange(3, 1).setValue('HTML').setBackground(gLabelColor);
-  sheet.getRange(3, 2).setValue(res['html'].substring(0, 45000)); //Google Spreadsheet allow 50000 chr/1 cell
+  // Google Spreadsheet allows 50000 characters per cell.
+  sheet.getRange(3, 2).setValue(
+    toPlainTextCellValue(res['html'].substring(0, 45000))
+  );
   sheet.hideRow(sheet.getRange(3, 1));
   sheet.setFrozenRows(2);
   
