@@ -159,18 +159,16 @@ function getCurrentPos() {
  * @return {Void}
  */
 function openLumpEditDialog(row, col, vals, is_append) {
-
-  // Create hidden inputs (same style as openDialogIssue)
-  var html = ''
-    + '<input type="hidden" id="lump-pos-row" value="' + row + '">'
-    + '<input type="hidden" id="lump-pos-col" value="' + col + '">'
-    + '<input type="hidden" id="lump-val" value="' + vals + '">'
-    + '<input type="hidden" id="lump-is_append" value="' + (is_append ? '1' : '0') + '">';
-
   var title = getUiLang('lump-edit', 'Lump Edit');
+  var templateVars = {
+    'row': row,
+    'col': col,
+    'vals': vals,
+    'isAppend': is_append ? '1' : '0'
+  };
 
   // Show dialog using the existing unified dialog function
-  showDialog('ui-lump-edit', 500, 200, title, html);
+  showDialog('ui-lump-edit', 500, 200, title, '', templateVars);
 }
 
 /**

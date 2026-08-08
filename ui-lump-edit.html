@@ -79,6 +79,15 @@
 
 <body>
 
+<input type="hidden" id="lump-pos-row" value="<?= TEMPLATE_VARS.row ?>">
+<input type="hidden" id="lump-pos-col" value="<?= TEMPLATE_VARS.col ?>">
+<input type="hidden" id="lump-val" value="<?= TEMPLATE_VARS.vals ?>">
+<input
+  type="hidden"
+  id="lump-is_append"
+  value="<?= TEMPLATE_VARS.isAppend ?>"
+>
+
 <h2><label for="lump-filter" data-i18n="choose-target-condition">Choose target condition:</label>  <span role="status" aria-live="polite" class="progress-indicator" id="progress-loading"></span></h2>
 
 <div>

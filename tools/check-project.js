@@ -330,6 +330,29 @@ runCheck('Issue dialog template escaping', () => {
   }
 });
 
+runCheck('Lump edit dialog template escaping', () => {
+  const lumpServer = read('input-utility.js');
+  const lumpTemplate = read('ui-lump-edit.html');
+  const fields = ['row', 'col', 'vals', 'isAppend'];
+
+  if (/id=["']lump-(?:pos-row|pos-col|val|is_append)["'][^\n]*\+/.test(lumpServer)) {
+    reportError(
+      'Lump edit dialog template escaping',
+      'lump edit values must not be concatenated into HTML'
+    );
+  }
+
+  fields.forEach((field) => {
+    const expression = `<?= TEMPLATE_VARS.${field} ?>`;
+    if (!lumpTemplate.includes(expression)) {
+      reportError(
+        'Lump edit dialog template escaping',
+        `${field} must use an escaped template expression`
+      );
+    }
+  });
+});
+
 runCheck('clasp excludes maintenance tools', () => {
   const claspIgnore = read('.claspignore');
 
