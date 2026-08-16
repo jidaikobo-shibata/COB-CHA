@@ -380,6 +380,77 @@ runCheck('ICL evaluation batch behavior', () => {
   }
 });
 
+runCheck('ICL technique link behavior', () => {
+  const context = {};
+  vm.createContext(context);
+  vm.runInContext(read('sheet-icl.js'), context, {filename: 'sheet-icl.js'});
+
+  const cases = [
+    ['ARIA16', 'WCAG21', 'aria'],
+    ['G82', 'WCAG21', 'general'],
+    ['H30', 'WCAG21', 'html'],
+    ['C9', 'WCAG21', 'css'],
+    ['F3', 'WCAG21', 'failures'],
+    ['PDF1', 'WCAG21', 'pdf'],
+    ['SCR20', 'WCAG21', 'client-side-script'],
+    ['SVR1', 'WCAG21', 'server-side-script'],
+    ['T1', 'WCAG21', 'text'],
+    ['C41', 'WCAG22', 'css'],
+    ['F108', 'WCAG22', 'failures'],
+    ['G218', 'WCAG22', 'general'],
+    ['H100', 'WCAG22', 'html']
+  ];
+
+  for (const [techniqueId, wcagVersion, directory] of cases) {
+    const expected =
+      `https://waic.jp/translations/${wcagVersion}/Techniques/` +
+      `${directory}/${techniqueId}`;
+    const actual = context.getIclTechniqueUrl(techniqueId);
+    if (actual !== expected) {
+      reportError(
+        'ICL technique link behavior',
+        `expected ${expected}, received ${actual}`
+      );
+    }
+  }
+
+  if (context.getIclTechniqueUrl('-') !== '') {
+    reportError(
+      'ICL technique link behavior',
+      'non-technique markers must not receive links'
+    );
+  }
+
+  const source = read('sheet-icl.js');
+  if (!source.includes('range.setRichTextValues(richTextValues)')) {
+    reportError(
+      'ICL technique link behavior',
+      'technique links must be written in one batch'
+    );
+  }
+  if (!source.includes(".setForegroundColor('#000000')") ||
+      !source.includes('.setUnderline(true)')) {
+    reportError(
+      'ICL technique link behavior',
+      'applicable technique links must have a consistent visible style'
+    );
+  }
+  if (!source.includes('.setForegroundColor(gLabelColor)') ||
+      !source.includes('.setUnderline(false)')) {
+    reportError(
+      'ICL technique link behavior',
+      'excluded technique links must follow the excluded row style'
+    );
+  }
+  if (!source.includes("sheet.getName() !== gIclTplSheetName") ||
+      !source.includes('firstColumn > 3 || lastColumn < 3')) {
+    reportError(
+      'ICL technique link behavior',
+      'applicability edits must refresh only relevant ICL technique links'
+    );
+  }
+});
+
 runCheck('Issue page matching behavior', () => {
   const context = {};
   vm.createContext(context);

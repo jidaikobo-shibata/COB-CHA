@@ -88,6 +88,139 @@ function generateIclTplSheet(iclType, type) {
 }
 
 /**
+ * Get the Japanese WAIC technique URL for a technique ID.
+ * Use WCAG 2.1 by default and WCAG 2.2 for techniques added in 2.2.
+ *
+ * @param String techniqueId
+ * @return String
+ */
+function getIclTechniqueUrl(techniqueId) {
+  var directories = {
+    'ARIA': 'aria',
+    'C': 'css',
+    'F': 'failures',
+    'G': 'general',
+    'H': 'html',
+    'PDF': 'pdf',
+    'SCR': 'client-side-script',
+    'SVR': 'server-side-script',
+    'T': 'text'
+  };
+  var wcag22TechniqueIds = {
+    'C41': true,
+    'C42': true,
+    'C43': true,
+    'C45': true,
+    'F108': true,
+    'F109': true,
+    'F110': true,
+    'F111': true,
+    'F112': true,
+    'G218': true,
+    'G219': true,
+    'G220': true,
+    'G221': true,
+    'G223': true,
+    'G224': true,
+    'G225': true,
+    'H99': true,
+    'H100': true,
+    'H101': true,
+    'H102': true
+  };
+  var match = String(techniqueId).match(/^([A-Z]+)\d+$/);
+
+  if (!match || !directories[match[1]]) return '';
+
+  var wcagVersion = wcag22TechniqueIds[techniqueId] ? 'WCAG22' : 'WCAG21';
+
+  return 'https://waic.jp/translations/' + wcagVersion + '/Techniques/' +
+    directories[match[1]] + '/' + techniqueId;
+}
+
+/**
+ * Add links to each technique ID in the ICL technique column.
+ *
+ * @param Object sheet
+ * @param Number firstRow
+ * @param Number numRows
+ * @param String excludedMark
+ * @return Void
+ */
+function setIclTechniqueLinks(sheet, firstRow, numRows, excludedMark) {
+  if (numRows < 1) return;
+
+  var range = sheet.getRange(firstRow, 7, numRows, 1);
+  var values = range.getDisplayValues();
+  var excludedValues = sheet.getRange(firstRow, 3, numRows, 1).getValues();
+  var richTextValues = [];
+  var linkStyle = SpreadsheetApp.newTextStyle()
+      .setForegroundColor('#000000')
+      .setUnderline(true)
+      .build();
+  var excludedLinkStyle = SpreadsheetApp.newTextStyle()
+      .setForegroundColor(gLabelColor)
+      .setUnderline(false)
+      .build();
+
+  for (var i = 0; i < values.length; i++) {
+    var text = values[i][0];
+    var builder = SpreadsheetApp.newRichTextValue().setText(text);
+    var pattern = /[A-Z]+\d+/g;
+    var match = pattern.exec(text);
+    var textStyle = excludedValues[i][0] === excludedMark ?
+      excludedLinkStyle : linkStyle;
+
+    while (match !== null) {
+      var url = getIclTechniqueUrl(match[0]);
+      if (url) {
+        builder
+          .setLinkUrl(match.index, match.index + match[0].length, url)
+          .setTextStyle(match.index, match.index + match[0].length, textStyle);
+      }
+      match = pattern.exec(text);
+    }
+
+    richTextValues.push([builder.build()]);
+  }
+
+  range.setRichTextValues(richTextValues);
+}
+
+/**
+ * Keep ICL technique link styles in sync with applicability edits.
+ *
+ * @param Object e
+ * @return Void
+ */
+function onEdit(e) {
+  if (!e || !e.range) return;
+
+  var editedRange = e.range;
+  var sheet = editedRange.getSheet();
+  var firstColumn = editedRange.getColumn();
+  var lastColumn = firstColumn + editedRange.getNumColumns() - 1;
+
+  if (sheet.getName() !== gIclTplSheetName ||
+      firstColumn > 3 || lastColumn < 3) return;
+
+  var firstRow = Math.max(2, editedRange.getRow());
+  var lastRow = Math.min(
+    editedRange.getRow() + editedRange.getNumRows() - 1,
+    sheet.getLastRow()
+  );
+
+  if (lastRow < firstRow) return;
+
+  setIclTechniqueLinks(
+    sheet,
+    firstRow,
+    lastRow - firstRow + 1,
+    getProp('mark')[3]
+  );
+}
+
+/**
  * Generate ICL
  * @param Object sheet
  * @param String iclType
@@ -170,6 +303,9 @@ function generateIcl(sheet, iclType, type) {
       row = row + eachTest.length;
     }
   }
+
+  // Link each related technique ID in one batch to avoid per-cell writes.
+  setIclTechniqueLinks(sheet, 2, row - 2, mF);
   
   // appearance
   var mark = getProp('mark');
