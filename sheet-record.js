@@ -63,7 +63,7 @@ function generateSheets(urlstr, lang, testType, level, targetId) {
       'msg': getUiLang('no-target-page-exists', "No target Page Exists"),
       'targetId': targetId
     };
-    var urls = urlListSheet.getRange(2, 1, lastRow - 1, 3).getValues();
+    var urls = urlListSheet.getRange(2, 1, lastRow - 1, 4).getValues();
 
     // Ignore unused rows in the URL list.
     urls = urls.filter(function(row) {
@@ -107,7 +107,8 @@ function generateSheets(urlstr, lang, testType, level, targetId) {
         urlsVals,
         ss.getSheetByName(targetSheetname),
         targetSheetname,
-        false
+        false,
+        urls[i][3]
       );
       continue;
     }
@@ -136,7 +137,8 @@ function generateSheets(urlstr, lang, testType, level, targetId) {
       urlsVals,
       targetSheet,
       targetSheetname,
-      true
+      true,
+      urls[i][3]
     );
     added++;
   }
@@ -257,14 +259,15 @@ function setRecordSheetPageData(sheet, targetUrl, res) {
  * @param Object sheet
  * @param String sheetname
  * @param Bool isNew
+ * @param String memo
  * @return Array
  */
-function generateUrlsSheetValues(urlsVals, sheet, sheetname, isNew) {
+function generateUrlsSheetValues(urlsVals, sheet, sheetname, isNew, memo) {
   var id    = '=HYPERLINK("#gid='+sheet.getSheetId()+'","'+sheetname+'")';
   var url   = getUrlFromSheet(sheet);
   var title = getTitleFromSheet(sheet);
   var apply = isNew ? "o" : "";
-  urlsVals.push([id, url, title, '', apply]);
+  urlsVals.push([id, url, title, memo || '', apply]);
   return urlsVals;
 }
 

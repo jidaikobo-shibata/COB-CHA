@@ -271,6 +271,26 @@ runCheck('Record sheet duplication behavior', () => {
     }
   });
 
+  context.getUrlFromSheet = () => 'https://example.com/';
+  context.getTitleFromSheet = () => 'Example title';
+  const urlRows = Array.from(
+    context.generateUrlsSheetValues(
+      [],
+      {getSheetId: () => 123},
+      '1',
+      true,
+      '代表するページ'
+    ),
+    (row) => Array.from(row)
+  );
+  if (urlRows[0][3] !== '代表するページ' ||
+      urlRows[0][2] !== 'Example title') {
+    reportError(
+      'Record sheet duplication behavior',
+      'updating URL titles must preserve the existing memo column'
+    );
+  }
+
   const source = read('sheet-record.js');
   if (!source.includes('addSheet(targetSheetname, templateSheet);')) {
     reportError(
@@ -282,6 +302,13 @@ runCheck('Record sheet duplication behavior', () => {
     reportError(
       'Record sheet duplication behavior',
       'unreachable lastSheetKey loop must not be restored'
+    );
+  }
+  if (!source.includes('lastRow - 1, 4') ||
+      !source.includes('urls[i][3]')) {
+    reportError(
+      'Record sheet duplication behavior',
+      'record generation must read and retain the URL memo column'
     );
   }
 });
