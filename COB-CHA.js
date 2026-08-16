@@ -875,6 +875,24 @@ function generateSheetEvenIfAlreadyExists(sheetName) {
 }
 
 /**
+ * Apply a lightweight grid to a checklist range in one batch operation.
+ * @param Object range
+ * @return Object
+ */
+function setChecklistBorders(range) {
+  return range.setBorder(
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    '#d9d9d9',
+    SpreadsheetApp.BorderStyle.SOLID
+  );
+}
+
+/**
  * prepare target sheet
  * @param String sheetName
  * @param Array defaults

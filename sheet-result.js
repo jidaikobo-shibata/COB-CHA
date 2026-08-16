@@ -170,6 +170,10 @@ function evaluateSc() {
   var range = sheet.getRange(3, 2, allSheets.length + 1, 1);
   setCellConditionLv(sheet, range, level);
 
+  setChecklistBorders(
+    sheet.getRange(1, 1, vals.length + 2, maxCol)
+  );
+
   // total
   generateTotalSheet();
   
@@ -461,6 +465,10 @@ function generateTotalSheet() {
 
   // Center-align headers for Level, Applied, Result
   sheet.getRange(1, 3, 1, 3).setHorizontalAlignment('center');
+
+  setChecklistBorders(
+    sheet.getRange(1, 1, rows.length + 2, 6)
+  );
 
   // generate Report Sheet
   generateReportSheet(level, totalResult);

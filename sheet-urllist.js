@@ -31,6 +31,9 @@ function generateUrlListSheet() {
   if (typeof msgOrSheetObj == "string") return msgOrSheetObj;
 
   msgOrSheetObj.getRange('D:K').setHorizontalAlignment('center');
+  setChecklistBorders(
+    msgOrSheetObj.getRange(1, 1, defaults.length, defaults[0].length)
+  );
 
   return getUiLang('target-sheet-generated', "Generate Target Sheet (%s).").replace('%s', gUrlListSheetName);
 }

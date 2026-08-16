@@ -322,6 +322,32 @@ runCheck('Record criteria batch write behavior', () => {
       'per-row criterion value writes must not be restored'
     );
   }
+  if (!source.includes('setChecklistBorders(') ||
+      !source.includes('criteriaRows.length + 1, 4')) {
+    reportError(
+      'Record criteria batch write behavior',
+      'the SC checklist must receive one batched A:D border grid'
+    );
+  }
+});
+
+runCheck('Checklist border coverage', () => {
+  const urlSource = read('sheet-urllist.js');
+  const resultSource = read('sheet-result.js');
+  if (!urlSource.includes('setChecklistBorders(') ||
+      !urlSource.includes('defaults[0].length')) {
+    reportError(
+      'Checklist border coverage',
+      'the URL list input range must receive a batched border grid'
+    );
+  }
+  if (!resultSource.includes('vals.length + 2, maxCol') ||
+      !resultSource.includes('rows.length + 2, 6')) {
+    reportError(
+      'Checklist border coverage',
+      'the Result and Total used ranges must receive batched border grids'
+    );
+  }
 });
 
 runCheck('ICL evaluation batch behavior', () => {
@@ -494,6 +520,14 @@ runCheck('ICL evaluation batch behavior', () => {
     reportError(
       'ICL evaluation batch behavior',
       'criterion and situation row styles must extend through page columns'
+    );
+  }
+  if (!source.includes(
+        'setChecklistBorders(sheet.getRange(1, 1, row - 1, 8))') ||
+      !evaluateSource.includes('setChecklistBorders(')) {
+    reportError(
+      'ICL evaluation batch behavior',
+      'ICL sheets and the ICL result must receive batched border grids'
     );
   }
 });

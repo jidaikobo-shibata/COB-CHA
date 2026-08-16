@@ -70,6 +70,9 @@ function applyScTemplate() {
   for (var i = 0; i < allSheets.length; i++) {
     if (String(allSheets[i].getName()).charAt(0) == '*') continue;
     tpl.getRange(5, 1, tpl.getLastRow() - 4, 6).copyTo(allSheets[i].getRange(5, 1));
+    setChecklistBorders(
+      allSheets[i].getRange(4, 1, tpl.getLastRow() - 3, 4)
+    );
     n++;
   }
 

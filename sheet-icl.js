@@ -448,6 +448,8 @@ function generateIcl(sheet, iclType, type) {
   setRowConditionApplicability(sheet, range, "=$C2=\""+mF+"\"");
   setRowConditionNotYet(sheet, range, "=AND($B2=\"\", NOT($E2=\"\"), NOT($F2=\"\"))");
 
+  setChecklistBorders(sheet.getRange(1, 1, row - 1, 8));
+
   return true;
 }
 
@@ -587,6 +589,14 @@ function evaluateIcl(lang, testType, level) {
     pageResultRange,
     mark[2],
     mark[3]
+  );
+  setChecklistBorders(
+    iclSheet.getRange(
+      1,
+      1,
+      resultRowCount + 1,
+      firstResultCol + pageCount - 1
+    )
   );
  
   return getUiLang('target-sheet-generated', "Generate Target Sheet (%s).").replace('%s', gIclSheetName);

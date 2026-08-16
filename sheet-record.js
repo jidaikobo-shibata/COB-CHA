@@ -227,6 +227,10 @@ function generateASheet(testType, sheet, targetUrl, res, sheetname, isEvaluateTa
   setCellConditionTF(sheet, range, mT, mF); // see sheet-result.gs
   
   setRowConditionNotYet(sheet, criteriaRange, "=$B5=\"\"");
+
+  setChecklistBorders(
+    sheet.getRange(4, 1, criteriaRows.length + 1, 4)
+  );
   
   return sheet;
 }
