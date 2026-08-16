@@ -456,23 +456,35 @@ runCheck('ICL evaluation batch behavior', () => {
       'ICL evaluation must not depend on the disposable ICL template sheet'
     );
   }
-  if (!evaluateSource.includes('.getRange(iclFirstRow, 1, resultRowCount, 26)') ||
-      !evaluateSource.includes('.copyTo(iclSheet.getRange(1, 1))')) {
+  if (!evaluateSource.includes(
+        '.getRange(iclFirstRow, 1, resultRowCount, 8)') ||
+      !evaluateSource.includes('.copyTo(iclSheet.getRange(1, 1))') ||
+      !evaluateSource.includes('iclSheet.deleteColumn(2)')) {
     reportError(
       'ICL evaluation batch behavior',
-      'the result sheet must be based on the ICL applied to a target page'
+      'the result sheet must retain page 1 columns A, E, F, G and H'
     );
   }
-  if (!source.includes('.setValues(resultRows);')) {
+  if (evaluateSource.includes('aggregateIclPageResults') ||
+      !evaluateSource.includes(
+        '.getRange(pageFirstRow, 2, copyRowCount, 1)') ||
+      !evaluateSource.includes('.setValues(resultRows)')) {
     reportError(
       'ICL evaluation batch behavior',
-      'ICL result matrix must be written with one setValues call'
+      'the ICL list must place each page raw column B from column F onward'
     );
   }
-  if (source.includes('.copyTo(iclSheet.getRange(2, col)')) {
+  if (!evaluateSource.includes('iclSheet.setFrozenColumns(5)')) {
     reportError(
       'ICL evaluation batch behavior',
-      'per-page destination copy must not be restored'
+      'the five ICL heading columns must remain frozen'
+    );
+  }
+  if (!evaluateSource.includes('requiredColumns - currentMaxColumns') ||
+      !evaluateSource.includes('iclSheet.insertColumnsAfter(')) {
+    reportError(
+      'ICL evaluation batch behavior',
+      'the result sheet must allocate enough columns for every page result'
     );
   }
 });

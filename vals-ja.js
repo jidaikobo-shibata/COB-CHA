@@ -734,7 +734,7 @@ function getUiJa ()
     'evaluate-title': '6. 集計',
     'apply-target-icl-to-sc': '対象ページごとの実装チェックを集計',
     'evaluate-sc': '達成基準チェックを集計する',
-    'evaluate-icl': '実装チェックを集計する',
+    'evaluate-icl': '実装チェックの一覧を作成',
     'generate-report': '「試験結果の表示」シートだけを生成',
 
     'etc-title': 'その他',

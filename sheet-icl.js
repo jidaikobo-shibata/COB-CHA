@@ -42,11 +42,6 @@ function findIclFirstResultRow(firstColumnValues) {
   return 0;
 }
 
-/**
- * Convert per-page result columns into rows for one setValues call.
- * @param Array resultColumns
- * @return Array
- */
 function transposeIclResultColumns(resultColumns) {
   if (resultColumns.length == 0) return [];
   var rowCount = resultColumns[0].length;
@@ -464,13 +459,14 @@ function generateIcl(sheet, iclType, type) {
  * @return Void
  */
 function evaluateIcl(lang, testType, level) {
-  var ss = getSpreadSheet();
   var allSheets = getAllSheets();
   if (allSheets.length == 0) {
      throw new Error(getUiLang('no-target-page-exists', "No Target Page Exists."));
   }
-  var iclLastRow = allSheets[0].getLastRow();
-  var firstColumnValues = allSheets[0]
+
+  var baseSheet = allSheets[0];
+  var iclLastRow = baseSheet.getLastRow();
+  var firstColumnValues = baseSheet
     .getRange(1, 1, iclLastRow, 1)
     .getValues();
   var iclFirstRow = findIclFirstResultRow(firstColumnValues);
@@ -479,64 +475,91 @@ function evaluateIcl(lang, testType, level) {
   }
   var resultRowCount = iclLastRow - iclFirstRow + 1;
 
-  // Build the result sheet from the ICL actually applied to a target page.
+  // Use page 1 as the row structure, retaining its A, E, F, G and H columns.
   var iclSheet = generateSheetEvenIfAlreadyExists(gIclSheetName);
-  allSheets[0]
-    .getRange(iclFirstRow, 1, resultRowCount, 26)
+  baseSheet
+    .getRange(iclFirstRow, 1, resultRowCount, 8)
     .copyTo(iclSheet.getRange(1, 1));
-  iclSheet.setColumnWidth(1, 60);
-  iclSheet.deleteColumn(2);
-  iclSheet.deleteColumn(3);
-  iclSheet.setColumnWidth(2, 50);
-  iclSheet.setColumnWidth(3, 50);
-  iclSheet.setColumnWidth(4, 50);
-  iclSheet.insertRows(1, 1);
-  iclSheet.getRange('1:1').setBackground(gLabelColor).setFontColor(gLabelColorText).setFontWeight('bold');
-  iclSheet.setFrozenRows(1);
-  iclSheet.setFrozenColumns(5);
-  iclSheet.activate();
-  var mark = getProp('mark');
-
-  // Read one result column from each page, then write the matrix once.
-  var headers = [];
-  var targetUrls = [];
-  var resultColumns = [];
-  for (var i = 0; i < allSheets.length; i++) {
-    var eachSheetName = allSheets[i].getName();
-    headers.push(
-      '=HYPERLINK("#gid=' + allSheets[i].getSheetId() + '","' +
-      eachSheetName + '")'
-    );
-    targetUrls.push(getUrlFromSheet(allSheets[i]));
-    var pageRows = allSheets[i]
-      .getRange(iclFirstRow, 1, resultRowCount, 6)
-      .getValues();
-    resultColumns.push(
-      aggregateIclPageResults(pageRows, mark)
-    );
+  for (var i = 0; i < 3; i++) {
+    iclSheet.deleteColumn(2);
   }
+  iclSheet.insertRows(1, 1);
+  iclSheet.setColumnWidth(1, 100);
+  iclSheet.setColumnWidth(2, 140);
+  iclSheet.setColumnWidth(3, 50);
+  iclSheet.setColumnWidth(4, 180);
+  iclSheet.setColumnWidth(5, 600);
 
   var firstResultCol = 6;
   var pageCount = allSheets.length;
+  var requiredColumns = firstResultCol + pageCount - 1;
+  var currentMaxColumns = iclSheet.getMaxColumns();
+  if (requiredColumns > currentMaxColumns) {
+    iclSheet.insertColumnsAfter(
+      currentMaxColumns,
+      requiredColumns - currentMaxColumns
+    );
+  }
+
+  var headers = [];
+  var targetUrls = [];
+  var resultColumns = [];
+  for (var i = 0; i < pageCount; i++) {
+    var pageSheet = allSheets[i];
+    var sheetName = pageSheet.getName();
+    var escapedSheetName = sheetName.replace(/"/g, '""');
+    headers.push(
+      '=HYPERLINK("#gid=' + pageSheet.getSheetId() + '","' +
+      escapedSheetName + '")'
+    );
+    targetUrls.push(getUrlFromSheet(pageSheet));
+
+    var pageLastRow = pageSheet.getLastRow();
+    var pageFirstColumn = pageSheet
+      .getRange(1, 1, pageLastRow, 1)
+      .getValues();
+    var pageFirstRow = findIclFirstResultRow(pageFirstColumn);
+    var pageResults = [];
+    if (pageFirstRow > 0 && pageFirstRow <= pageLastRow) {
+      var copyRowCount = Math.min(
+        resultRowCount,
+        pageLastRow - pageFirstRow + 1
+      );
+      pageResults = pageSheet
+        .getRange(pageFirstRow, 2, copyRowCount, 1)
+        .getValues();
+    }
+    while (pageResults.length < resultRowCount) pageResults.push(['']);
+    resultColumns.push(pageResults);
+  }
+
   var headerRange = iclSheet.getRange(1, firstResultCol, 1, pageCount);
   headerRange.setValues([headers]);
   for (var i = 0; i < pageCount; i++) {
     headerRange.getCell(1, i + 1).setComment(targetUrls[i]);
   }
+  headerRange
+    .setBackground(gLabelColorDark)
+    .setFontColor(gLabelColorDarkText)
+    .setFontWeight('bold');
   iclSheet.setColumnWidths(firstResultCol, pageCount, 40);
 
   var resultRows = transposeIclResultColumns(resultColumns);
   iclSheet
     .getRange(2, firstResultCol, resultRowCount, pageCount)
-    .setValues(resultRows);
-  iclSheet
-    .getRange(1, firstResultCol, iclSheet.getLastRow(), pageCount)
+    .setValues(resultRows)
     .setHorizontalAlignment('center');
+  iclSheet.setFrozenRows(1);
+  iclSheet.setFrozenColumns(5);
+  iclSheet.activate();
 
-  var mT = mark[2];
-  var mF = mark[3];
-  var range = iclSheet.getRange(5, firstResultCol, resultRowCount, pageCount);
-  setCellConditionTF(iclSheet, range, mT, mF)
+  var mark = getProp('mark');
+  setCellConditionTF(
+    iclSheet,
+    iclSheet.getRange(2, firstResultCol, resultRowCount, pageCount),
+    mark[2],
+    mark[3]
+  );
  
   return getUiLang('target-sheet-generated', "Generate Target Sheet (%s).").replace('%s', gIclSheetName);
 }
