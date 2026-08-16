@@ -30,6 +30,44 @@ function isEditIssue() {
 }
 
 /**
+ * Build lookups for the displayed No. in *URLs.
+ * @param Array rows
+ * @return Object
+ */
+function buildPageNumberMap(rows) {
+  var pageNumbers = {
+    'bySheetAndUrl': {},
+    'bySheetName': {},
+    'byUrl': {}
+  };
+  for (var i = 0; i < rows.length; i++) {
+    var rawPageNumber = rows[i][0];
+    var pageNumber = String(rawPageNumber == null ? '' : rawPageNumber).trim();
+    var url = String(rows[i][1] == null ? '' : rows[i][1]).trim();
+    if (pageNumber == '') continue;
+    pageNumbers.bySheetName[pageNumber] = pageNumber;
+    if (url != '') {
+      pageNumbers.bySheetAndUrl[pageNumber + '\n' + url] = pageNumber;
+      if (!pageNumbers.byUrl[url]) pageNumbers.byUrl[url] = pageNumber;
+    }
+  }
+  return pageNumbers;
+}
+
+/**
+ * Find the best matching page number for a record sheet.
+ * @param Object pageNumberMap
+ * @param String sheetName
+ * @param String url
+ * @return String
+ */
+function findPageNumber(pageNumberMap, sheetName, url) {
+  return pageNumberMap.bySheetAndUrl[sheetName + '\n' + url] ||
+    pageNumberMap.byUrl[url] ||
+    pageNumberMap.bySheetName[sheetName] || '';
+}
+
+/**
  * set dialog Value Issue
  * @return {Object}
  */
@@ -43,10 +81,20 @@ function dialogValueIssue() {
   ret['usingTechs'] = getUsingTechs();
 
   ret['allPlaces'] = [];
+  var pageNumberMap = buildPageNumberMap([]);
+  var urlListSheet = getSheetIfExists(gUrlListSheetName);
+  if (urlListSheet && urlListSheet.getLastRow() >= 2) {
+    var urlRows = urlListSheet
+      .getRange(2, 1, urlListSheet.getLastRow() - 1, 3)
+      .getDisplayValues();
+    pageNumberMap = buildPageNumberMap(urlRows);
+  }
   var all = getAllSheets();
   for (var i = 0; i < all.length; i++) {
+    var targetUrl = getUrlFromSheet(all[i]);
     ret['allPlaces'].push({
-      'url' : getUrlFromSheet(all[i]),
+      'no' : findPageNumber(pageNumberMap, all[i].getName(), targetUrl),
+      'url' : targetUrl,
       'title' : getTitleFromSheet(all[i])
     });
   }

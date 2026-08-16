@@ -4,6 +4,21 @@
   <base target="_top">
   <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
 
+  <style>
+    .checked-sort-note {
+      margin: 0 0 5px;
+    }
+
+    .page-number {
+      display: inline-block;
+      margin-right: 0.5em;
+      color: #555;
+      font-size: 0.95em;
+      font-weight: normal;
+      white-space: nowrap;
+    }
+  </style>
+
   <script>
     // Embedding dictionaries and current languages ​​on the server
     window.I18N = <?!= JSON.stringify(getLangSet('ui')) ?> || {};
@@ -58,7 +73,12 @@
 
       // on change
       document.addEventListener('change', function(event) {
-        if (event.target.matches('.criteria-chk')) changeCriteria();
+        if (event.target.matches('.criteria-chk')) {
+          sortCheckedCriteria();
+          changeCriteria();
+          sortCheckedTechniques();
+        }
+        if (event.target.matches('.tech-chk')) sortCheckedTechniques();
       });
     });
     
@@ -99,6 +119,7 @@
         criteriaInput.value = criterion;
         criteriaLabel.htmlFor = idname;
         criteriaLabel.textContent = criterion+': '+exp;
+        criteriaRow.dataset.originalIndex = String(i);
 
         criteriaInputCell.append(criteriaInput);
         criteriaLabelCell.append(criteriaLabel);
@@ -121,6 +142,8 @@
         var techHeading = document.createElement('th');
 
         techHeadingRow.classList.add(classname, 'tech-row');
+        techHeadingRow.dataset.criterion = classname;
+        techHeadingRow.dataset.techHeading = 'true';
         techHeading.colSpan = 3;
         techHeading.textContent = criteria;
         techHeadingRow.append(techHeading);
@@ -139,7 +162,10 @@
           var techLabel = document.createElement('label');
 
           techRow.classList.add(classname, 'tech-row');
+          techRow.dataset.criterion = classname;
+          techRow.dataset.originalIndex = String(k);
           techInput.type = 'checkbox';
+          techInput.className = 'tech-chk';
           techInput.id = for_id;
           techInput.value = each;
           techLabel.htmlFor = for_id;
@@ -158,6 +184,7 @@
       for (var i = 0; i < ret['allPlaces'].length; i++) {
         var place = ret['allPlaces'][i].url;
         var title = ret['allPlaces'][i].title;
+        var pageNumber = ret['allPlaces'][i].no || '';
         var idname = 'target-place-' + i;
 
         var placeRow = document.createElement('tr');
@@ -172,7 +199,27 @@
         placeInput.className = 'places';
         placeInput.value = place;
         placeLabel.htmlFor = idname;
-        placeLabel.textContent = title;
+
+        if (pageNumber !== '') {
+          var pageNumberAccessible = document.createElement('span');
+          var pageNumberLabel = document.createElement('span');
+          pageNumberAccessible.className = 'skip';
+          pageNumberAccessible.textContent =
+            t('page-number-accessible-prefix', 'Page number') +
+            ' ' + pageNumber + ', ';
+          pageNumberLabel.className = 'page-number';
+          pageNumberLabel.setAttribute('aria-hidden', 'true');
+          pageNumberLabel.textContent = '[' + pageNumber + ']';
+          placeLabel.append(
+            pageNumberAccessible,
+            pageNumberLabel,
+            document.createTextNode(' ')
+          );
+        }
+        var pageTitleLabel = document.createElement('span');
+        pageTitleLabel.className = 'page-title';
+        pageTitleLabel.textContent = title || place;
+        placeLabel.append(pageTitleLabel);
 
         placeInputCell.append(placeInput);
         placeLabelCell.append(placeLabel);
@@ -241,7 +288,9 @@
       })();
 
       // Match the initial technique list to the restored criteria selection.
+      sortCheckedCriteria();
       changeCriteria();
+      sortCheckedTechniques();
                   
       if ( ! ret['isEdit']) {
         // loading end
@@ -353,6 +402,68 @@
         });
       }
     }
+
+    /**
+     * Sort rows with checked inputs first, retaining the original order within
+     * the checked and unchecked groups.
+     * @param {HTMLElement[]} rows
+     * @param {string} checkboxSelector
+     * @returns {HTMLElement[]}
+     */
+    function getCheckedFirstRows(rows, checkboxSelector) {
+      return rows.sort(function(a, b) {
+        var aInput = a.querySelector(checkboxSelector);
+        var bInput = b.querySelector(checkboxSelector);
+        var aChecked = aInput && aInput.checked ? 0 : 1;
+        var bChecked = bInput && bInput.checked ? 0 : 1;
+        if (aChecked != bChecked) return aChecked - bChecked;
+        return Number(a.dataset.originalIndex) - Number(b.dataset.originalIndex);
+      });
+    }
+
+    /** Keep keyboard focus when existing rows are moved in the DOM. */
+    function restoreMovedFocus(focusedElement) {
+      if (
+        focusedElement && document.contains(focusedElement) &&
+        document.activeElement !== focusedElement
+      ) {
+        focusedElement.focus({preventScroll: true});
+      }
+    }
+
+    /** Move checked criteria to the beginning of the criteria table. */
+    function sortCheckedCriteria() {
+      var table = document.getElementById('criteria');
+      var focusedElement = document.activeElement;
+      var rows = getCheckedFirstRows(
+        Array.from(table.querySelectorAll('tr')),
+        '.criteria-chk'
+      );
+      var fragment = document.createDocumentFragment();
+      rows.forEach(function(row) { fragment.append(row); });
+      table.append(fragment);
+      restoreMovedFocus(focusedElement);
+    }
+
+    /** Move checked techniques to the beginning of each criterion group. */
+    function sortCheckedTechniques() {
+      var table = document.getElementById('techs');
+      var focusedElement = document.activeElement;
+      var headings = Array.from(table.querySelectorAll('[data-tech-heading]'));
+      var itemRows = Array.from(table.querySelectorAll('.tech-row:not([data-tech-heading])'));
+
+      headings.forEach(function(heading) {
+        var criterion = heading.dataset.criterion;
+        var rows = itemRows.filter(function(row) {
+          return row.dataset.criterion === criterion;
+        });
+        getCheckedFirstRows(rows, '.tech-chk');
+        var fragment = document.createDocumentFragment();
+        rows.forEach(function(row) { fragment.append(row); });
+        heading.after(fragment);
+      });
+      restoreMovedFocus(focusedElement);
+    }
   </script>
   <?!= HtmlService.createHtmlOutputFromFile('ui-common').getContent(); ?>
 <body style="padding-bottom: 4em;">
@@ -382,12 +493,21 @@
     <td><textarea id="explanation" style="width:100%;height:100px;"></textarea></td>
   </tr>
   <tr>
+    <td colspan="2">
+      <p
+        id="checked-sort-note"
+        class="checked-sort-note"
+        data-i18n="checked-items-move-note"
+      >Checked items move to the beginning of each list. Unchecking them restores their original position.</p>
+    </td>
+  </tr>
+  <tr>
     <th data-i18n="criterion">Criteria</th>
-    <td style="position:relative;height:150px;"><div style="position:absolute;top:0;height:160px;overflow:auto;overflow-x:hidden;padding:5px;width:100%;"><table id="criteria" style="width: 100%"></table></div></td>
+    <td style="position:relative;height:150px;"><div style="position:absolute;top:0;height:160px;overflow:auto;overflow-x:hidden;padding:5px;width:100%;"><table id="criteria" aria-describedby="checked-sort-note" style="width: 100%"></table></div></td>
   </tr>
   <tr>
     <th style="vertical-align: top;" id="tech-title" data-i18n="tech">Techniques</th>
-    <td style="position:relative;height:150px;"><div style="position:absolute;top:0;height:160px;overflow:auto;overflow-x:hidden;padding:5px;width:100%;"><table id="techs" style="width: 100%"></table></div></td>
+    <td style="position:relative;height:150px;"><div style="position:absolute;top:0;height:160px;overflow:auto;overflow-x:hidden;padding:5px;width:100%;"><table id="techs" aria-describedby="checked-sort-note" style="width: 100%"></table></div></td>
   </tr>
   <tr>
     <th><span id="places-title" data-i18n="places">Places</span><p><button type="button" id="all-page">Check All</button></p></th>

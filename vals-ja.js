@@ -677,6 +677,7 @@ function getUiJa ()
     'canceled': '中止しました',
     'error-lump-edit': '一括編集の行/列に不正な値がセットされています。範囲を指定し直してください',
     'preparing': '準備中です',
+    'checked-items-move-note': 'チェックした項目は各一覧の先頭へ移動します。チェックを外すと元の位置に戻ります。',
 
     // words
     'additional-criteria': '追加の達成基準',
@@ -693,6 +694,7 @@ function getUiJa ()
     'memo': '備考',
     'template': 'テンプレート',
     'tester': 'テスト担当者',
+    'page-number-accessible-prefix': 'ページ番号',
 
     // control-panel
     'in-progress': '処理中',

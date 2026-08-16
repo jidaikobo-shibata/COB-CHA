@@ -450,6 +450,67 @@ runCheck('Issue ID allocation and edit targeting', () => {
   }
 });
 
+runCheck('Issue dialog checked ordering and page numbers', () => {
+  const context = {};
+  vm.createContext(context);
+  vm.runInContext(read('sheet-issue.js'), context, {filename: 'sheet-issue.js'});
+
+  const pageNumbers = context.buildPageNumberMap([
+    ['1', 'https://example.com/one'],
+    [2, 'https://example.com/two'],
+    [0, 'https://example.com/zero'],
+    ['', '']
+  ]);
+  const pageNumberCases = [
+    ['1', 'https://example.com/one', '1'],
+    ['different-sheet', 'https://example.com/two', '2'],
+    ['0', 'https://example.com/zero', '0'],
+    ['1', 'https://example.com/changed', '1'],
+    ['missing', 'https://example.com/missing', '']
+  ];
+  pageNumberCases.forEach(([sheetName, url, expected]) => {
+    const actual = context.findPageNumber(pageNumbers, sheetName, url);
+    if (actual === expected) return;
+    reportError(
+      'Issue dialog checked ordering and page numbers',
+      `sheet="${sheetName}", url="${url}": expected "${expected}", received "${actual}"`
+    );
+  });
+
+  const issueUi = read('ui-issue.html');
+  const requiredUiFragments = [
+    'function sortCheckedCriteria()',
+    'function sortCheckedTechniques()',
+    'dataset.originalIndex',
+    'data-i18n="checked-items-move-note"',
+    "pageNumberLabel.className = 'page-number'",
+    "pageNumberLabel.setAttribute('aria-hidden', 'true')",
+    "t('page-number-accessible-prefix', 'Page number')"
+  ];
+  requiredUiFragments.forEach((fragment) => {
+    if (!issueUi.includes(fragment)) {
+      reportError(
+        'Issue dialog checked ordering and page numbers',
+        `missing UI behavior: ${fragment}`
+      );
+    }
+  });
+
+  const dictionaryContext = {};
+  vm.createContext(dictionaryContext);
+  vm.runInContext(read('vals-basic.js'), dictionaryContext, {filename: 'vals-basic.js'});
+  vm.runInContext(read('vals-ja.js'), dictionaryContext, {filename: 'vals-ja.js'});
+  if (
+    dictionaryContext.getUiJa()['page-number-accessible-prefix'] !==
+    'ページ番号'
+  ) {
+    reportError(
+      'Issue dialog checked ordering and page numbers',
+      'Japanese accessible page number prefix is missing'
+    );
+  }
+});
+
 runCheck('UI inline JavaScript syntax', () => {
   for (const file of htmlFiles) {
     const scripts = extractInlineScripts(read(file));
