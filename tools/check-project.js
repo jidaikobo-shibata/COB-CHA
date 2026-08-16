@@ -831,6 +831,7 @@ runCheck('COB-CHA ICL other option behavior', () => {
 
   const situations = context.getIclSituationCobcha();
   const tests = context.getIclTestCobcha();
+  const testsWithPdf = context.getIclTestCobcha(true);
 
   if (!tests['2.4.9'] || tests['2.4.9'].length !== 3 ||
       tests['2.4.4'].some((item) => item.length > 3)) {
@@ -871,7 +872,7 @@ runCheck('COB-CHA ICL other option behavior', () => {
     );
   }
   if (tests['1.4.5-B'][1][2].criteria !== '1.4.5,1.4.9' ||
-      tests['1.4.5-B'][2][2].criteria !== '1.4.5,1.4.9' ||
+      testsWithPdf['1.4.5-B'][2][2].criteria !== '1.4.5,1.4.9' ||
       tests['1.4.5-A'][0][2] !== undefined ||
       tests['1.4.9'].length !== 2) {
     reportError(
@@ -913,8 +914,8 @@ runCheck('COB-CHA ICL other option behavior', () => {
 
     const otherIsApplicable = criterion === '1.3.1' || criterion === '4.1.2';
     const expectedOther = otherIsApplicable ?
-      [['-', 'その他']] :
-      [['-', 'その他', {defaultExcluded: true}]];
+      [['-', 'その他', {pdf: true}]] :
+      [['-', 'その他', {defaultExcluded: true, pdf: true}]];
     if (JSON.stringify(tests[otherId]) !== JSON.stringify(expectedOther)) {
       reportError(
         'COB-CHA ICL other option behavior',
@@ -1079,6 +1080,18 @@ runCheck('COB-CHA PDF ICL adapter behavior', () => {
 
   const situations = context.getIclSituationCobchaPdf();
   const tests = context.getIclTestCobchaPdf();
+  const sourceSituations = context.getIclSituationCobcha();
+  const sourceTests = context.getIclTestCobcha();
+  const sourceTestsWithPdf = context.getIclTestCobcha(true);
+  for (const criterion of Object.keys(sourceSituations)) {
+    if (criterion === 'UI-Common') continue;
+    if (!situations[criterion] || Object.keys(situations[criterion]).length === 0) {
+      reportError(
+        'COB-CHA PDF ICL adapter behavior',
+        `${criterion} must retain at least one PDF check situation`
+      );
+    }
+  }
   for (const criterion of Object.keys(situations)) {
     for (const situationId of Object.keys(situations[criterion])) {
       if (!tests[situationId] || tests[situationId].length === 0) {
@@ -1091,6 +1104,22 @@ runCheck('COB-CHA PDF ICL adapter behavior', () => {
   }
 
   const allItems = Object.values(tests).flat();
+  const sourceItems = Object.values(sourceTests).flat();
+  const sourceItemsWithPdf = Object.values(sourceTestsWithPdf).flat();
+  if (!sourceItemsWithPdf.some((item) => item[2] && item[2].pdf === true) ||
+      read('vals-ja-icl-cobcha-pdf.js').includes('getCobchaPdfTechniqueIds')) {
+    reportError(
+      'COB-CHA PDF ICL adapter behavior',
+      'PDF inclusion must be controlled by the complete ICL options'
+    );
+  }
+  if (sourceItems.some((item) => item[2] && item[2].pdfOnly === true) ||
+      !sourceItemsWithPdf.some((item) => item[2] && item[2].pdfOnly === true)) {
+    reportError(
+      'COB-CHA PDF ICL adapter behavior',
+      'PDF-only checks must be hidden from the complete COB-CHA ICL'
+    );
+  }
   if (!allItems.some((item) => item[0].split('/').includes('PDF1')) ||
       !allItems.some((item) => item[0].split('/').includes('PDF12')) ||
       allItems.some((item) => item[0].split('/').some((id) =>
@@ -1100,9 +1129,16 @@ runCheck('COB-CHA PDF ICL adapter behavior', () => {
       'PDF checks must retain PDF techniques and exclude technology-specific web techniques'
     );
   }
+  if (allItems.some((item) => item[2] && item[2].defaultExcluded === true)) {
+    reportError(
+      'COB-CHA PDF ICL adapter behavior',
+      'selected PDF checks must not be excluded by default'
+    );
+  }
   if (!tests['UI-Common-A'] ||
       !tests['UI-Common-A'][0][1].includes('PDFフォームコントロール') ||
-      !tests['1.1.1-A'][0][1].includes('Altエントリ')) {
+      !tests['1.1.1-A'][0][1].includes('Altエントリ') ||
+      tests['2.4.2'][0][1].includes('ウェブページ')) {
     reportError(
       'COB-CHA PDF ICL adapter behavior',
       'PDF-specific terminology overrides must be applied'

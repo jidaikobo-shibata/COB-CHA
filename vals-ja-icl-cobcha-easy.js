@@ -29,7 +29,10 @@ function getIclTestCobchaEasy() {
       var item = sourceItem.slice();
       var easyOptions = {};
       for (var optionName in options) {
-        if (optionName !== 'easy') easyOptions[optionName] = options[optionName];
+        if (optionName !== 'easy' && optionName !== 'pdf' &&
+            optionName !== 'pdfOnly') {
+          easyOptions[optionName] = options[optionName];
+        }
       }
 
       if (easyOptions.criteria) {

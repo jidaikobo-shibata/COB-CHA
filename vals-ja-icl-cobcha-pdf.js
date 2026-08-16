@@ -1,41 +1,22 @@
 /**
  * PDF adapter for the COB-CHA Implementation Check List.
  *
- * The complete COB-CHA ICL is the source of truth. This file selects checks
- * applicable to PDF and overrides only descriptions that require PDF-specific
- * terminology.
+ * The complete COB-CHA ICL is the source of truth. Checks marked with
+ * {pdf: true} are selected, and this file overrides only descriptions that
+ * require PDF-specific terminology.
  * LICENSE: [CC0](https://creativecommons.org/share-your-work/public-domain/cc0)
  */
 
-function getCobchaPdfTechniqueIds(techniques) {
-  var ids = String(techniques || '').split('/');
-  var hasPdfTechnique = ids.some(function (id) {
-    return /^PDF\d+$/.test(id);
-  });
-  var hasGeneralTechnique = ids.some(function (id) {
-    return /^G\d+$/.test(id);
-  });
-  var isGenericSet = ids.every(function (id) {
+/**
+ * Remove references to implementation techniques that do not apply to PDF.
+ * This does not decide whether the check is included; inclusion is controlled
+ * exclusively by the {pdf: true} option in the complete ICL.
+ */
+function getCobchaPdfRelatedTechniques(techniques) {
+  return String(techniques || '').split('/').filter(function (id) {
     return id === '-' || /^PDF\d+$/.test(id) || /^G\d+$/.test(id) ||
       /^F\d+$/.test(id);
-  });
-  var isF111 = ids.length === 1 && ids[0] === 'F111';
-  var isImplementationIndependent = ids.every(function (id) {
-    return id === '-';
-  });
-  if (!hasPdfTechnique && !(hasGeneralTechnique && isGenericSet) &&
-      !isF111 && !isImplementationIndependent) return '';
-
-  var selected = ids.filter(function (id) {
-    return id === '-' || /^PDF\d+$/.test(id) || /^G\d+$/.test(id) ||
-      /^F\d+$/.test(id);
-  });
-  if (selected.length === 0) return '';
-
-  // G108 describes use of standard markup in general, but the complete ICL
-  // wording for it is HTML-specific. PDF form semantics are covered by PDF12.
-  selected = selected.filter(function (id) { return id !== 'G108'; });
-  return selected.join('/');
+  }).join('/') || '-';
 }
 
 function getCobchaPdfOverrides() {
@@ -59,6 +40,9 @@ function getCobchaPdfOverrides() {
       ['G117', 'フォント、太字、斜体などの見た目によって伝えている情報を、テキストでも理解できる'],
       ['PDF6/PDF20', '表形式の情報はテーブルタグによってマークアップされ、見出しセルとデータセルの関係を理解できる']
     ],
+    '2.4.2' : [
+      ['G88/PDF18/F25', 'PDF文書には内容を説明するタイトルがある']
+    ],
     '3.1.1' : [
       ['PDF16', 'PDF文書のプロパティで、文書全体の主要な言語が正しく設定されている']
     ],
@@ -66,7 +50,7 @@ function getCobchaPdfOverrides() {
       ['PDF19', '文書全体の主要な言語と異なる言語の範囲に、適切なLangエントリが設定されている']
     ],
     '4.1.1' : [
-      ['-', 'PDFの構造とタグ付けに、支援技術による解釈を妨げるエラーがない', {defaultExcluded: true}]
+      ['-', 'PDFの構造とタグ付けに、支援技術による解釈を妨げるエラーがない']
     ],
     '4.1.2-C' : [
       ['PDF10/PDF12', 'PDFフォームコントロールがPDFの標準的な機能で作成され、名前、役割、状態および値を支援技術が理解できる']
@@ -75,30 +59,37 @@ function getCobchaPdfOverrides() {
 }
 
 function getIclTestCobchaPdf() {
-  var sourceTests = getIclTestCobcha();
+  var sourceTests = getIclTestCobcha(true);
   var overrides = getCobchaPdfOverrides();
-  var webOnlySituations = {
-    '2.5.6' : true
-  };
   var tests = {};
 
   for (var situationId in sourceTests) {
-    if (webOnlySituations[situationId]) continue;
-    if (overrides[situationId]) {
-      tests[situationId] = overrides[situationId];
-      continue;
-    }
-
     var selected = [];
     for (var i = 0; i < sourceTests[situationId].length; i++) {
       var sourceItem = sourceTests[situationId][i];
-      var techniques = getCobchaPdfTechniqueIds(sourceItem[0]);
-      if (techniques === '') continue;
+      var options = sourceItem[2];
+      if (!options || typeof options !== 'object' || options.pdf !== true) {
+        continue;
+      }
+
       var item = sourceItem.slice();
-      item[0] = techniques;
+      item[0] = getCobchaPdfRelatedTechniques(item[0]);
+      var pdfOptions = {};
+      for (var optionName in options) {
+        if (optionName !== 'defaultExcluded' && optionName !== 'pdf' &&
+            optionName !== 'pdfOnly' && optionName !== 'easy') {
+          pdfOptions[optionName] = options[optionName];
+        }
+      }
+      if (Object.keys(pdfOptions).length > 0) {
+        item[2] = pdfOptions;
+      } else {
+        item.splice(2, 1);
+      }
       selected.push(item);
     }
-    if (selected.length > 0) tests[situationId] = selected;
+    if (selected.length === 0) continue;
+    tests[situationId] = overrides[situationId] || selected;
   }
 
   return tests;
