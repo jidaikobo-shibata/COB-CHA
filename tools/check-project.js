@@ -933,6 +933,78 @@ runCheck('COB-CHA ICL other option behavior', () => {
   }
 });
 
+runCheck('COB-CHA PDF ICL adapter behavior', () => {
+  const context = {};
+  vm.createContext(context);
+  vm.runInContext(
+    read('vals-ja-icl-cobcha.js'),
+    context,
+    {filename: 'vals-ja-icl-cobcha.js'}
+  );
+  vm.runInContext(
+    read('vals-ja-icl-cobcha-pdf.js'),
+    context,
+    {filename: 'vals-ja-icl-cobcha-pdf.js'}
+  );
+
+  const situations = context.getIclSituationCobchaPdf();
+  const tests = context.getIclTestCobchaPdf();
+  for (const criterion of Object.keys(situations)) {
+    for (const situationId of Object.keys(situations[criterion])) {
+      if (!tests[situationId] || tests[situationId].length === 0) {
+        reportError(
+          'COB-CHA PDF ICL adapter behavior',
+          `${situationId} must have at least one extracted PDF check`
+        );
+      }
+    }
+  }
+
+  const allItems = Object.values(tests).flat();
+  if (!allItems.some((item) => item[0].split('/').includes('PDF1')) ||
+      !allItems.some((item) => item[0].split('/').includes('PDF12')) ||
+      allItems.some((item) => item[0].split('/').some((id) =>
+        /^(ARIA|H|C|SCR|SVR|T)\d+$/.test(id)))) {
+    reportError(
+      'COB-CHA PDF ICL adapter behavior',
+      'PDF checks must retain PDF techniques and exclude technology-specific web techniques'
+    );
+  }
+  if (!tests['UI-Common-A'] ||
+      !tests['UI-Common-A'][0][1].includes('PDFフォームコントロール') ||
+      !tests['1.1.1-A'][0][1].includes('Altエントリ')) {
+    reportError(
+      'COB-CHA PDF ICL adapter behavior',
+      'PDF-specific terminology overrides must be applied'
+    );
+  }
+  if (tests['4.1.2-B'] || tests['1.3.1-B']) {
+    reportError(
+      'COB-CHA PDF ICL adapter behavior',
+      'mixed ARIA and general-technique HTML checks must not leak into the PDF ICL'
+    );
+  }
+  if (tests['2.5.6'] ||
+      tests['3.1.1'][0][1].includes('HTML') ||
+      tests['3.1.2'][0][1].includes('lang属性')) {
+    reportError(
+      'COB-CHA PDF ICL adapter behavior',
+      'web-only wording and planned JavaScript checks must not leak into the PDF ICL'
+    );
+  }
+
+  const cobchaSource = read('COB-CHA.js');
+  const jaSource = read('vals-ja.js');
+  if (!cobchaSource.includes("case 'iclSituationCobchaPdf'") ||
+      !cobchaSource.includes("case 'iclTestCobchaPdf'") ||
+      !jaSource.includes("'CobchaPdf':")) {
+    reportError(
+      'COB-CHA PDF ICL adapter behavior',
+      'the PDF adapter must be selectable and routed through getLangSet'
+    );
+  }
+});
+
 runCheck('Issue page matching behavior', () => {
   const context = {};
   vm.createContext(context);

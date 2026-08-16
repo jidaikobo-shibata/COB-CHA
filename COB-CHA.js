@@ -289,6 +289,8 @@ function getLangSet(setName) {
       case 'iclTestCobcha':          return getIclTestCobcha();
       case 'iclSituationCobchaEasy': return getIclSituationCobchaEasy();
       case 'iclTestCobchaEasy':      return getIclTestCobchaEasy();
+      case 'iclSituationCobchaPdf':  return getIclSituationCobchaPdf();
+      case 'iclTestCobchaPdf':       return getIclTestCobchaPdf();
       case 'iclSituationIcollabo':   return getIclSituationIcollabo();
       case 'iclTestIcollabo':        return getIclTestIcollabo();
     }
