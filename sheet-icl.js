@@ -75,7 +75,7 @@ function generateIclTplSheet(iclType, type) {
     getUiLang("memo", "memo"),
     getUiLang("criterion", "criterion"),
     getUiLang("level", "level"),
-    getUiLang("tech", "tech")
+    getUiLang("related-techniques", "Related Techniques")
 //    getUiLang("icl-note", "-:not applied,　o:conformance,　　x:non-conformance. \"eliminated\": test way not applied")
   ]];
   var msgOrSheetObj = generateSheetIfNotExists(gIclTplSheetName, defaults, "row");
@@ -128,9 +128,22 @@ function getIclTechniqueUrl(techniqueId) {
     'H101': true,
     'H102': true
   };
+  var w3cOnlyTechniqueIds = {
+    'ARIA25': true,
+    'ARIA26': true,
+    'C44': true,
+    'F113': true,
+    'G226': true,
+    'SCR40': true
+  };
   var match = String(techniqueId).match(/^([A-Z]+)\d+$/);
 
   if (!match || !directories[match[1]]) return '';
+
+  if (w3cOnlyTechniqueIds[techniqueId]) {
+    return 'https://www.w3.org/WAI/WCAG22/Techniques/' +
+      directories[match[1]] + '/' + techniqueId;
+  }
 
   var wcagVersion = wcag22TechniqueIds[techniqueId] ? 'WCAG22' : 'WCAG21';
 

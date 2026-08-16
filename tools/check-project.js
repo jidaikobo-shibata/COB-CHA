@@ -414,6 +414,26 @@ runCheck('ICL technique link behavior', () => {
     }
   }
 
+  const w3cOnlyCases = [
+    ['ARIA25', 'aria'],
+    ['ARIA26', 'aria'],
+    ['C44', 'css'],
+    ['F113', 'failures'],
+    ['G226', 'general'],
+    ['SCR40', 'client-side-script']
+  ];
+  for (const [techniqueId, directory] of w3cOnlyCases) {
+    const expected =
+      `https://www.w3.org/WAI/WCAG22/Techniques/${directory}/${techniqueId}`;
+    const actual = context.getIclTechniqueUrl(techniqueId);
+    if (actual !== expected) {
+      reportError(
+        'ICL technique link behavior',
+        `expected ${expected}, received ${actual}`
+      );
+    }
+  }
+
   if (context.getIclTechniqueUrl('-') !== '') {
     reportError(
       'ICL technique link behavior',
@@ -447,6 +467,190 @@ runCheck('ICL technique link behavior', () => {
     reportError(
       'ICL technique link behavior',
       'applicability edits must refresh only relevant ICL technique links'
+    );
+  }
+});
+
+runCheck('COB-CHA ICL other option behavior', () => {
+  const context = {};
+  vm.createContext(context);
+  vm.runInContext(
+    read('vals-ja-icl-cobcha.js'),
+    context,
+    {filename: 'vals-ja-icl-cobcha.js'}
+  );
+
+  const situations = context.getIclSituationCobcha();
+  const tests = context.getIclTestCobcha();
+
+  for (const criterion of Object.keys(situations)) {
+    const otherId = `${criterion}-Other`;
+    const situationIds = Object.keys(situations[criterion]);
+
+    if (situationIds[situationIds.length - 1] !== otherId ||
+        situations[criterion][otherId] !== 'その他') {
+      reportError(
+        'COB-CHA ICL other option behavior',
+        `${criterion} must end with an Other situation`
+      );
+    }
+
+    const otherIsApplicable = criterion === '1.3.1' || criterion === '4.1.2';
+    const expectedOther = otherIsApplicable ?
+      [['-', 'その他']] : [['-', 'その他', true]];
+    if (JSON.stringify(tests[otherId]) !== JSON.stringify(expectedOther)) {
+      reportError(
+        'COB-CHA ICL other option behavior',
+        otherIsApplicable ?
+          `${criterion} Other must be applicable by default` :
+          `${criterion} must have an initially excluded Other check item`
+      );
+    }
+  }
+
+  const obsolete412CatchAll = tests['4.1.2-A'].some(
+    (item) => item[1].includes('4.1.2の趣旨に沿って')
+  );
+  if (obsolete412CatchAll) {
+    reportError(
+      'COB-CHA ICL other option behavior',
+      'the former 4.1.2-A catch-all item must be removed'
+    );
+  }
+
+  const imageAlternative = tests['1.1.1-A'];
+  if (imageAlternative.some((item) => item[1].includes('iframeの内容が地図')) ||
+      imageAlternative.length !== 2) {
+    reportError(
+      'COB-CHA ICL other option behavior',
+      'the former 1.1.1-A iframe item must be removed'
+    );
+  }
+
+  const interactiveAlternative = tests['1.1.1-C'];
+  if (interactiveAlternative[3][0] !== 'H65' ||
+      interactiveAlternative[3][2] === true ||
+      interactiveAlternative[4][0] !== 'H24' ||
+      interactiveAlternative[4][2] !== true) {
+    reportError(
+      'COB-CHA ICL other option behavior',
+      '1.1.1-C title and area checks must have the intended order and defaults'
+    );
+  }
+
+  const customControl = tests['4.1.2-B'][0];
+  if (customControl[0] !== 'ARIA4/ARIA5/ARIA16/G202' ||
+      !customControl[1].includes('役割に応じたキーボード操作及びフォーカス管理')) {
+    reportError(
+      'COB-CHA ICL other option behavior',
+      '4.1.2-B-1 must cover custom control semantics and operation'
+    );
+  }
+
+  const ariaHeading = tests['1.3.1-B'][1];
+  if (ariaHeading[0] !== 'ARIA12' ||
+      !ariaHeading[1].includes('見出し階層に対応した適切なaria-level')) {
+    reportError(
+      'COB-CHA ICL other option behavior',
+      '1.3.1-B-2 must prefer native headings and require a proper aria-level'
+    );
+  }
+
+  const ariaRegion = tests['1.3.1-B'][5];
+  if (ariaRegion[0] !== 'ARIA20' ||
+      !ariaRegion[1].includes('アクセシブルな名前を持つsection要素') ||
+      !ariaRegion[1].includes('重要な領域に限って')) {
+    reportError(
+      'COB-CHA ICL other option behavior',
+      '1.3.1-B-6 must limit named regions to important unmatched areas'
+    );
+  }
+
+  const errorDialog = tests['3.3.1'][4];
+  const correctionDialog = tests['3.3.3-B'][2];
+  if (!errorDialog[1].includes('適切に実装されたalertdialog') ||
+      !errorDialog[1].includes('エラー箇所を特定できる') ||
+      !correctionDialog[1].includes('適切に実装されたalertdialog') ||
+      !correctionDialog[1].includes('エラーの修正方法が提供されている')) {
+    reportError(
+      'COB-CHA ICL other option behavior',
+      'ARIA18 checks must identify a proper alertdialog and its purpose'
+    );
+  }
+
+  const allItems = Object.values(tests).flat();
+  if (tests['3.3.2'].some((item) => item[0] === 'H65') ||
+      allItems.some((item) => item[0] === 'F87')) {
+    reportError(
+      'COB-CHA ICL other option behavior',
+      'obsolete H65 for 3.3.2 and F87 checks must be removed'
+    );
+  }
+
+  if (tests['2.4.3'][0][0] !== 'G59/C27/PDF3' ||
+      tests['2.4.8'][3][0] !== 'G127' ||
+      tests['2.4.8'][3][1].includes('メタデータ') ||
+      tests['3.1.3'][0][0] !== 'G101/G55/H40/G62') {
+    reportError(
+      'COB-CHA ICL other option behavior',
+      'obsolete H4, H59, and H60 references must be removed'
+    );
+  }
+
+  const expectedNewTechniques = [
+    ['1.2.3', 'G226'],
+    ['1.2.5', 'F113'],
+    ['1.3.1-A', 'H101'],
+    ['1.3.1-A', 'F111'],
+    ['1.4.10', 'G224'],
+    ['1.4.10', 'G225'],
+    ['2.2.2', 'F112'],
+    ['2.3.3', 'SCR40'],
+    ['2.4.3', 'H102'],
+    ['2.4.7', 'C45'],
+    ['2.4.8', 'ARIA26'],
+    ['2.5.3-A', 'F111'],
+    ['2.5.5', 'C44'],
+    ['4.1.2-A', 'F111'],
+    ['4.1.3-A', 'ARIA25']
+  ];
+  for (const [situation, technique] of expectedNewTechniques) {
+    if (!tests[situation].some((item) => item[0].split('/').includes(technique))) {
+      reportError(
+        'COB-CHA ICL other option behavior',
+        `${situation} must include ${technique}`
+      );
+    }
+  }
+
+  if (tests['1.3.1-A'][5][0] !== 'H101' ||
+      tests['1.3.1-B'][0][0] !== 'ARIA11') {
+    reportError(
+      'COB-CHA ICL other option behavior',
+      'H101 must be 1.3.1-A-6 and ARIA11 must remain an independent B item'
+    );
+  }
+
+  const independentF111Items = [
+    tests['1.3.1-A'].filter((item) => item[0] === 'F111'),
+    tests['2.5.3-A'].filter((item) => item[0] === 'F111'),
+    tests['4.1.2-A'].filter((item) => item[0] === 'F111')
+  ];
+  if (independentF111Items.some((items) => items.length !== 1) ||
+      allItems.some((item) => item[0] !== 'F111' &&
+        item[0].split('/').includes('F111'))) {
+    reportError(
+      'COB-CHA ICL other option behavior',
+      'F111 must be one independent item in 1.3.1, 2.5.3, and 4.1.2'
+    );
+  }
+
+  if (!tests['2.5.8'][0][1].includes('直径24 CSSピクセル') ||
+      tests['2.5.8'][0][1].includes('44ピクセル') ||
+      allItems.some((item) => item[0].split('/').includes('ARIA27'))) {
+    reportError(
+      'COB-CHA ICL other option behavior',
+      'C42 must describe 24px spacing and experimental ARIA27 must stay excluded'
     );
   }
 });

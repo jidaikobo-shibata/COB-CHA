@@ -691,6 +691,7 @@ function getUiJa ()
     'criterion': '達成基準',
     'check': '判定',
     'tech': 'テクニック',
+    'related-techniques': '関連テクニック',
     'memo': '備考',
     'template': 'テンプレート',
     'tester': 'テスト担当者',
