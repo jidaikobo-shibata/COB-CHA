@@ -151,7 +151,7 @@ function getIclSituationCobchaEasy () {
 /**
  * Each Test of Implement Check List
  * @return Array
- * ['techmniques', 'explanation', default not apply]
+ * ['techniques', 'explanation', {defaultExcluded, criteria, easy}]
  */
 function getIclTestCobchaEasy () {
   return {

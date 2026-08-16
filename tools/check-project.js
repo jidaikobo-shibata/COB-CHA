@@ -403,6 +403,27 @@ runCheck('ICL evaluation batch behavior', () => {
     );
   }
 
+  const objectOptions = context.getIclTestOptions([
+    'G202',
+    'Example',
+    {defaultExcluded: true, criteria: '2.1.1,2.1.3', easy: true}
+  ]);
+  const legacyOptions = context.getIclTestOptions([
+    'G202',
+    'Example',
+    true,
+    '2.1.1,2.1.3'
+  ]);
+  if (!objectOptions.defaultExcluded || !objectOptions.easy ||
+      objectOptions.criteria !== '2.1.1,2.1.3' ||
+      !legacyOptions.defaultExcluded ||
+      legacyOptions.criteria !== '2.1.1,2.1.3') {
+    reportError(
+      'ICL evaluation batch behavior',
+      'ICL options must support object metadata and legacy definitions'
+    );
+  }
+
   const rows = Array.from(
     context.transposeIclResultColumns([
       [['o'], ['x'], ['-']],
@@ -713,7 +734,7 @@ runCheck('COB-CHA ICL other option behavior', () => {
   const sharedErrorPreventionRows = []
     .concat(tests['3.3.4-A'], tests['3.3.4-B'], tests['3.3.4-C']);
   if (sharedErrorPreventionRows.some((item) =>
-      item[3] !== '3.3.4,3.3.6') ||
+      item[2].criteria !== '3.3.4,3.3.6') ||
       !tests['3.3.6'] || tests['3.3.6'].length !== 1 ||
       tests['3.3.6'][0][0] !== '-' ||
       tests['3.3.6-A'] || tests['3.3.6-B']) {
@@ -723,8 +744,8 @@ runCheck('COB-CHA ICL other option behavior', () => {
     );
   }
   if (tests['2.1.1'].slice(0, 3).some((item) =>
-      item[3] !== '2.1.1,2.1.3') ||
-      tests['2.1.1'][3][3] !== undefined ||
+      item[2].criteria !== '2.1.1,2.1.3') ||
+      tests['2.1.1'][3][2].criteria !== undefined ||
       !tests['2.1.3'] || tests['2.1.3'].length !== 1 ||
       tests['2.1.3'][0][0] !== '-') {
     reportError(
@@ -733,17 +754,17 @@ runCheck('COB-CHA ICL other option behavior', () => {
     );
   }
   if (tests['3.3.8'].slice(0, 3).some((item) =>
-      item[3] !== '3.3.8,3.3.9') ||
-      tests['3.3.8'][4][3] !== '3.3.8,3.3.9' ||
+      item[2].criteria !== '3.3.8,3.3.9') ||
+      tests['3.3.8'][4][2].criteria !== '3.3.8,3.3.9' ||
       tests['3.3.9'].length !== 1 || tests['3.3.9'][0][0] !== '-') {
     reportError(
       'COB-CHA ICL other option behavior',
       '3.3.8 checks must be shared while 3.3.9 retains its narrower exceptions'
     );
   }
-  if (tests['1.4.5-B'][1][3] !== '1.4.5,1.4.9' ||
-      tests['1.4.5-B'][2][3] !== '1.4.5,1.4.9' ||
-      tests['1.4.5-A'][0][3] !== undefined ||
+  if (tests['1.4.5-B'][1][2].criteria !== '1.4.5,1.4.9' ||
+      tests['1.4.5-B'][2][2].criteria !== '1.4.5,1.4.9' ||
+      tests['1.4.5-A'][0][2] !== undefined ||
       tests['1.4.9'].length !== 2) {
     reportError(
       'COB-CHA ICL other option behavior',
@@ -763,7 +784,7 @@ runCheck('COB-CHA ICL other option behavior', () => {
       tests['UI-Common-Other'] || commonItems.length !== 4 ||
       expectedCommonItems.some(([technique, criteria]) =>
         !commonItems.some((item) =>
-          item[0] === technique && item[2] === false && item[3] === criteria))) {
+          item[0] === technique && item[2].criteria === criteria))) {
     reportError(
       'COB-CHA ICL other option behavior',
       'shared user-interface checks must be visible and map to their criteria'
@@ -784,7 +805,8 @@ runCheck('COB-CHA ICL other option behavior', () => {
 
     const otherIsApplicable = criterion === '1.3.1' || criterion === '4.1.2';
     const expectedOther = otherIsApplicable ?
-      [['-', 'その他']] : [['-', 'その他', true]];
+      [['-', 'その他']] :
+      [['-', 'その他', {defaultExcluded: true}]];
     if (JSON.stringify(tests[otherId]) !== JSON.stringify(expectedOther)) {
       reportError(
         'COB-CHA ICL other option behavior',
@@ -817,7 +839,7 @@ runCheck('COB-CHA ICL other option behavior', () => {
   const interactiveAlternative = tests['1.1.1-C'];
   if (interactiveAlternative.length !== 3 ||
       interactiveAlternative[2][0] !== 'H24' ||
-      interactiveAlternative[2][2] !== true) {
+      interactiveAlternative[2][2].defaultExcluded !== true) {
     reportError(
       'COB-CHA ICL other option behavior',
       'shared form-control checks must leave the 1.1.1-C area check intact'

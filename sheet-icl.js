@@ -401,13 +401,14 @@ function generateIcl(sheet, iclType, type) {
           var eachTechName = eachTechNames.join("\n");
         } else {
           // COB-CHA , Icollabo
+          var testOptions = getIclTestOptions(iclTest[testId][l]);
           if (iclType.indexOf('Cobcha') != -1) {
             var eachTechId = iclTest[testId][l][0];
           } else {
             var eachTechId = iclTest[testId][l][0].split("/").join("\n");
           }
           var eachTechName = iclTest[testId][l][1];
-          isApply = iclTest[testId][l][2] ? mF : isApply;
+          isApply = testOptions.defaultExcluded ? mF : isApply;
         }
         
         // WCAG 2.2 4.1.1 sets the default ICL value to "Not Applicable"
@@ -415,7 +416,8 @@ function generateIcl(sheet, iclType, type) {
           isApply = mF; // x or F
         }
 
-        var relatedCriteria = iclTest[testId][l][3] || cCriterion;
+        var relatedCriteria = typeof testOptions !== 'undefined' &&
+          testOptions.criteria ? testOptions.criteria : cCriterion;
         eachTest.push([eachTestId, "", isApply, "", relatedCriteria, clevel, eachTechId, eachTechName]);
         eachNum++;
       }
@@ -451,6 +453,28 @@ function generateIcl(sheet, iclType, type) {
   setChecklistBorders(sheet.getRange(1, 1, row - 1, 8));
 
   return true;
+}
+
+/**
+ * Normalize metadata attached to an ICL check definition.
+ *
+ * New definitions use an options object as the third array element. The
+ * legacy boolean and fourth-element criteria are accepted so customized ICL
+ * definitions continue to work.
+ *
+ * @param Array testDefinition
+ * @return Object
+ */
+function getIclTestOptions(testDefinition) {
+  var options = testDefinition[2];
+  if (options && typeof options === 'object' && !Array.isArray(options)) {
+    return options;
+  }
+
+  return {
+    defaultExcluded: options === true,
+    criteria: testDefinition[3] || ''
+  };
 }
 
 /**
