@@ -365,7 +365,104 @@ runCheck('ICL evaluation batch behavior', () => {
     );
   }
 
+  const markCases = [
+    [[], '-'],
+    [['-'], '-'],
+    [['-', 'o'], 'o'],
+    [['', 'o'], '?'],
+    [['?', 'x'], 'x']
+  ];
+  for (const [values, expectedMark] of markCases) {
+    const actualMark = context.summarizeIclMarks(
+      values,
+      ['?', '-', 'o', 'x']
+    );
+    if (actualMark !== expectedMark) {
+      reportError(
+        'ICL evaluation batch behavior',
+        `expected ${JSON.stringify(values)} to summarize as ` +
+          `${expectedMark}, received ${actualMark}`
+      );
+    }
+  }
+
+  const pageRows = [
+    ['ID', 'Check', 'Excluded', 'Memo', 'Criterion', 'Level'],
+    ['9.9.8: Shared check', '', '', '', '', ''],
+    ['Shared situation', '', '', '', '', ''],
+    ['9.9.8-1', 'o', '', 'memo', '9.9.8,9.9.9', 'A']
+  ];
+  const aggregated = Array.from(
+    context.aggregateIclPageResults(
+      pageRows,
+      ['?', '-', 'o', 'x']
+    ),
+    (row) => Array.from(row)
+  );
+  if (aggregated[1][0] !== 'o' || aggregated[2][0] !== '') {
+    reportError(
+      'ICL evaluation batch behavior',
+      'criterion headings must be aggregated without assigning results to situations'
+    );
+  }
+
+  vm.runInContext(read('input-utility.js'), context, {
+    filename: 'input-utility.js'
+  });
+  const transfer = context.getIclScTransferRows(
+    pageRows,
+    [['A', '9.9.8'], ['A', '9.9.9']],
+    ['?', '-', 'o', 'x']
+  );
+  const transferredResults = Array.from(
+    transfer.results,
+    (row) => Array.from(row)
+  );
+  if (JSON.stringify(transferredResults) !== JSON.stringify([['o'], ['o']])) {
+    reportError(
+      'ICL evaluation batch behavior',
+      `expected ICL-to-SC transfer [["o"],["o"]], received ` +
+        JSON.stringify(transferredResults)
+    );
+  }
+
+  const nestedCriteriaRows = [
+    ['ID', 'Check', 'Excluded', 'Memo', 'Criterion', 'Level'],
+    ['3.3.4: Error prevention', '', '', '', '', ''],
+    ['3.3.4-A-1', 'o', '', '', '3.3.4,3.3.6', 'AA'],
+    ['3.3.6: Error prevention all', '', '', '', '', ''],
+    ['3.3.6-1', 'x', '', '', '3.3.6', 'AAA']
+  ];
+  const nestedResults = context.calculateIclPageResults(
+    nestedCriteriaRows,
+    ['?', '-', 'o', 'x']
+  ).criteria;
+  if (nestedResults['3.3.4'] !== 'o' || nestedResults['3.3.6'] !== 'x') {
+    reportError(
+      'ICL evaluation batch behavior',
+      'shared lower-scope checks and higher-scope-only checks must aggregate independently'
+    );
+  }
+
   const source = read('sheet-icl.js');
+  const evaluateSource = source.slice(
+    source.indexOf('function evaluateIcl('),
+    source.indexOf('\n}', source.indexOf('function evaluateIcl(')) + 2
+  );
+  if (evaluateSource.includes('gIclTplSheetName') ||
+      evaluateSource.includes('iclTplSheet')) {
+    reportError(
+      'ICL evaluation batch behavior',
+      'ICL evaluation must not depend on the disposable ICL template sheet'
+    );
+  }
+  if (!evaluateSource.includes('.getRange(iclFirstRow, 1, resultRowCount, 26)') ||
+      !evaluateSource.includes('.copyTo(iclSheet.getRange(1, 1))')) {
+    reportError(
+      'ICL evaluation batch behavior',
+      'the result sheet must be based on the ICL applied to a target page'
+    );
+  }
   if (!source.includes('.setValues(resultRows);')) {
     reportError(
       'ICL evaluation batch behavior',
@@ -442,6 +539,47 @@ runCheck('ICL technique link behavior', () => {
   }
 
   const source = read('sheet-icl.js');
+  const understandingUrl = context.getIclUnderstandingUrl(
+    'error-prevention-all'
+  );
+  if (understandingUrl !==
+      'https://waic.jp/translations/WCAG22/Understanding/' +
+      'error-prevention-all') {
+    reportError(
+      'ICL technique link behavior',
+      `unexpected Understanding URL: ${understandingUrl}`
+    );
+  }
+  if (!source.includes('getIclCriterionHeadingRichText(') ||
+      !source.includes('.setRichTextValue(') ||
+      !source.includes('.setForegroundColor(gLabelColorDarkText)')) {
+    reportError(
+      'ICL technique link behavior',
+      'criterion headings must link to WCAG 2.2 Understanding pages'
+    );
+  }
+  const wcag22UnderstandingSlugs = [
+    'focus-not-obscured-minimum',
+    'focus-not-obscured-enhanced',
+    'focus-appearance',
+    'dragging-movements',
+    'target-size-minimum',
+    'consistent-help',
+    'redundant-entry',
+    'accessible-authentication-minimum',
+    'accessible-authentication-enhanced'
+  ];
+  for (const dictionaryFile of ['vals-ja.js', 'vals-en.js']) {
+    const dictionarySource = read(dictionaryFile);
+    for (const slug of wcag22UnderstandingSlugs) {
+      if (!dictionarySource.includes(`'${slug}'`)) {
+        reportError(
+          'ICL technique link behavior',
+          `${dictionaryFile} must define the WCAG 2.2 slug ${slug}`
+        );
+      }
+    }
+  }
   if (!source.includes('range.setRichTextValues(richTextValues)')) {
     reportError(
       'ICL technique link behavior',
@@ -483,7 +621,74 @@ runCheck('COB-CHA ICL other option behavior', () => {
   const situations = context.getIclSituationCobcha();
   const tests = context.getIclTestCobcha();
 
+  if (!tests['2.4.9'] || tests['2.4.9'].length !== 3 ||
+      tests['2.4.4'].some((item) => item.length > 3)) {
+    reportError(
+      'COB-CHA ICL other option behavior',
+      '2.4.4 and 2.4.9 must retain independent implementation rows'
+    );
+  }
+  const sharedErrorPreventionRows = []
+    .concat(tests['3.3.4-A'], tests['3.3.4-B'], tests['3.3.4-C']);
+  if (sharedErrorPreventionRows.some((item) =>
+      item[3] !== '3.3.4,3.3.6') ||
+      !tests['3.3.6'] || tests['3.3.6'].length !== 1 ||
+      tests['3.3.6'][0][0] !== '-' ||
+      tests['3.3.6-A'] || tests['3.3.6-B']) {
+    reportError(
+      'COB-CHA ICL other option behavior',
+      '3.3.4 checks must be shared with 3.3.6 while broader forms remain independent'
+    );
+  }
+  if (tests['2.1.1'].slice(0, 3).some((item) =>
+      item[3] !== '2.1.1,2.1.3') ||
+      tests['2.1.1'][3][3] !== undefined ||
+      !tests['2.1.3'] || tests['2.1.3'].length !== 1 ||
+      tests['2.1.3'][0][0] !== '-') {
+    reportError(
+      'COB-CHA ICL other option behavior',
+      '2.1.1 keyboard checks must be shared while its exception remains specific to 2.1.1'
+    );
+  }
+  if (tests['3.3.8'].slice(0, 3).some((item) =>
+      item[3] !== '3.3.8,3.3.9') ||
+      tests['3.3.8'][4][3] !== '3.3.8,3.3.9' ||
+      tests['3.3.9'].length !== 1 || tests['3.3.9'][0][0] !== '-') {
+    reportError(
+      'COB-CHA ICL other option behavior',
+      '3.3.8 checks must be shared while 3.3.9 retains its narrower exceptions'
+    );
+  }
+  if (tests['1.4.5-B'][1][3] !== '1.4.5,1.4.9' ||
+      tests['1.4.5-B'][2][3] !== '1.4.5,1.4.9' ||
+      tests['1.4.5-A'][0][3] !== undefined ||
+      tests['1.4.9'].length !== 2) {
+    reportError(
+      'COB-CHA ICL other option behavior',
+      '1.4.5 and 1.4.9 must share only checks with the same image-of-text scope'
+    );
+  }
+  const commonSituations = situations['UI-Common'];
+  const commonItems = []
+    .concat(tests['UI-Common-A'], tests['UI-Common-B']);
+  const expectedCommonItems = [
+    ['G108/H44/ARIA6/ARIA10/ARIA14/ARIA16/PDF10', '1.1.1,1.3.1,4.1.2'],
+    ['G108/H65', '1.1.1,1.3.1,4.1.2'],
+    ['F111', '1.3.1,2.5.3,4.1.2'],
+    ['G83/PDF5', '3.3.1,3.3.3']
+  ];
+  if (!commonSituations || commonSituations['UI-Common-Other'] ||
+      tests['UI-Common-Other'] || commonItems.length !== 4 ||
+      expectedCommonItems.some(([technique, criteria]) =>
+        !commonItems.some((item) =>
+          item[0] === technique && item[2] === false && item[3] === criteria))) {
+    reportError(
+      'COB-CHA ICL other option behavior',
+      'shared user-interface checks must be visible and map to their criteria'
+    );
+  }
   for (const criterion of Object.keys(situations)) {
+    if (!/^\d+\.\d+\.\d+$/.test(criterion)) continue;
     const otherId = `${criterion}-Other`;
     const situationIds = Object.keys(situations[criterion]);
 
@@ -528,19 +733,18 @@ runCheck('COB-CHA ICL other option behavior', () => {
   }
 
   const interactiveAlternative = tests['1.1.1-C'];
-  if (interactiveAlternative[3][0] !== 'H65' ||
-      interactiveAlternative[3][2] === true ||
-      interactiveAlternative[4][0] !== 'H24' ||
-      interactiveAlternative[4][2] !== true) {
+  if (interactiveAlternative.length !== 3 ||
+      interactiveAlternative[2][0] !== 'H24' ||
+      interactiveAlternative[2][2] !== true) {
     reportError(
       'COB-CHA ICL other option behavior',
-      '1.1.1-C title and area checks must have the intended order and defaults'
+      'shared form-control checks must leave the 1.1.1-C area check intact'
     );
   }
 
   const customControl = tests['4.1.2-B'][0];
   if (customControl[0] !== 'ARIA4/ARIA5/ARIA16/G202' ||
-      !customControl[1].includes('役割に応じたキーボード操作及びフォーカス管理')) {
+      !customControl[1].includes('役割に応じたキーボード操作およびフォーカス管理')) {
     reportError(
       'COB-CHA ICL other option behavior',
       '4.1.2-B-1 must cover custom control semantics and operation'
@@ -566,7 +770,7 @@ runCheck('COB-CHA ICL other option behavior', () => {
     );
   }
 
-  const errorDialog = tests['3.3.1'][4];
+  const errorDialog = tests['3.3.1'][3];
   const correctionDialog = tests['3.3.3-B'][2];
   if (!errorDialog[1].includes('適切に実装されたalertdialog') ||
       !errorDialog[1].includes('エラー箇所を特定できる') ||
@@ -601,7 +805,7 @@ runCheck('COB-CHA ICL other option behavior', () => {
     ['1.2.3', 'G226'],
     ['1.2.5', 'F113'],
     ['1.3.1-A', 'H101'],
-    ['1.3.1-A', 'F111'],
+    ['UI-Common-A', 'F111'],
     ['1.4.10', 'G224'],
     ['1.4.10', 'G225'],
     ['2.2.2', 'F112'],
@@ -609,9 +813,7 @@ runCheck('COB-CHA ICL other option behavior', () => {
     ['2.4.3', 'H102'],
     ['2.4.7', 'C45'],
     ['2.4.8', 'ARIA26'],
-    ['2.5.3-A', 'F111'],
     ['2.5.5', 'C44'],
-    ['4.1.2-A', 'F111'],
     ['4.1.3-A', 'ARIA25']
   ];
   for (const [situation, technique] of expectedNewTechniques) {
@@ -631,17 +833,11 @@ runCheck('COB-CHA ICL other option behavior', () => {
     );
   }
 
-  const independentF111Items = [
-    tests['1.3.1-A'].filter((item) => item[0] === 'F111'),
-    tests['2.5.3-A'].filter((item) => item[0] === 'F111'),
-    tests['4.1.2-A'].filter((item) => item[0] === 'F111')
-  ];
-  if (independentF111Items.some((items) => items.length !== 1) ||
-      allItems.some((item) => item[0] !== 'F111' &&
-        item[0].split('/').includes('F111'))) {
+  if (commonItems.filter((item) => item[0] === 'F111').length !== 1 ||
+      allItems.filter((item) => item[0].split('/').includes('F111')).length !== 1) {
     reportError(
       'COB-CHA ICL other option behavior',
-      'F111 must be one independent item in 1.3.1, 2.5.3, and 4.1.2'
+      'F111 must be one shared item for 1.3.1, 2.5.3, and 4.1.2'
     );
   }
 

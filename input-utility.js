@@ -307,6 +307,30 @@ function doLumpEditWithFilter(row, col, vals, is_append, filterKey) {
  * iclToSc
  * @return String
  */
+function getIclScTransferRows(iclRows, usingCriteria, marks) {
+  var criterionResults = calculateIclPageResults(iclRows, marks).criteria;
+  var criterionMemos = {};
+  iclRows.forEach(function (row) {
+    var memo = String(row[3] || '').trim();
+    if (memo === '') return;
+    parseIclCriteria(row[4]).forEach(function (criterion) {
+      if (!criterionMemos[criterion]) criterionMemos[criterion] = [];
+      if (criterionMemos[criterion].indexOf(memo) === -1) {
+        criterionMemos[criterion].push(memo);
+      }
+    });
+  });
+
+  var results = [];
+  var memos = [];
+  usingCriteria.forEach(function (criterion) {
+    var criterionId = criterion[1];
+    results.push([criterionResults[criterionId] || '']);
+    memos.push([(criterionMemos[criterionId] || []).join('\n')]);
+  });
+  return {results: results, memos: memos};
+}
+
 function doApplyTargetIclToSc() {
   var allSheets = getSelectedSheets();
   if (allSheets.length == 0) {
@@ -318,12 +342,7 @@ function doApplyTargetIclToSc() {
   var msg = getUiLang('template-caution', 'CAUTION: All result will be overwritten.');
   if(showConfirm(msg) != "OK") return getUiLang('canceled', 'canceled');
   
-  // mark
   var mark = getProp('mark');
-  var mT = mark[2];
-  var mF = mark[3];
-  var mD = mark[1];
-
   var n = 0;
   var usingCriteria = getUsingCriteria();
 
@@ -333,67 +352,14 @@ function doApplyTargetIclToSc() {
   for (var i = 0; i < allSheets.length; i++) {
     var lastrow = allSheets[i].getLastRow();
     if (row2start >= lastrow) continue;
-    var iclResults = allSheets[i].getRange(row2start, 2, lastrow, 4).getValues();
-
-    var ScResultsTmp = {};
-    var ScApplyTmp = {};
-    var ScMemoTmp = {};
-    for (var j = 0; j < iclResults.length; j++) {
-      var criterion = iclResults[j][3];
-      if (criterion == '') continue;
-      if (typeof ScResultsTmp[criterion] === "undefined") ScResultsTmp[criterion] = [];
-      if (typeof ScApplyTmp[criterion] === "undefined") ScApplyTmp[criterion] = [];
-      if (typeof ScMemoTmp[criterion] === "undefined") ScMemoTmp[criterion] = [];
-      ScResultsTmp[criterion].push(iclResults[j][0]);
-      ScApplyTmp[criterion].push(iclResults[j][1]);
-      if (iclResults[j][2] != '' && ScMemoTmp[criterion].indexOf(iclResults[j][2])) {
-        ScMemoTmp[criterion].push(iclResults[j][2]);
-      }
-    }
-   
-    var ScResults = [];
-    var ScMemos = [];
-    for (var j = 0; j < usingCriteria.length; j++) {
-      var cCriterion = usingCriteria[j][1];
-      if (typeof ScResultsTmp[cCriterion] === "undefined") {
-        ScResults.push(['']);
-        ScMemos.push(['']);
-      } else {
-        ScMemos.push([ScMemoTmp[cCriterion].join("\n").trim()]);
-
-        // N/A Only
-        //var arr = ScApplyTmp[cCriterion].join().match(/x/g);
-        var xCount = ScApplyTmp[cCriterion].filter(function(v){ return v === 'x'; }).length;
-        if (ScApplyTmp[cCriterion].length > 0 && xCount === ScResultsTmp[cCriterion].length) {
-          ScResults.push([mD]);
-          continue;
-        }
-
-        // not yet (no check found)
-        if (ScResultsTmp[cCriterion].every(function(v){ return v === ''; })) {
-          ScResults.push(['']);
-          continue;
-        }
-
-        // at least one Fail found
-        if (ScResultsTmp[cCriterion].indexOf(mF) >= 0) {
-          ScResults.push([mF]);
-          continue;
-        }
-        
-        // No comformance and N/A
-        if (ScResultsTmp[cCriterion].indexOf(mT) == -1 && ScResultsTmp[cCriterion].indexOf(mD) >= 0) {
-          ScResults.push([mD]);
-          continue;
-        }
-
-        ScResults.push([mT]);
-      }
-    }
+    var iclRows = allSheets[i]
+      .getRange(row2start, 1, lastrow - row2start + 1, 6)
+      .getValues();
+    var transfer = getIclScTransferRows(iclRows, usingCriteria, mark);
     
     // set
-    allSheets[i].getRange(5, 2, ScResults.length, 1).setValues(ScResults);
-    allSheets[i].getRange(5, 4, ScMemos.length, 1).setValues(ScMemos);
+    allSheets[i].getRange(5, 2, transfer.results.length, 1).setValues(transfer.results);
+    allSheets[i].getRange(5, 4, transfer.memos.length, 1).setValues(transfer.memos);
     
     n++;
   }

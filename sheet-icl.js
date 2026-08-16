@@ -61,6 +61,91 @@ function transposeIclResultColumns(resultColumns) {
   return rows;
 }
 
+function parseIclCriteria(value) {
+  var matches = String(value || '').match(/\d+\.\d+\.\d+/g);
+  return matches ? matches.filter(function (criterion, index) {
+    return matches.indexOf(criterion) === index;
+  }) : [];
+}
+
+function summarizeIclMarks(values, marks) {
+  var unknown = marks[0];
+  var notApplicable = marks[1];
+  var pass = marks[2];
+  var fail = marks[3];
+  if (values.length === 0) return notApplicable;
+  if (values.every(function (value) { return value === notApplicable; })) {
+    return notApplicable;
+  }
+  if (values.indexOf(fail) !== -1) return fail;
+  if (values.indexOf('') !== -1 || values.indexOf(unknown) !== -1) return unknown;
+  if (values.indexOf(pass) !== -1) return pass;
+  return unknown;
+}
+
+function calculateIclPageResults(pageRows, marks) {
+  var fail = marks[3];
+  var output = pageRows.map(function (row) { return [row[1]]; });
+  var headingRows = [];
+  var criterionValues = {};
+
+  for (var row = 1; row < pageRows.length; row++) {
+    var idOrLabel = String(pageRows[row][0] || '');
+    var criteria = parseIclCriteria(pageRows[row][4]);
+    var level = String(pageRows[row][5] || '');
+    if (/^\d+\.\d+\.\d+:/.test(idOrLabel)) {
+      var heading = {
+        row: row,
+        criteria: parseIclCriteria(idOrLabel).concat(criteria)
+      };
+      heading.criteria = heading.criteria.filter(
+        function (criterion, index, values) {
+          return values.indexOf(criterion) === index;
+        }
+      );
+      headingRows.push(heading);
+    } else if (level !== '' && criteria.length > 0) {
+      criteria.forEach(function (criterion) {
+        if (!criterionValues[criterion]) criterionValues[criterion] = [];
+        if (pageRows[row][2] !== fail) {
+          criterionValues[criterion].push(pageRows[row][1]);
+        }
+      });
+    }
+  }
+
+  var criterionResults = {};
+  Object.keys(criterionValues).forEach(function (criterion) {
+    criterionResults[criterion] = summarizeIclMarks(
+      criterionValues[criterion],
+      marks
+    );
+  });
+
+  headingRows.forEach(function (heading) {
+    var results = {};
+    heading.criteria.forEach(function (criterion) {
+      results[criterion] = criterionResults[criterion] || marks[1];
+    });
+    output[heading.row][0] = formatIclAggregateResult(results);
+  });
+
+  return {output: output, criteria: criterionResults};
+}
+
+function aggregateIclPageResults(pageRows, marks) {
+  return calculateIclPageResults(pageRows, marks).output;
+}
+
+function formatIclAggregateResult(results) {
+  var criteria = Object.keys(results);
+  if (criteria.length === 0) return '';
+  if (criteria.length === 1) return results[criteria[0]];
+  return criteria.map(function (criterion) {
+    return criterion + ':' + results[criterion];
+  }).join(' / ');
+}
+
 /**
  * Generate ICL Sheets
  * @param String iclType
@@ -149,6 +234,27 @@ function getIclTechniqueUrl(techniqueId) {
 
   return 'https://waic.jp/translations/' + wcagVersion + '/Techniques/' +
     directories[match[1]] + '/' + techniqueId;
+}
+
+function getIclUnderstandingUrl(slug) {
+  if (!slug) return '';
+  return 'https://waic.jp/translations/WCAG22/Understanding/' + slug;
+}
+
+function getIclCriterionHeadingRichText(text, slug) {
+  var builder = SpreadsheetApp.newRichTextValue().setText(text);
+  var url = getIclUnderstandingUrl(slug);
+  if (!url) return builder.build();
+
+  var linkStyle = SpreadsheetApp.newTextStyle()
+    .setForegroundColor(gLabelColorDarkText)
+    .setBold(true)
+    .setUnderline(true)
+    .build();
+  return builder
+    .setLinkUrl(0, text.length, url)
+    .setTextStyle(0, text.length, linkStyle)
+    .build();
 }
 
 /**
@@ -245,13 +351,17 @@ function generateIcl(sheet, iclType, type) {
   var type          = type || getProp('type');
   var mark          = getProp('mark'); // ex: ['?', '-', 'o', 'x'] or ['NT','DNA','T','F']
   var mF            = mark[3]; // 'x' or 'F'
-  var usingCriteria = getUsingCriteria();
+  var usingCriteria = getUsingCriteria().slice();
   var iclSituation  = getLangSet('iclSituation'+iclType);
   var iclTest       = getLangSet('iclTest'+iclType);
   var techNames     = getLangSet('tech');
   var row           = 2;
   
   if (iclSituation.length == 0) return false;
+
+  if (typeof iclSituation['UI-Common'] !== "undefined") {
+    usingCriteria.unshift(['A', 'UI-Common', 'ユーザインタフェースコンポーネント共通', '', '']);
+  }
     
   for (var j = 0; j < usingCriteria.length; j++) {
     // criterion title
@@ -259,7 +369,11 @@ function generateIcl(sheet, iclType, type) {
     var cCriterion = usingCriteria[j][1];
     if (typeof iclSituation[cCriterion] === "undefined") continue;
 
-    sheet.getRange(row, 1).setValue(cCriterion+': '+usingCriteria[j][2]); 
+    var criterionHeading = cCriterion === 'UI-Common' ?
+      usingCriteria[j][2] : cCriterion + ': ' + usingCriteria[j][2];
+    sheet.getRange(row, 1).setRichTextValue(
+      getIclCriterionHeadingRichText(criterionHeading, usingCriteria[j][4])
+    );
     sheet.getRange(row+":"+row).setBackground(gLabelColorDark).setFontColor(gLabelColorDarkText).setFontWeight('bold');
     row++;
     
@@ -306,7 +420,8 @@ function generateIcl(sheet, iclType, type) {
           isApply = mF; // x or F
         }
 
-        eachTest.push([eachTestId, "", isApply, "", cCriterion, clevel, eachTechId, eachTechName]);
+        var relatedCriteria = iclTest[testId][l][3] || cCriterion;
+        eachTest.push([eachTestId, "", isApply, "", relatedCriteria, clevel, eachTechId, eachTechName]);
         eachNum++;
       }
       sheet.getRange(row, 1, eachTest.length, 8).setValues(eachTest).setVerticalAlignment('top');
@@ -336,7 +451,7 @@ function generateIcl(sheet, iclType, type) {
 
   var range = sheet.getRange(2, 1, sheet.getLastRow(), 26);
   setRowConditionApplicability(sheet, range, "=$C2=\""+mF+"\"");
-  setRowConditionNotYet(sheet, range, "=AND($B2=\"\", NOT($E2=\"\"))");
+  setRowConditionNotYet(sheet, range, "=AND($B2=\"\", NOT($E2=\"\"), NOT($F2=\"\"))");
 
   return true;
 }
@@ -349,33 +464,7 @@ function generateIcl(sheet, iclType, type) {
  * @return Void
  */
 function evaluateIcl(lang, testType, level) {
-  // template not exists
   var ss = getSpreadSheet();
-  var iclTplSheet = ss.getSheetByName(gIclTplSheetName);
-  if (iclTplSheet == null) {
-     throw new Error(getUiLang('icl-tpl-not-exists', "ICL sheet is not exists."));
-  }
-
-  // generate Sheet
-  var iclSheet = ss.getSheetByName(gIclSheetName);
-  if (iclSheet) {
-    ss.deleteSheet(iclSheet);
-  }
-  iclTplSheet.activate();
-  var iclSheet = ss.duplicateActiveSheet().setName(gIclSheetName);
-    
-  iclSheet.setColumnWidth(1, 60);
-  iclSheet.deleteColumn(2);
-  iclSheet.deleteColumn(3);
-  iclSheet.setColumnWidth(2, 50);
-  iclSheet.setColumnWidth(3, 50);
-  iclSheet.setColumnWidth(4, 50);
-  iclSheet.insertRows(1, 1);
-  iclSheet.getRange('1:1').setBackground(gLabelColor).setFontColor(gLabelColorText).setFontWeight('bold');
-  iclSheet.setFrozenRows(1);
-  iclSheet.setFrozenColumns(5);
-
-  // detect ICL Rows
   var allSheets = getAllSheets();
   if (allSheets.length == 0) {
      throw new Error(getUiLang('no-target-page-exists', "No Target Page Exists."));
@@ -389,7 +478,24 @@ function evaluateIcl(lang, testType, level) {
     throw new Error(getUiLang('error-no-icl-found', "Error: ICL template was not found."));
   }
   var resultRowCount = iclLastRow - iclFirstRow + 1;
+
+  // Build the result sheet from the ICL actually applied to a target page.
+  var iclSheet = generateSheetEvenIfAlreadyExists(gIclSheetName);
+  allSheets[0]
+    .getRange(iclFirstRow, 1, resultRowCount, 26)
+    .copyTo(iclSheet.getRange(1, 1));
+  iclSheet.setColumnWidth(1, 60);
+  iclSheet.deleteColumn(2);
+  iclSheet.deleteColumn(3);
+  iclSheet.setColumnWidth(2, 50);
+  iclSheet.setColumnWidth(3, 50);
+  iclSheet.setColumnWidth(4, 50);
+  iclSheet.insertRows(1, 1);
+  iclSheet.getRange('1:1').setBackground(gLabelColor).setFontColor(gLabelColorText).setFontWeight('bold');
+  iclSheet.setFrozenRows(1);
+  iclSheet.setFrozenColumns(5);
   iclSheet.activate();
+  var mark = getProp('mark');
 
   // Read one result column from each page, then write the matrix once.
   var headers = [];
@@ -402,10 +508,11 @@ function evaluateIcl(lang, testType, level) {
       eachSheetName + '")'
     );
     targetUrls.push(getUrlFromSheet(allSheets[i]));
+    var pageRows = allSheets[i]
+      .getRange(iclFirstRow, 1, resultRowCount, 6)
+      .getValues();
     resultColumns.push(
-      allSheets[i]
-        .getRange(iclFirstRow, 2, resultRowCount, 1)
-        .getValues()
+      aggregateIclPageResults(pageRows, mark)
     );
   }
 
@@ -426,7 +533,6 @@ function evaluateIcl(lang, testType, level) {
     .getRange(1, firstResultCol, iclSheet.getLastRow(), pageCount)
     .setHorizontalAlignment('center');
 
-  var mark = getProp('mark');
   var mT = mark[2];
   var mF = mark[3];
   var range = iclSheet.getRange(5, firstResultCol, resultRowCount, pageCount);
