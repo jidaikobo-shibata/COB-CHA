@@ -2,3 +2,4 @@ AGENTS.md
 .serena/
 node_modules/
 sample/
+.codex-private/
