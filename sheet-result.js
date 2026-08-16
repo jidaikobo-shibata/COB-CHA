@@ -124,8 +124,9 @@ function evaluateSc() {
   var criteriaF = criteriaFormula(maxCol, num, mF);
   var tabulateF = tabulateFormula(maxCol, level);
 
-  // tabulate
-  var tabulate = ['Total', tabulateF];
+  // Collect page marks per criterion. They are summarized after all pages so
+  // incomplete pages cannot be overwritten by a conforming page.
+  var tabulateMarks = criteria.map(function () { return []; });
 
   // each row
   var vals = [];
@@ -140,13 +141,9 @@ function evaluateSc() {
 
     var chks = fetchEachResults(type, allSheets[i], criteria, mT, mF, mD);
     for (var j = 0; j < chks.length; j++) {
-      each.push(chks[j]);
-      var tabcol = j + 2;
-      tabulate[tabcol] = tabulate[tabcol] === undefined ? chks[j] : tabulate[tabcol] ;
-      tabulate[tabcol] = chks[j][0] == mF ? mF : tabulate[tabcol];
-      if (tabulate[tabcol] != mF) {
-        tabulate[tabcol] = chks[j][0] == mT ? mT : tabulate[tabcol];
-      }
+      var checkMark = Array.isArray(chks[j]) ? chks[j][0] : chks[j];
+      each.push(checkMark);
+      tabulateMarks[j].push(checkMark);
     }
     
     each = each.concat(criteriaF);
@@ -155,7 +152,12 @@ function evaluateSc() {
   }
 
   // tabulation row
-  tabulate = tabulate.concat(criteriaF);
+  var tabulate = ['Total', tabulateF].concat(
+    tabulateMarks.map(function (values) {
+      return summarizeEvaluationMarks(values, mark);
+    }),
+    criteriaF
+  );
   vals.push(tabulate);
   
   // set vals
@@ -250,6 +252,7 @@ function fetchEachResults(type, sheet, criteria, mT, mF, mD) {
  * @return String
  */
 function tabulateFormula(maxCol, level) {
+  var criteriaLastCol = maxCol - 4;
   var niCol = maxCol - 3;
   var aCol = maxCol - 2;
   var aaCol = maxCol - 1;
@@ -257,13 +260,23 @@ function tabulateFormula(maxCol, level) {
   // non-interference
   var str = '=IF(INDIRECT(ADDRESS(ROW(), '+niCol+')) = "NI", "NI",';
   
-  // each condition
-  var singleACond = 'INDIRECT(ADDRESS(ROW(), '+aCol+')) = 0';
-  var doubleACond = 'INDIRECT(ADDRESS(ROW(), '+aaCol+')) = 0';
-  var tripleACond = 'INDIRECT(ADDRESS(ROW(), '+maxCol+')) = 0';
-  var singleAF = 'IF('+singleACond+', "A", "A-")';
-  var doubleAF = 'IF(AND('+singleACond+', '+doubleACond+'), "AA",';
-  doubleAF+= 'IF(AND('+singleACond+', INDIRECT(ADDRESS(ROW(), '+aaCol+')) <= -1), "AA-", '+singleAF+'))';
+  var mark = getProp('mark');
+  var unknown = mark[0];
+  var valueRange = 'INDIRECT(ADDRESS(ROW(), 3)&":"&ADDRESS(ROW(), '+criteriaLastCol+'))';
+  var levelRange = 'INDIRECT("C2:"&ADDRESS(2, '+criteriaLastCol+'))';
+  var incompleteFor = function (targetLevel) {
+    return '(COUNTIFS('+valueRange+', "", '+levelRange+', "'+targetLevel+'")+' +
+      'COUNTIFS('+valueRange+', "'+unknown+'", '+levelRange+', "'+targetLevel+'"))>0';
+  };
+  var aFail = 'INDIRECT(ADDRESS(ROW(), '+aCol+')) < 0';
+  var aaFail = 'INDIRECT(ADDRESS(ROW(), '+aaCol+')) < 0';
+  var aaaFail = 'INDIRECT(ADDRESS(ROW(), '+maxCol+')) < 0';
+  var aIncomplete = incompleteFor('A');
+  var aaIncomplete = incompleteFor('AA');
+  var aaaIncomplete = incompleteFor('AAA');
+  var singleAF = 'IF('+aFail+', "A-", IF('+aIncomplete+', "'+unknown+'", "A"))';
+  var doubleAF = 'IF('+aFail+', "A-", IF('+aaFail+', "AA-", ' +
+    'IF(OR('+aIncomplete+', '+aaIncomplete+'), "'+unknown+'", "AA")))';
   
   // A
   if (level.length == 1) {
@@ -279,9 +292,8 @@ function tabulateFormula(maxCol, level) {
 
   // AAA
   if (level.length == 3) {
-    str+= 'IF(AND('+singleACond+', '+doubleACond+', '+tripleACond+'), "AAA",';
-    str+= 'IF(AND('+singleACond+', '+doubleACond+', INDIRECT(ADDRESS(ROW(), '+maxCol+')) <= -1), "AAA-",';
-    str+= doubleAF+')))';
+    str+= 'IF('+aFail+', "A-", IF('+aaFail+', "AA-", IF('+aaaFail+', "AAA-",';
+    str+= 'IF(OR('+aIncomplete+', '+aaIncomplete+', '+aaaIncomplete+'), "'+unknown+'", "AAA")))))';
     return str;
   }
 }
@@ -319,6 +331,20 @@ function criteriaFormula(maxCol, num, mF) {
   rets.push(countF(cntcol, mF, singleAcol + 1));
   rets.push(countF(cntcol, mF, singleAcol + 2));
   return rets;
+}
+
+/** Summarize one success criterion across target pages. */
+function summarizeCriterionAcrossPages(values, marks) {
+  var notApplicable = marks[1];
+  var pass = marks[2];
+  var appliedCount = values.filter(function (value) {
+    return value !== notApplicable;
+  }).length;
+  var summarized = summarizeEvaluationMarks(values, marks);
+  return {
+    applied: appliedCount === 0 ? notApplicable : pass,
+    result: summarized === notApplicable ? pass : summarized
+  };
 }
 
 /**
@@ -393,51 +419,9 @@ function generateTotalSheet() {
     rawrows[r].shift(); // level
 
     var values = rawrows[r];              // marks per target: o/x/-/?/''
-    var totalTargets = values.length;
-
-    // 2) Count marks
-    var counts = {};
-    counts[mT] = 0;        // conforming
-    counts[mF] = 0;        // non-conforming
-    counts[mD] = 0;        // not applicable
-    counts['?'] = 0;       // unknown
-    counts['BLANK'] = 0;   // empty input
-
-    for (var j = 0; j < totalTargets; j++) {
-      var key = values[j];
-      if (key === '') key = 'BLANK';
-      counts[key] = (counts[key] || 0) + 1;
-    }
-
-    // 3) Applied count = total targets excluding N/A ("-")
-    var appliedCount = totalTargets - (counts[mD] || 0);
-
-    // 4) Applied cell (col 4): if appliedCount == 0 -> "-", else "o"
-    rows[r][3] = (appliedCount === 0) ? mD : mT;
-
-    // 5) Result cell (col 5)
-    //    Priority:
-    //      a) If appliedCount == 0 -> treated as "conforming without applicability" => "o"
-    //      b) If any unknown or blank exists among applicable targets -> "?"
-    //      c) If any non-conforming exists -> "x"
-    //      d) Else if any conforming exists -> "o"
-    //      e) Else "?" (safety net)
-    var resultMark;
-    if (appliedCount === 0) {
-      resultMark = mT; // conforming because no applicable targets
-    } else {
-      var unknownOrBlank = (counts['?'] || 0) + (counts['BLANK'] || 0);
-      if (unknownOrBlank > 0) {
-        resultMark = '?';
-      } else if ((counts[mF] || 0) > 0) {
-        resultMark = mF;
-      } else if ((counts[mT] || 0) > 0) {
-        resultMark = mT;
-      } else {
-        resultMark = '?';
-      }
-    }
-    rows[r][4] = resultMark;
+    var criterionSummary = summarizeCriterionAcrossPages(values, mark);
+    rows[r][3] = criterionSummary.applied;
+    rows[r][4] = criterionSummary.result;
 
     // 6) Note cell (col 6): leave blank as requested
     rows[r][5] = '';
@@ -507,9 +491,14 @@ function generateReportSheet(level, totalResult) {
   // Create the sheet only if it does not exist
   var msgOrSheet = generateSheetIfNotExists(gReportSheetName, defaults /*, header*/);
 
-  // If a string is returned, the target sheet already exists; do nothing further
+  // Preserve user-authored report fields, but refresh generated result values.
   if (typeof msgOrSheet === 'string') {
-    return msgOrSheet; // e.g., "Target sheet (...) is already exists."
+    updateReportSummaryValues(
+      getSpreadSheet().getSheetByName(gReportSheetName),
+      level,
+      totalResult
+    );
+    return msgOrSheet;
   }
 
   // Newly created: apply presentation only once here
@@ -537,4 +526,21 @@ function generateReportSheet(level, totalResult) {
     'target-sheet-generated',
     "Generated new Report Sheet (%s)."
   ).replace('%s', gReportSheetName);
+}
+
+/** Update generated values without overwriting user-authored report fields. */
+function updateReportSummaryValues(sheet, level, totalResult) {
+  if (!sheet || sheet.getLastRow() < 1) return;
+  var labels = {
+    'level': getUiLang('report-target-level', 'Target level'),
+    'result': getUiLang('report-gained-level', 'Gained level')
+  };
+  var values = sheet.getRange(1, 1, sheet.getLastRow(), 2).getValues();
+  for (var i = 0; i < values.length; i++) {
+    if (values[i][0] === labels.level) {
+      sheet.getRange(i + 1, 2).setValue(level);
+    } else if (values[i][0] === labels.result) {
+      sheet.getRange(i + 1, 2).setValue(totalResult);
+    }
+  }
 }

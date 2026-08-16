@@ -64,18 +64,7 @@ function parseIclCriteria(value) {
 }
 
 function summarizeIclMarks(values, marks) {
-  var unknown = marks[0];
-  var notApplicable = marks[1];
-  var pass = marks[2];
-  var fail = marks[3];
-  if (values.length === 0) return notApplicable;
-  if (values.every(function (value) { return value === notApplicable; })) {
-    return notApplicable;
-  }
-  if (values.indexOf(fail) !== -1) return fail;
-  if (values.indexOf('') !== -1 || values.indexOf(unknown) !== -1) return unknown;
-  if (values.indexOf(pass) !== -1) return pass;
-  return unknown;
+  return summarizeEvaluationMarks(values, marks);
 }
 
 function calculateIclPageResults(pageRows, marks) {
@@ -355,7 +344,7 @@ function generateIcl(sheet, iclType, type) {
   var techNames     = getLangSet('tech');
   var row           = 2;
   
-  if (iclSituation.length == 0) return false;
+  if (!iclSituation || Object.keys(iclSituation).length === 0) return false;
 
   if (typeof iclSituation['UI-Common'] !== "undefined") {
     usingCriteria.unshift(['A', 'UI-Common', 'ユーザインタフェースコンポーネント共通', '', '']);

@@ -236,6 +236,53 @@ runCheck('Spreadsheet formula injection protection', () => {
   });
 });
 
+runCheck('Cross-page result aggregation behavior', () => {
+  const context = {};
+  vm.createContext(context);
+  vm.runInContext(read('COB-CHA.js'), context, {filename: 'COB-CHA.js'});
+  vm.runInContext(read('sheet-result.js'), context, {filename: 'sheet-result.js'});
+  const marks = ['?', '-', 'o', 'x'];
+  const cases = [
+    [['-', '-'], '-', 'o'],
+    [['o', '-'], 'o', 'o'],
+    [['o', ''], 'o', '?'],
+    [['?', 'x'], 'o', 'x']
+  ];
+  cases.forEach(([values, applied, result]) => {
+    const summary = context.summarizeCriterionAcrossPages(values, marks);
+    if (summary.applied !== applied || summary.result !== result) {
+      reportError(
+        'Cross-page result aggregation behavior',
+        `${JSON.stringify(values)}: expected ${applied}/${result}, ` +
+          `received ${summary.applied}/${summary.result}`
+      );
+    }
+  });
+  context.getProp = () => marks;
+  ['A', 'AA', 'AAA'].forEach((level) => {
+    const formula = context.tabulateFormula(20, level);
+    if (!formula.includes('COUNTIFS') || !formula.includes('"?"') ||
+        formula.indexOf('"A-"') > formula.indexOf('COUNTIFS')) {
+      reportError(
+        'Cross-page result aggregation behavior',
+        `${level} formula must test failures before incomplete values`
+      );
+    }
+    let balance = 0;
+    for (const character of formula) {
+      if (character === '(') balance++;
+      if (character === ')') balance--;
+      if (balance < 0) break;
+    }
+    if (balance !== 0) {
+      reportError(
+        'Cross-page result aggregation behavior',
+        `${level} formula has unbalanced parentheses: ${balance}`
+      );
+    }
+  });
+});
+
 runCheck('Record sheet duplication behavior', () => {
   const context = {};
   const written = {};
@@ -252,13 +299,13 @@ runCheck('Record sheet duplication behavior', () => {
   vm.createContext(context);
   vm.runInContext(read('COB-CHA.js'), context, {filename: 'COB-CHA.js'});
   vm.runInContext(read('sheet-record.js'), context, {filename: 'sheet-record.js'});
-  context.setRecordSheetPageData(fakeSheet, 'https://example.com/', {
+  context.setRecordSheetPageData(fakeSheet, '=unsafe url', {
     title: '=unsafe title',
     html: '<html>Example</html>'
   });
 
   const expected = {
-    '1,2': 'https://example.com/',
+    '1,2': "'=unsafe url",
     '1,6': "'=unsafe title",
     '3,2': '<html>Example</html>'
   };
@@ -358,6 +405,50 @@ runCheck('Record criteria batch write behavior', () => {
   }
 });
 
+runCheck('Maintenance boundary behavior', () => {
+  const cobchaSource = read('COB-CHA.js');
+  const inputSource = read('input-utility.js');
+  const iclSource = read('sheet-icl.js');
+  if (!cobchaSource.includes('if (lastCol < 5 || lastRow < 2) return [];') ||
+      cobchaSource.includes('var url = getUrlFromSheet(allSheets[i]);') ||
+      !inputSource.includes('Number.isInteger(row)') ||
+      !inputSource.includes('cellCount > 10000') ||
+      !iclSource.includes('Object.keys(iclSituation).length === 0')) {
+    reportError(
+      'Maintenance boundary behavior',
+      'empty URL sheets, invalid bulk ranges, URL lookup, and empty ICL definitions must be guarded'
+    );
+  }
+
+  const context = {};
+  vm.createContext(context);
+  vm.runInContext(read('COB-CHA.js'), context, {filename: 'COB-CHA.js'});
+  vm.runInContext(read('sheet-result.js'), context, {filename: 'sheet-result.js'});
+  context.getUiLang = (_key, fallback) => fallback;
+  const written = {};
+  const rows = [
+    ['Accessibility Conformance Report', ''],
+    ['Target level', 'A'],
+    ['Gained level', 'A-'],
+    ['User field', 'preserve me']
+  ];
+  const sheet = {
+    getLastRow: () => rows.length,
+    getRange(row, col, numRows, numCols) {
+      if (numRows && numCols) return {getValues: () => rows};
+      return {setValue: (value) => { written[`${row},${col}`] = value; }};
+    }
+  };
+  context.updateReportSummaryValues(sheet, 'AA', 'AA-');
+  if (written['2,2'] !== 'AA' || written['3,2'] !== 'AA-' ||
+      written['4,2'] !== undefined) {
+    reportError(
+      'Maintenance boundary behavior',
+      'existing reports must refresh generated summary cells only'
+    );
+  }
+});
+
 runCheck('Checklist border coverage', () => {
   const urlSource = read('sheet-urllist.js');
   const resultSource = read('sheet-result.js');
@@ -380,6 +471,7 @@ runCheck('Checklist border coverage', () => {
 runCheck('ICL evaluation batch behavior', () => {
   const context = {};
   vm.createContext(context);
+  vm.runInContext(read('COB-CHA.js'), context, {filename: 'COB-CHA.js'});
   vm.runInContext(read('sheet-icl.js'), context, {filename: 'sheet-icl.js'});
 
   const firstRow = context.findIclFirstResultRow([
@@ -499,6 +591,21 @@ runCheck('ICL evaluation batch behavior', () => {
         JSON.stringify(transferredResults)
     );
   }
+  const excludedMemoTransfer = context.getIclScTransferRows(
+    [
+      ['ID', 'Check', 'Excluded', 'Memo', 'Criterion', 'Level'],
+      ['9.9.8-1', 'o', 'x', 'excluded memo', '9.9.8', 'A'],
+      ['9.9.8-2', 'o', '', 'included memo', '9.9.8', 'A']
+    ],
+    [['A', '9.9.8']],
+    ['?', '-', 'o', 'x']
+  );
+  if (excludedMemoTransfer.memos[0][0] !== 'included memo') {
+    reportError(
+      'ICL evaluation batch behavior',
+      'memos from excluded ICL checks must not transfer to the SC checklist'
+    );
+  }
 
   const nestedCriteriaRows = [
     ['ID', 'Check', 'Excluded', 'Memo', 'Criterion', 'Level'],
@@ -583,6 +690,7 @@ runCheck('ICL evaluation batch behavior', () => {
 runCheck('ICL technique link behavior', () => {
   const context = {};
   vm.createContext(context);
+  vm.runInContext(read('COB-CHA.js'), context, {filename: 'COB-CHA.js'});
   vm.runInContext(read('sheet-icl.js'), context, {filename: 'sheet-icl.js'});
 
   const cases = [
@@ -1118,6 +1226,14 @@ runCheck('Issue page matching behavior', () => {
       );
     }
   });
+  const source = read('sheet-issue.js');
+  if (!source.includes("if (!issueSheet) return {'url': '', 'issues': []};") ||
+      !source.includes('targetRow > issueSheet.getLastRow()')) {
+    reportError(
+      'Issue page matching behavior',
+      'Issue listing and editing must handle a missing sheet and invalid rows'
+    );
+  }
 });
 
 runCheck('Issue ID allocation and edit targeting', () => {

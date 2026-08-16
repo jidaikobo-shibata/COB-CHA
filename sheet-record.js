@@ -245,7 +245,7 @@ function generateASheet(testType, sheet, targetUrl, res, sheetname, isEvaluateTa
  * @return Void
  */
 function setRecordSheetPageData(sheet, targetUrl, res) {
-  sheet.getRange(1, 2).setValue(targetUrl);
+  sheet.getRange(1, 2).setValue(toPlainTextCellValue(targetUrl));
   sheet.getRange(1, 6).setValue(toPlainTextCellValue(res['title']));
   // Google Spreadsheet allows 50000 characters per cell.
   sheet.getRange(3, 2).setValue(

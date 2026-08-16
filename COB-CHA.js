@@ -222,16 +222,19 @@ function getTitleFromSheet(sheet) {
  * @return Object
  */
 function getSheetByUrl(url) {
-  if (getSheetByUrl.vals && getSheetByUrl.vals[url]) return getSheetByUrl.vals[url];
+  var targetUrl = String(url || '');
+  if (getSheetByUrl.vals && getSheetByUrl.vals[targetUrl]) {
+    return getSheetByUrl.vals[targetUrl];
+  }
 
   var vals = {};
   var allSheets = getAllSheets();
   for (var i = 0; i < allSheets.length; i++) {
-    var url = getUrlFromSheet(allSheets[i]);
-    vals[url] = allSheets[i];
+    var sheetUrl = getUrlFromSheet(allSheets[i]);
+    vals[sheetUrl] = allSheets[i];
   }
   getSheetByUrl.vals = vals;
-  return getSheetByUrl.vals[url];
+  return getSheetByUrl.vals[targetUrl];
 }
 
 /**
@@ -602,6 +605,34 @@ function toPlainTextCellValue(value) {
 }
 
 /**
+ * Summarize check marks with one shared precedence.
+ *
+ * Not applicable is returned only when every value is not applicable. A
+ * confirmed failure takes precedence over incomplete values; incomplete
+ * values take precedence over conformance.
+ *
+ * @param Array values
+ * @param Array marks [unknown, not applicable, pass, fail]
+ * @return String
+ */
+function summarizeEvaluationMarks(values, marks) {
+  var unknown = marks[0];
+  var notApplicable = marks[1];
+  var pass = marks[2];
+  var fail = marks[3];
+  if (values.length === 0) return notApplicable;
+  if (values.every(function (value) { return value === notApplicable; })) {
+    return notApplicable;
+  }
+  if (values.indexOf(fail) !== -1) return fail;
+  if (values.indexOf('') !== -1 || values.indexOf(unknown) !== -1) {
+    return unknown;
+  }
+  if (values.indexOf(pass) !== -1) return pass;
+  return unknown;
+}
+
+/**
  * Get HTML and its title
  * @param String url
  * @return Object
@@ -754,10 +785,11 @@ function getUrlSheetHeadersWithCount() {
   if (!sheet) return [];
 
   var lastCol = sheet.getLastColumn();
-  if (lastCol < 5) return [];
+  var lastRow = sheet.getLastRow();
+  if (lastCol < 5 || lastRow < 2) return [];
 
   var headerRow = sheet.getRange(1, 5, 1, lastCol - 4).getValues()[0];
-  var data = sheet.getRange(2, 5, sheet.getLastRow() - 1, lastCol - 4).getValues();
+  var data = sheet.getRange(2, 5, lastRow - 1, lastCol - 4).getValues();
 
   var result = [];
 

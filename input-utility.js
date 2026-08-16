@@ -257,6 +257,16 @@ function doLumpEdit(row, col, vals, is_append) {
  */
 function doLumpEditWithFilter(row, col, vals, is_append, filterKey) {
 
+  row = Number(row);
+  col = Number(col);
+  if (!Number.isInteger(row) || !Number.isInteger(col) || row < 1 || col < 1) {
+    return getUiLang(
+      'error-lump-edit',
+      'An invalid value is set in the row/column of the lump edit'
+    );
+  }
+  vals = String(vals == null ? '' : vals);
+
   // Get sheets filtered by the given header
   var sheets = getSelectedSheets(filterKey);
 
@@ -275,6 +285,17 @@ function doLumpEditWithFilter(row, col, vals, is_append, filterKey) {
                               .replace(/%:%:%/g, "::")
                               .replace(/%%/g, "\n");
                 })});
+
+  var cellCount = arr.length * arr[0].length;
+  var hasOversizedCell = arr.some(function (items) {
+    return items.some(function (item) { return item.length > 50000; });
+  });
+  if (cellCount > 10000 || hasOversizedCell || sheets.some(function (sheet) {
+    return row + arr.length - 1 > sheet.getMaxRows() ||
+      col + arr[0].length - 1 > sheet.getMaxColumns();
+  })) {
+    return getUiLang('error-lump-edit', 'The lump edit range is invalid or too large.');
+  }
 
   var n = 0;
 
@@ -314,6 +335,7 @@ function getIclScTransferRows(iclRows, usingCriteria, marks) {
   var criterionResults = calculateIclPageResults(iclRows, marks).criteria;
   var criterionMemos = {};
   iclRows.forEach(function (row) {
+    if (row[2] === marks[3]) return;
     var memo = String(row[3] || '').trim();
     if (memo === '') return;
     parseIclCriteria(row[4]).forEach(function (criterion) {

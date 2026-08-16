@@ -364,6 +364,7 @@ function issueAppliesToUrl(places, url) {
 function setIssueList() {
   var ss = getSpreadSheet();
   var issueSheet = ss.getSheetByName(gIssueSheetName);
+  if (!issueSheet) return {'url': '', 'issues': []};
   var activeSheet = ss.getActiveSheet();
   var activeSheetName = activeSheet.getName().toString();
   
@@ -397,7 +398,12 @@ function setIssueList() {
 function showEachIssue(row) {
   var ss = getSpreadSheet();
   var issueSheet = ss.getSheetByName(gIssueSheetName);
-  issueSheet.getRange(row, 1).activate();
+  var targetRow = Number(row);
+  if (!issueSheet || !Number.isInteger(targetRow) ||
+      targetRow < 2 || targetRow > issueSheet.getLastRow()) {
+    return getUiLang('issue-not-found', 'Issue was not found.');
+  }
+  issueSheet.getRange(targetRow, 1).activate();
   showDialog(
     'ui-issue',
     500,
@@ -406,4 +412,5 @@ function showEachIssue(row) {
     '',
     {'targetUrl': ''}
   );
+  return '';
 }
