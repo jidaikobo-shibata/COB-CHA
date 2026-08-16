@@ -405,7 +405,8 @@ function getIclSituationCobcha () {
 /**
  * Each Test of Implement Check List
  * @return Array
- * ['techniques', 'explanation', {defaultExcluded, criteria, easy}]
+ * ['techniques', 'explanation',
+ *  {defaultExcluded, criteria, easy, pdf, pdfOnly}]
  */
 function getIclTestCobcha (includePdfOnly) {
   var tests = {
