@@ -1140,6 +1140,7 @@ function getIclTestCobcha () {
   };
 
   var situations = getIclSituationCobcha();
+  applyCobchaEasySelection(tests);
   for (var criterion in situations) {
     if (!/^\d+\.\d+\.\d+$/.test(criterion)) continue;
     var otherIsApplicable = criterion === '1.3.1' || criterion === '4.1.2';
@@ -1148,4 +1149,92 @@ function getIclTestCobcha () {
   }
 
   return tests;
+}
+
+/**
+ * Mark the important level-A checks used by the COB-CHA easy ICL.
+ *
+ * Technique identifiers are used within each situation so reordering checks
+ * does not change the selection. Keep this list intentionally small: the easy
+ * ICL is a screening checklist and is not a substitute for a conformance test.
+ *
+ * @param Object tests
+ * @return Void
+ */
+function applyCobchaEasySelection(tests) {
+  var selection = {
+    'UI-Common-A' : [
+      'G108/H44/ARIA6/ARIA10/ARIA14/ARIA16/PDF10',
+      'F111'
+    ],
+    'UI-Common-B' : ['G83/PDF5'],
+    '1.1.1-A' : ['H37/PDF1/ARIA6/ARIA10'],
+    '1.1.1-B' : [
+      {technique: 'G73/G74/G92', text: '支援技術の利用者'}
+    ],
+    '1.2.1-A' : ['G158'],
+    '1.2.1-B' : ['G159'],
+    '1.2.2' : ['G87'],
+    '1.2.3' : ['G78/G173/G8/G226'],
+    '1.3.1-A' : [
+      'G115/H49/H42/PDF9',
+      'H48/PDF21',
+      'H101',
+      'H51',
+      'F91'
+    ],
+    '1.3.2' : ['G57/C27/F49/F1'],
+    '1.3.3' : ['G96'],
+    '1.4.1' : ['G14/G205', 'G183/F73'],
+    '1.4.2' : ['G170'],
+    '2.1.1' : ['G202'],
+    '2.1.2' : ['G21'],
+    '2.1.4' : ['G217'],
+    '2.2.1-A' : ['G198'],
+    '2.2.2' : ['G11/G152/SCR22/F112'],
+    '2.3.1' : ['G19'],
+    '2.4.1' : ['G1', 'ARIA11'],
+    '2.4.2' : ['G88/H25/PDF18/F25'],
+    '2.4.3' : ['G59/C27/PDF3', 'H102'],
+    '2.4.4' : ['G91/H30/H24/PDF11/PDF13', 'G53'],
+    '2.5.1' : ['G215'],
+    '2.5.2' : [
+      {technique: '-', text: 'ポインタのダウンイベントで実行しない'}
+    ],
+    '2.5.3-A' : ['G208/G211'],
+    '2.5.4' : ['G213'],
+    '3.1.1' : ['H57/PDF16'],
+    '3.2.1' : ['G107'],
+    '3.2.2' : ['G80/H32/H84/PDF15', 'F37'],
+    '3.2.6' : ['G220', '-'],
+    '3.3.1' : ['G84/G85/PDF22', 'ARIA19'],
+    '3.3.2' : [
+      {technique: 'G131/G162', text: '入力欄の上または左'},
+      'G131/G89',
+      'G131/H90/ARIA1/ARIA9/ARIA17'
+    ],
+    '3.3.7' : ['G221', '-'],
+    '4.1.1' : ['G134/H88'],
+    '4.1.2-A' : ['G108/H88/H91'],
+    '4.1.2-B' : ['ARIA4/ARIA5/ARIA16/G202']
+  };
+
+  for (var situationId in selection) {
+    if (!tests[situationId]) continue;
+    for (var i = 0; i < tests[situationId].length; i++) {
+      var item = tests[situationId][i];
+      var isSelected = selection[situationId].some(function (selector) {
+        if (typeof selector === 'string') return selector === item[0];
+        return selector.technique === item[0] &&
+          item[1].indexOf(selector.text) !== -1;
+      });
+      if (!isSelected) continue;
+      var options = item[2];
+      if (!options || typeof options !== 'object' || Array.isArray(options)) {
+        options = {};
+        item[2] = options;
+      }
+      options.easy = true;
+    }
+  }
 }

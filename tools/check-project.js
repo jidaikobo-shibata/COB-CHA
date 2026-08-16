@@ -1027,6 +1027,71 @@ runCheck('COB-CHA PDF ICL adapter behavior', () => {
   }
 });
 
+runCheck('COB-CHA easy ICL adapter behavior', () => {
+  const context = {};
+  vm.createContext(context);
+  for (const file of [
+    'vals-basic.js',
+    'vals-ja-icl-cobcha.js',
+    'vals-ja-icl-cobcha-easy.js'
+  ]) {
+    vm.runInContext(read(file), context, {filename: file});
+  }
+
+  const sourceTests = context.getIclTestCobcha();
+  const situations = context.getIclSituationCobchaEasy();
+  const tests = context.getIclTestCobchaEasy();
+  const allItems = Object.values(tests).flat();
+
+  if (allItems.length !== 52 || Object.keys(situations).length !== 33) {
+    reportError(
+      'COB-CHA easy ICL adapter behavior',
+      'the easy ICL must retain the reviewed 52-check level-A selection'
+    );
+  }
+  for (const criterion of context.gSingleACriteria) {
+    if (!situations[criterion]) {
+      reportError(
+        'COB-CHA easy ICL adapter behavior',
+        `level-A criterion ${criterion} must remain in the easy ICL`
+      );
+    }
+  }
+  if (!situations['3.2.6'] || !situations['3.3.7'] ||
+      !situations['4.1.1'] || situations['2.4.11'] ||
+      Object.keys(tests).some((id) => /-Other$/.test(id)) ||
+      allItems.some((item) => /^PDF\d+(\/PDF\d+)*$/.test(item[0])) ||
+      allItems.some((item) => /^T\d+(\/T\d+)*$/.test(item[0]))) {
+    reportError(
+      'COB-CHA easy ICL adapter behavior',
+      'the easy ICL must include WCAG 2.2 level A and 4.1.1, without AA, Other, PDF-only, or plain-text-only checks'
+    );
+  }
+  const selectedSourceCount = Object.values(sourceTests).flat().filter(
+    (item) => item[2] && item[2].easy === true
+  ).length;
+  if (selectedSourceCount !== 52 ||
+      tests['1.1.1-B'].length !== 1 ||
+      tests['1.1.1-C'] || tests['1.1.1-F'] ||
+      tests['2.5.2'].length !== 1 ||
+      tests['3.3.2'].length !== 3) {
+    reportError(
+      'COB-CHA easy ICL adapter behavior',
+      'easy flags must select exact checks even when techniques are shared'
+    );
+  }
+  const sheetIclSource = read('sheet-icl.js');
+  const jaSource = read('vals-ja.js');
+  if (!sheetIclSource.includes(
+        "iclType === 'CobchaEasy' ? 'wcag22' : type") ||
+      !jaSource.includes("'label' : 'COB-CHA式（簡易）'")) {
+    reportError(
+      'COB-CHA easy ICL adapter behavior',
+      'the easy ICL must always use WCAG 2.2 criteria and retain its published label'
+    );
+  }
+});
+
 runCheck('Issue page matching behavior', () => {
   const context = {};
   vm.createContext(context);

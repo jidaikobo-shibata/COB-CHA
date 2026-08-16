@@ -857,7 +857,7 @@ function getIclListJa ()
       'label' : 'COB-CHA式'
     },
     'CobchaEasy': {
-      'label' : 'COB-CHA式（簡易 Aのみ）'
+      'label' : 'COB-CHA式（簡易）'
     },
     'CobchaPdf': {
       'label' : 'COB-CHA式（PDF）'

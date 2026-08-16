@@ -346,7 +346,10 @@ function generateIcl(sheet, iclType, type) {
   var type          = type || getProp('type');
   var mark          = getProp('mark'); // ex: ['?', '-', 'o', 'x'] or ['NT','DNA','T','F']
   var mF            = mark[3]; // 'x' or 'F'
-  var usingCriteria = getUsingCriteria().slice();
+  // The easy ICL is defined as a WCAG 2.2 level-A screening checklist even
+  // when the current test configuration uses an older WCAG version.
+  var criteriaType  = iclType === 'CobchaEasy' ? 'wcag22' : type;
+  var usingCriteria = getUsingCriteria(criteriaType).slice();
   var iclSituation  = getLangSet('iclSituation'+iclType);
   var iclTest       = getLangSet('iclTest'+iclType);
   var techNames     = getLangSet('tech');
