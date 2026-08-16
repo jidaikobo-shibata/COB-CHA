@@ -487,6 +487,15 @@ runCheck('ICL evaluation batch behavior', () => {
       'the result sheet must allocate enough columns for every page result'
     );
   }
+  if (!evaluateSource.includes('baseStructure[row][5] === \'\'') ||
+      !evaluateSource.includes('.setBackgrounds(resultBackgrounds)') ||
+      !evaluateSource.includes('.setFontColors(resultFontColors)') ||
+      !evaluateSource.includes('.setFontWeights(resultFontWeights)')) {
+    reportError(
+      'ICL evaluation batch behavior',
+      'criterion and situation row styles must extend through page columns'
+    );
+  }
 });
 
 runCheck('ICL technique link behavior', () => {

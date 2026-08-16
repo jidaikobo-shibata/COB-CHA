@@ -545,10 +545,38 @@ function evaluateIcl(lang, testType, level) {
   iclSheet.setColumnWidths(firstResultCol, pageCount, 40);
 
   var resultRows = transposeIclResultColumns(resultColumns);
-  iclSheet
-    .getRange(2, firstResultCol, resultRowCount, pageCount)
+  var pageResultRange = iclSheet
+    .getRange(2, firstResultCol, resultRowCount, pageCount);
+  pageResultRange
     .setValues(resultRows)
     .setHorizontalAlignment('center');
+
+  // Extend criterion and situation row styles through every page column.
+  var baseStructure = baseSheet
+    .getRange(iclFirstRow, 1, resultRowCount, 6)
+    .getValues();
+  var baseStyleRange = baseSheet
+    .getRange(iclFirstRow, 1, resultRowCount, 1);
+  var baseBackgrounds = baseStyleRange.getBackgrounds();
+  var baseFontColors = baseStyleRange.getFontColors();
+  var baseFontWeights = baseStyleRange.getFontWeights();
+  var resultBackgrounds = pageResultRange.getBackgrounds();
+  var resultFontColors = pageResultRange.getFontColors();
+  var resultFontWeights = pageResultRange.getFontWeights();
+  for (var row = 0; row < resultRowCount; row++) {
+    var isHeadingRow = baseStructure[row][0] !== '' &&
+      baseStructure[row][5] === '';
+    if (!isHeadingRow) continue;
+    for (var col = 0; col < pageCount; col++) {
+      resultBackgrounds[row][col] = baseBackgrounds[row][0];
+      resultFontColors[row][col] = baseFontColors[row][0];
+      resultFontWeights[row][col] = baseFontWeights[row][0];
+    }
+  }
+  pageResultRange
+    .setBackgrounds(resultBackgrounds)
+    .setFontColors(resultFontColors)
+    .setFontWeights(resultFontWeights);
   iclSheet.setFrozenRows(1);
   iclSheet.setFrozenColumns(5);
   iclSheet.activate();
@@ -556,7 +584,7 @@ function evaluateIcl(lang, testType, level) {
   var mark = getProp('mark');
   setCellConditionTF(
     iclSheet,
-    iclSheet.getRange(2, firstResultCol, resultRowCount, pageCount),
+    pageResultRange,
     mark[2],
     mark[3]
   );
