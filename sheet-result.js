@@ -262,11 +262,12 @@ function tabulateFormula(maxCol, level) {
   
   var mark = getProp('mark');
   var unknown = mark[0];
+  var unknownCriterion = unknown.replace(/([?*~])/g, '~$1');
   var valueRange = 'INDIRECT(ADDRESS(ROW(), 3)&":"&ADDRESS(ROW(), '+criteriaLastCol+'))';
   var levelRange = 'INDIRECT("C2:"&ADDRESS(2, '+criteriaLastCol+'))';
   var incompleteFor = function (targetLevel) {
     return '(COUNTIFS('+valueRange+', "", '+levelRange+', "'+targetLevel+'")+' +
-      'COUNTIFS('+valueRange+', "'+unknown+'", '+levelRange+', "'+targetLevel+'"))>0';
+      'COUNTIFS('+valueRange+', "'+unknownCriterion+'", '+levelRange+', "'+targetLevel+'"))>0';
   };
   var aFail = 'INDIRECT(ADDRESS(ROW(), '+aCol+')) < 0';
   var aaFail = 'INDIRECT(ADDRESS(ROW(), '+aaCol+')) < 0';

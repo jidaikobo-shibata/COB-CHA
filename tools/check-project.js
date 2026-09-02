@@ -261,11 +261,11 @@ runCheck('Cross-page result aggregation behavior', () => {
   context.getProp = () => marks;
   ['A', 'AA', 'AAA'].forEach((level) => {
     const formula = context.tabulateFormula(20, level);
-    if (!formula.includes('COUNTIFS') || !formula.includes('"?"') ||
+    if (!formula.includes('COUNTIFS') || !formula.includes('"~?"') ||
         formula.indexOf('"A-"') > formula.indexOf('COUNTIFS')) {
       reportError(
         'Cross-page result aggregation behavior',
-        `${level} formula must test failures before incomplete values`
+        `${level} formula must escape wildcard marks and test failures first`
       );
     }
     let balance = 0;

@@ -1039,3 +1039,72 @@ node tools/check-project.js
 - 通常版にPDF専用項目が現れないこと、PDF版に`defaultExcluded`が残らないことを検査へ追加した。
 
 未完了事項は、通常版でPDF専用5項目が表示されないこと、およびPDF版の全項目が初期除外されずに生成されることをGoogle Spreadsheet上で確認すること。
+
+## 2026-09-01 Chrome Web Store の Manifest V2 アイテム削除確認
+
+### 何をしたか
+
+- Chrome Web Store から届いた、COB-CHA（アイテム ID:
+  `ghfhlnhiblihmibgdpkpjfajgcljnbof`）の Manifest V2 による削除通知を確認した。
+- 現在の `main` には Chrome 拡張用の `manifest.json` がなく、GAS 用の
+  `appsscript.json` のみ存在することを確認した。
+- Git の旧 `origin/master` には、`"manifest_version": 2` と
+  `"version": "1.1"` を持つ `manifest.json` が残っていることを確認した。
+- Google Workspace Marketplace と Chrome Web Store が別の配布先であることを
+  整理した。
+- 通常のブラウザとシークレットウィンドウの両方で、Google Workspace
+  Marketplace の検索結果に COB-CHA が表示されることを確認した。
+- シークレットウィンドウの未ログイン状態でも「インストール」が表示され、
+  一般公開と新規入手が継続していることを確認した。
+
+### なぜそうしたか
+
+- Chrome Web Store 側の削除が、現在利用されている Google スプレッドシート用
+  アドオンの配布に影響するかを切り分けるため。
+- 初期公開時に Chrome Web Store と Google Workspace Marketplace の両方へ
+  登録した可能性があり、削除された登録が旧経路であることを確認するため。
+
+### 判断
+
+- 削除されたのは、初期に作成したと考えられる Chrome Web Store 側の旧登録。
+- 現行の配布先である Google Workspace Marketplace 版は公開・入手可能であり、
+  今回の削除による配布上の問題はない。
+- Chrome Web Store への再審査請求や Manifest V3 版の再提出は行わない。
+- `appsscript.json`、GAS ソース、現行 Marketplace 設定の変更は不要。
+- 削除通知は旧登録の終了記録として保管し、本件は対応完了とする。
+
+### 未完了の事項
+
+- なし。
+
+### 次にやるとよいこと
+
+- 将来、旧 `origin/master` や `manifest.json` を参照する場合は、現在使用している
+  GAS マニフェストと混同せず、廃止済みの Chrome Web Store 登録用として扱う。
+
+## 2026-09-02 集計結果が未テストになる不具合の修正
+
+### 何をしたか
+
+- `clasp pull` で Google Apps Script 側の最新版を取り込んだ。
+- 結果シートの行判定式で、未テスト記号 `?` を `COUNTIFS` の検索条件として
+  `~?` にエスケープするよう修正した。
+- `?`、`*`、`~` のいずれが記号に指定されてもリテラル検索になるようにした。
+- 回帰検査を、未エスケープの `?` を拒否する内容へ更新した。
+- ローカルの全27検査と差分チェックが成功した。
+- `clasp push` で Google Apps Script 側へ修正を反映した。
+- 実データで再集計し、期待どおりの結果になることを確認した。
+- `getVersion()` を57から58へ更新した。
+
+### なぜそうしたか
+
+- Google スプレッドシートでは `COUNTIFS` の条件中の `?` が任意の1文字を表すため、
+  `o` や `-` まで未テストとして数えられ、各ページとTotalの結果が `?` になっていた。
+
+### 未完了の事項
+
+- なし。
+
+### 次にやるとよいこと
+
+- 次回の修正時はバージョン59以降を使用する。
