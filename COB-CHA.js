@@ -239,7 +239,7 @@ function getSheetByUrl(url) {
 
 /**
  * Get Property
- * @param String prop [lang, type, level]
+ * @param String prop [lang, type, level, mark, additional, criteriaNameSet]
  * @return String
  */
 function getProp(prop) {
@@ -251,18 +251,21 @@ function getProp(prop) {
     "type"      : "wcag20",
     "level"     : "AA",
     "mark"      : ['?', '-', 'o', 'x'],
-    "additional": ""
+    "additional": "",
+    "criteriaNameSet": "wcag-ja"
   };
 
   var sheet = getSheetIfExists(gConfigSheetName);
   if (sheet === false) return vals[prop];
-  var rets = sheet.getRange(1, 2, 5, 2).getValues();
+  var rets = sheet.getRange(1, 2, 6, 2).getValues();
 
   vals['lang']  = ['en', 'ja'].indexOf(rets[0][0]) > -1 ? rets[0][0] : vals['lang'];
   vals['type']  = ['wcag20', 'wcag21', 'wcag22', 'tt20'].indexOf(rets[1][0]) > -1 ? rets[1][0] : vals['type'];
   vals['level'] = ['A', 'AA', 'AAA'].indexOf(rets[2][0]) > -1 ? rets[2][0] : vals['level'];
   vals['mark']  = rets[3][0].toString().charAt(0) == 'o' ? vals['mark'] : ['NT', 'DNA', 'T', 'F'];
   vals['additional']  = rets[4][0].toString();
+  vals['criteriaNameSet'] = ['wcag-ja', 'jis2016-ja'].indexOf(rets[5][0]) > -1 ?
+    rets[5][0] : vals['criteriaNameSet'];
   //  vals['lang']  = 'en';
 
   getProp.vals = vals;
@@ -340,6 +343,24 @@ function getAllCriteria(type) {
   if (set == 'ttCriteria') return allCriteria;
   if (getAllCriteria.vals) return getAllCriteria.vals;
 
+  var translatedNames = lang == 'ja' ? getCriteriaNamesJaWcagVersion(type) : {};
+  if (lang == 'ja' && Object.keys(translatedNames).length > 0) {
+    allCriteria = allCriteria.map(function (criterion) {
+      var copied = criterion.slice();
+      if (translatedNames[copied[1]]) copied[2] = translatedNames[copied[1]];
+      return copied;
+    });
+  }
+
+  if (lang == 'ja' && getProp('criteriaNameSet') == 'jis2016-ja') {
+    var jisNames = getCriteriaNamesJaJis2016();
+    allCriteria = allCriteria.map(function (criterion) {
+      var copied = criterion.slice();
+      if (jisNames[copied[1]]) copied[2] = jisNames[copied[1]];
+      return copied;
+    });
+  }
+
   return allCriteria;
 }
 
@@ -384,7 +405,7 @@ function getUsingCriteria(type) {
   });
 
   // --- annotate labels: WCAG 2.2 section 4.1.1 is marked as "(deprecated/deleted)" ---
-  if (type === 'wcag22') {
+  if (type === 'wcag22' && getProp('criteriaNameSet') !== 'jis2016-ja') {
     var suffix = ' ' + getUiLang('obsolete-removed', '(Obsolete and removed)');
     for (var k = 0; k < usingCriteria.length; k++) {
       if (!usingCriteria[k]) continue;

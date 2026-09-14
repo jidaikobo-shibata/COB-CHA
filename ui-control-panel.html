@@ -98,7 +98,16 @@
       var current = window.LANG || 'en';
       document.getElementById('lang').value = current;
       document.documentElement.setAttribute('lang', current);
+      document.getElementById('jis-criteria-name-option').hidden = current !== 'ja';
       if (current !== 'ja') setIclTemplateVisibility(false);
+
+      google.script.run
+        .withSuccessHandler(
+          function(ret) {
+            document.getElementById('use-jis-criteria-names').checked =
+              ret === 'jis2016-ja';
+          })
+        .getProp('criteriaNameSet');
 
       google.script.run
         .withSuccessHandler(
@@ -212,7 +221,8 @@
             document.getElementById('lang').value,
             document.getElementById('test-type').value,
             document.getElementById('evaluate-level').value,
-            document.getElementById('mark').value
+            document.getElementById('mark').value,
+            getCriteriaNameSet()
           );
         },
         12000
@@ -238,8 +248,14 @@
           document.getElementById('lang').value,
           document.getElementById('test-type').value,
           document.getElementById('evaluate-level').value,
-          document.getElementById('mark').value
+          document.getElementById('mark').value,
+          getCriteriaNameSet()
         );
+    }
+
+    function getCriteriaNameSet() {
+      return document.getElementById('use-jis-criteria-names').checked ?
+        'jis2016-ja' : 'wcag-ja';
     }
 
     /**
@@ -553,6 +569,12 @@
         <option value="ox">o/x</option>
         <option value="tf">T/F</option>
       </select>
+    </p>
+    <p id="jis-criteria-name-option">
+      <input type="checkbox" id="use-jis-criteria-names">
+      <label for="use-jis-criteria-names" data-i18n="use-jis-criteria-names">
+        Use JIS X 8341-3:2016 success criterion names
+      </label>
     </p>
     <p>
       <button id="generate-config-sheet" data-i18n="generate-config-sheet">Generate config sheet</button>

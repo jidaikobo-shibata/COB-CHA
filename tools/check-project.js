@@ -283,6 +283,96 @@ runCheck('Cross-page result aggregation behavior', () => {
   });
 });
 
+runCheck('Japanese success criterion name sets', () => {
+  const context = {};
+  vm.createContext(context);
+  vm.runInContext(read('COB-CHA.js'), context, {filename: 'COB-CHA.js'});
+  vm.runInContext(read('vals-ja.js'), context, {filename: 'vals-ja.js'});
+
+  const jisNames = context.getCriteriaNamesJaJis2016();
+  if (Object.keys(jisNames).length !== 61) {
+    reportError(
+      'Japanese success criterion name sets',
+      `expected 61 JIS names, received ${Object.keys(jisNames).length}`
+    );
+  }
+  if (jisNames['1.2.6'] !== '手話(収録済み)の達成基準' ||
+      jisNames['4.1.2'] !== '名前(name)，役割(role)及び値(value)の達成基準') {
+    reportError(
+      'Japanese success criterion name sets',
+      'JIS level AAA or final criterion names do not match the source workbook'
+    );
+  }
+
+  let nameSet = 'wcag-ja';
+  context.getProp = (prop) => {
+    if (prop === 'lang') return 'ja';
+    if (prop === 'criteriaNameSet') return nameSet;
+    return '';
+  };
+  let criteria = context.getAllCriteria('wcag20');
+  let byNumber = Object.fromEntries(criteria.map((row) => [row[1], row[2]]));
+  if (byNumber['1.3.2'] !== '意味のある順序' ||
+      byNumber['3.3.4'] !== 'エラー回避 (法的、金融、データ)') {
+    reportError(
+      'Japanese success criterion name sets',
+      'WCAG 2.0 must use the latest WCAG 2.0 translation column'
+    );
+  }
+
+  criteria = context.getAllCriteria('wcag21');
+  byNumber = Object.fromEntries(criteria.map((row) => [row[1], row[2]]));
+  if (byNumber['1.3.2'] !== '意味のあるシーケンス' ||
+      byNumber['2.5.5'] !== 'ターゲットのサイズ' ||
+      byNumber['3.3.4'] !== '誤り防止 (法的、金融、データ)') {
+    reportError(
+      'Japanese success criterion name sets',
+      'WCAG 2.1 must use the WCAG 2.1 translation column'
+    );
+  }
+
+  criteria = context.getAllCriteria('wcag22');
+  byNumber = Object.fromEntries(criteria.map((row) => [row[1], row[2]]));
+  if (byNumber['1.3.2'] !== '意味をなすシーケンス' ||
+      byNumber['3.3.4'] !== '誤り防止 (法的・金融・データ)') {
+    reportError(
+      'Japanese success criterion name sets',
+      'WCAG 2.2 must use the current WCAG 2.2 translation column'
+    );
+  }
+
+  nameSet = 'jis2016-ja';
+  criteria = context.getAllCriteria('wcag20');
+  byNumber = Object.fromEntries(criteria.map((row) => [row[1], row[2]]));
+  if (byNumber['2.4.1'] !== 'ブロックスキップの達成基準') {
+    reportError(
+      'Japanese success criterion name sets',
+      'JIS names must override the selected WCAG translation'
+    );
+  }
+
+  criteria = context.getAllCriteria('wcag22');
+  byNumber = Object.fromEntries(criteria.map((row) => [row[1], row[2]]));
+  if (byNumber['2.4.1'] !== 'ブロックスキップの達成基準' ||
+      byNumber['2.4.11'] !== '隠されないフォーカス (最低限)') {
+    reportError(
+      'Japanese success criterion name sets',
+      'JIS names must override only criteria defined by JIS X 8341-3:2016'
+    );
+  }
+
+  const configSource = read('sheet-config.js');
+  const panelSource = read('ui-control-panel.html');
+  if (!configSource.includes("getRange(6, 2).setValue(criteriaNameSet)") ||
+      !panelSource.includes('id="use-jis-criteria-names"') ||
+      !panelSource.includes(".getProp('criteriaNameSet')")) {
+    reportError(
+      'Japanese success criterion name sets',
+      'the JIS name preference must be persisted and restored in the panel'
+    );
+  }
+});
+
 runCheck('Record sheet duplication behavior', () => {
   const context = {};
   const written = {};

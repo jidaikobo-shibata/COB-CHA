@@ -13,16 +13,19 @@
  * @param String testType
  * @param String level
  * @param String mark
+ * @param String criteriaNameSet
  * @param Bool force
  * @return String
  */
-function generateConfigSheet(lang, testType, level, mark, force) {
+function generateConfigSheet(lang, testType, level, mark, criteriaNameSet, force) {
+  criteriaNameSet = criteriaNameSet === 'jis2016-ja' ? 'jis2016-ja' : 'wcag-ja';
   var defaults = [
     [getUiLang('lang-using', "Lang"), lang],
     [getUiLang('standard-using', "Type"), testType],
     [getUiLang('level', "Level"), level],
     [getUiLang('symbol-using', "Mark Type"), mark],
-    [getUiLang('additional-criteria', "Additional Criteria"), ""]
+    [getUiLang('additional-criteria', "Additional Criteria"), ""],
+    [getUiLang('criteria-name-set', "Success Criterion Names"), criteriaNameSet]
   ];
   var msgOrSheetObj = generateSheetIfNotExists(gConfigSheetName, defaults);
 
@@ -34,6 +37,7 @@ function generateConfigSheet(lang, testType, level, mark, force) {
     var msg = getUiLang('force-update-config', 'Config Sheet is alreadt exists. Update config?');
     if(showConfirm(msg) != "OK") return getUiLang('canceled', 'canceled');
     sheet.getRange(1, 2, 4, 1).setValues([[lang], [testType], [level], [mark]]);
+    sheet.getRange(6, 2).setValue(criteriaNameSet);
     return getUiLang('target-sheet-updated', "Update Target Sheet (%s).").replace('%s', gConfigSheetName);
   }
 
@@ -46,10 +50,11 @@ function generateConfigSheet(lang, testType, level, mark, force) {
  * @param String testType
  * @param String level
  * @param String mark
+ * @param String criteriaNameSet
  * @return Void
  */
-function openDialogAdditionalCriteria(lang, testType, level, mark) {
-  generateConfigSheet(lang, testType, level, mark, true);
+function openDialogAdditionalCriteria(lang, testType, level, mark, criteriaNameSet) {
+  generateConfigSheet(lang, testType, level, mark, criteriaNameSet, true);
   showDialog('ui-additional-criteria', 500, 400, getUiLang('set-additional-criteria', 'Set additional criteria'));
 }
 
@@ -96,7 +101,7 @@ function forceUpdateLang(lang) {
   if (sheet !== false) {
     sheet.getRange(1, 2).setValue(lang);
   } else {
-    generateConfigSheet(lang, '', '', '', true);
+    generateConfigSheet(lang, '', '', '', 'wcag-ja', true);
   }
     
   // when language was update, renew control panel
