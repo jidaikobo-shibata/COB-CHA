@@ -210,6 +210,45 @@ runCheck('URL fetch helper behavior', () => {
   }
 });
 
+runCheck('Fetch failure diagnostics in record sheets', () => {
+  const context = {};
+  vm.createContext(context);
+  vm.runInContext(read('COB-CHA.js'), context);
+  vm.runInContext(read('sheet-record.js'), context);
+  function verify(fetch, expected, expectHtml) {
+    context.UrlFetchApp = {fetch};
+    const result = context.getHtmlAndTitle('https://example.com/page');
+    const written = {};
+    context.setRecordSheetPageData({
+      getRange: (row, col) => ({setValue: value => { written[`${row},${col}`] = value; }})
+    }, 'https://example.com/page', result);
+    if (written['1,6'] !== expected || written['3,2'] !== (expectHtml || expected)) {
+      throw new Error(`unexpected diagnostic: ${JSON.stringify(written)}`);
+    }
+    if (!expectHtml && (result.html !== '' || result.title !== '')) {
+      throw new Error('error response must not be stored as page HTML/title');
+    }
+  }
+  function response(status, type, body, headers = {}) {
+    return {getResponseCode: () => status,
+      getHeaders: () => ({'Content-Type': type, ...headers}),
+      getContentText: () => body};
+  }
+  [403, 429, 503, 404].forEach(status => {
+    verify(() => response(status, 'text/html', '<title>Error page</title>'), `status: ${status}`);
+  });
+  verify(() => { throw new Error('connection failed with private details'); }, 'fetch error');
+  let requests = 0;
+  verify(() => {
+    if (requests++ === 0) return response(302, 'text/html', '', {Location: '/next'});
+    throw new Error('connection failed');
+  }, 'fetch error');
+  verify(() => response(200, 'application/pdf', '%PDF'), 'status: 200 (non-HTML response)');
+  verify(() => response(200, 'text/html', ''), 'status: 200 (empty response)');
+  verify(() => response(200, 'text/html', '<title>Page title</title>'),
+    'Page title', '<title>Page title</title>');
+});
+
 runCheck('Spreadsheet formula injection protection', () => {
   const context = {};
   vm.createContext(context);

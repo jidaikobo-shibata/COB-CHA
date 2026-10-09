@@ -245,11 +245,18 @@ function generateASheet(testType, sheet, targetUrl, res, sheetname, isEvaluateTa
  * @return Void
  */
 function setRecordSheetPageData(sheet, targetUrl, res) {
+  // Keep diagnostics separate from HTML until writing the display values.
+  var diagnostic = res['error'] || '';
+  if (res['status'] != null && (
+    res['status'] < 200 || res['status'] >= 300 || diagnostic != ''
+  )) {
+    diagnostic = 'status: ' + res['status'] + (diagnostic ? ' (' + diagnostic + ')' : '');
+  }
   sheet.getRange(1, 2).setValue(toPlainTextCellValue(targetUrl));
-  sheet.getRange(1, 6).setValue(toPlainTextCellValue(res['title']));
+  sheet.getRange(1, 6).setValue(toPlainTextCellValue(diagnostic || res['title']));
   // Google Spreadsheet allows 50000 characters per cell.
   sheet.getRange(3, 2).setValue(
-    toPlainTextCellValue(res['html'].substring(0, 45000))
+    toPlainTextCellValue(diagnostic || res['html'].substring(0, 45000))
   );
 }
 

@@ -659,9 +659,12 @@ function summarizeEvaluationMarks(values, marks) {
  * @return Object
  */
 function getHtmlAndTitle(url, skipSlashFallback) {
-  var ret = {'title': '', 'html': ''};
+  var ret = {'title': '', 'html': '', 'status': null, 'error': ''};
   var targetUrl = normalizeFetchUrl(url);
-  if (targetUrl == '') return ret;
+  if (targetUrl == '') {
+    ret.error = 'invalid URL';
+    return ret;
+  }
 
   var options = {
     "muteHttpExceptions" : true,
@@ -677,20 +680,37 @@ function getHtmlAndTitle(url, skipSlashFallback) {
     for (var i = 0; i <= 5; i++) {
       response = UrlFetchApp.fetch(targetUrl, options);
       status = response.getResponseCode();
+      ret.status = status;
       if (redirectCodes.indexOf(status) < 0) break;
-      if (i == 5) return ret;
+      if (i == 5) {
+        ret.error = 'too many redirects';
+        return ret;
+      }
       targetUrl = resolveFetchRedirectUrl(
         targetUrl,
         getResponseHeader(response, 'Location')
       );
-      if (targetUrl == '') return ret;
+      if (targetUrl == '') {
+        ret.error = 'invalid redirect URL';
+        return ret;
+      }
     }
 
-    if (status < 200 || status >= 300 || !isHtmlFetchResponse(response)) return ret;
+    if (status < 200 || status >= 300) return ret;
+    if (!isHtmlFetchResponse(response)) {
+      ret.error = 'non-HTML response';
+      return ret;
+    }
     var contentLength = Number(getResponseHeader(response, 'Content-Length'));
-    if (contentLength > 5000000) return ret;
+    if (contentLength > 5000000) {
+      ret.error = 'response too large';
+      return ret;
+    }
     var html = response.getContentText();
-    if (html.length > 5000000) return ret;
+    if (html.length > 5000000) {
+      ret.error = 'response too large';
+      return ret;
+    }
     if (
       html == '' && !skipSlashFallback &&
       targetUrl.charAt(targetUrl.length - 1) != '/'
@@ -698,8 +718,15 @@ function getHtmlAndTitle(url, skipSlashFallback) {
       return getHtmlAndTitle(targetUrl + '/', true);
     }
 
-    return {'title': extractHtmlTitle(html), 'html': html};
+    if (html == '') {
+      ret.error = 'empty response';
+      return ret;
+    }
+    return {'title': extractHtmlTitle(html), 'html': html, 'status': status, 'error': ''};
   } catch(e) {
+    // A previous redirect status does not describe a failed subsequent request.
+    ret.status = null;
+    ret.error = 'fetch error';
     return ret;
   }
 }
