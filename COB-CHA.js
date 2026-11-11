@@ -112,7 +112,7 @@ function showControlPanel() {
  * @return Void
  */
 function showHelp() {
-  showDialog('ui-help', 500, 400, getUiLang('help', 'Help'));
+  showDialog('ui-help', 500, 400, getUiLang('cob-cha-help', 'COB-CHA Help'));
 }
 
 /**

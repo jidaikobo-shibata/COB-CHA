@@ -786,7 +786,7 @@ function getUiJa ()
 
     // menu
     'show-control-panel': 'コントロールパネルを表示',
-    'cob-cha-help': 'COB-CHA ヘルプ',
+    'cob-cha-help': 'COB-CHAヘルプ',
     'credit': 'クレジット',
 
     // messages
